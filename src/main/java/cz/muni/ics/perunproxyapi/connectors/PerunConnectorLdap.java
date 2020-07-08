@@ -1,5 +1,7 @@
 package cz.muni.ics.perunproxyapi.connectors;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.directory.api.ldap.model.message.SearchScope;
@@ -17,21 +19,24 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Component
+@NoArgsConstructor
 public class PerunConnectorLdap implements DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(PerunConnectorLdap.class);
 
-    private final LdapConnectionPool pool;
-    private final LdapConnectionTemplate ldap;
+    private LdapConnectionPool pool;
+    private LdapConnectionTemplate ldap;
 
     // Values from config
     @Value("${connector.ldap.port}")
     private int PORT_NUMBER;
 
     @Value("${connector.ldap.base_dn}")
+    @Getter
     private String baseDN;
 
     @Value("${connector.ldap.ldap_host}")
@@ -46,8 +51,8 @@ public class PerunConnectorLdap implements DisposableBean {
     @Value("${connector.ldap.timeout_secs}")
     private long timeoutSecs;
 
-
-    public PerunConnectorLdap() {
+    @PostConstruct
+    public void postInit() {
         if (ldapHost == null || ldapHost.trim().isEmpty()) {
             throw new IllegalArgumentException("Host cannot be null or empty");
         } else if (baseDN == null || baseDN.trim().isEmpty()) {
@@ -72,10 +77,6 @@ public class PerunConnectorLdap implements DisposableBean {
         pool = new LdapConnectionPool(new DefaultPoolableLdapConnectionFactory(factory), poolConfig);
         ldap = new LdapConnectionTemplate(pool);
         log.debug("initialized LDAP connector");
-    }
-
-    public String getBaseDN() {
-        return baseDN;
     }
 
     private LdapConnectionConfig getConfig(String host) {

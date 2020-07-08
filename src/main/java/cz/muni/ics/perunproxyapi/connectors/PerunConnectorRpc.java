@@ -63,7 +63,7 @@ public class PerunConnectorRpc {
     @Value("${connector.rpc.max.per_route}")
     private int MAX_CONN_PER_ROUTE;
 
-    @Value("${connector.rpc.perun_url")
+    @Value("${connector.rpc.perun_url}")
     public void setPerunUrl(String perunUrl) {
         if (perunUrl == null || perunUrl.trim().isEmpty()) {
             throw new IllegalArgumentException("Perun URL cannot be null or empty");
@@ -74,7 +74,7 @@ public class PerunConnectorRpc {
         this.perunUrl = perunUrl;
     }
 
-    @Value("${connector.rpc.perun_user")
+    @Value("${connector.rpc.perun_user}")
     public void setPerunUser(String perunUser) {
         if (perunUser == null || perunUser.trim().isEmpty()) {
             throw new IllegalArgumentException("Perun USER cannot be null or empty");
@@ -83,7 +83,7 @@ public class PerunConnectorRpc {
         this.perunUser = perunUser;
     }
 
-    @Value("${connector.rpc.perun_password")
+    @Value("${connector.rpc.perun_password}")
     public void setPerunPassword(String perunPassword) {
         if (perunPassword == null || perunPassword.trim().isEmpty()) {
             throw new IllegalArgumentException("Perun PASSWORD cannot be null or empty");
@@ -92,7 +92,7 @@ public class PerunConnectorRpc {
         this.perunPassword = perunPassword;
     }
 
-    @Value("${connector.rpc.is_enabled")
+    @Value("${connector.rpc.is_enabled}")
     public void setEnabled(String enabled) {
         this.isEnabled = Boolean.parseBoolean(enabled);
     }
