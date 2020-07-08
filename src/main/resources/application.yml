@@ -1,0 +1,22 @@
+connector:
+  rpc:
+    perun_url: "example.com"
+    perun_user: "example user"
+    perun_password: "example password"
+    is_enabled: "true"
+    request:
+      timeout: 30000
+    connect:
+      timeout: 30000
+    socket:
+      timeout: 60000
+    max:
+      connections: 20
+      per_route: 18
+  ldap:
+    ldap_host: "example host"
+    ldap_user: "example user"
+    ldap_password: "example password"
+    timeout_secs: 100
+    base_dn: "example dn"
+    port: 636

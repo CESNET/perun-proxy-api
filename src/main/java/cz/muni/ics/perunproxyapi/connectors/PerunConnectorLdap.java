@@ -15,14 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class PerunConnectorLdap implements DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(PerunConnectorLdap.class);
 
-    private final String baseDN;
     private final LdapConnectionPool pool;
     private final LdapConnectionTemplate ldap;
 
@@ -30,15 +31,29 @@ public class PerunConnectorLdap implements DisposableBean {
     @Value("${connector.ldap.port}")
     private int PORT_NUMBER;
 
+    @Value("${connector.ldap.base_dn}")
+    private String baseDN;
 
-    public PerunConnectorLdap(String ldapHost, String ldapUser, String ldapPassword, long timeoutSecs, String baseDN) {
+    @Value("${connector.ldap.ldap_host}")
+    private String ldapHost;
+
+    @Value("${connector.ldap.ldap_user}")
+    private String ldapUser;
+
+    @Value("${connector.ldap.ldap_password}")
+    private String ldapPassword;
+
+    @Value("${connector.ldap.timeout_secs}")
+    private long timeoutSecs;
+
+
+    public PerunConnectorLdap() {
         if (ldapHost == null || ldapHost.trim().isEmpty()) {
             throw new IllegalArgumentException("Host cannot be null or empty");
         } else if (baseDN == null || baseDN.trim().isEmpty()) {
             throw new IllegalArgumentException("baseDN cannot be null or empty");
         }
 
-        this.baseDN = baseDN;
         LdapConnectionConfig config = getConfig(ldapHost);
         if (ldapUser != null && !ldapUser.isEmpty()) {
             log.debug("setting ldap user to {}", ldapUser);

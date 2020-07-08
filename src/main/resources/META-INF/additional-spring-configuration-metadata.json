@@ -17,12 +17,48 @@
       "type": "java.lang.Integer"
     },
     {
-      "name": "connector.rpc.max.per.route",
+      "name": "connector.rpc.max.per_route",
       "type": "java.lang.Integer"
     },
     {
       "name": "connector.ldap.port",
       "type": "java.lang.Integer"
+    },
+    {
+      "name": "connector.rpc.perun_url",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "connector.rpc.perun_password",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "connector.rpc.perun_user",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "connector.rpc.is_enabled",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "connector.ldap.ldap_host",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "connector.ldap.ldap_user",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "connector.ldap.ldap_password",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "connector.ldap.timeout_secs",
+      "type": "java.lang.Integer"
+    },
+    {
+      "name": "connector.ldap.base_dn",
+      "type": "java.lang.String"
     }
   ]
 }
