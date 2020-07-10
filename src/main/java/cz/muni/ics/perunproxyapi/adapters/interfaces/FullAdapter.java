@@ -15,7 +15,7 @@ public interface FullAdapter extends DataAdapter {
      * @param attributes list of attribute names
      * @return the map of the attributes with their names
      */
-    Map<String, PerunAttribute> getAttributes(Entity entity, long entityId, List<String> attributes);
+    Map<String, PerunAttribute> getAttributes(Entity entity, Long entityId, List<String> attributes);
 
     /**
      * @param extSourceName name of the user ext source
@@ -38,11 +38,20 @@ public interface FullAdapter extends DataAdapter {
      * @param entityId entity id
      * @param attributes attributes we want to set
      */
-    void setAttributes(Entity entity, long entityId, List<PerunAttribute> attributes);
+    void setAttributes(Entity entity, Long entityId, List<PerunAttribute> attributes);
 
     /**
      *
      * @param userExtSource user ext source to update
      */
-    void updateUserExtSourceLastAccess(UserExtSource userExtSource);
+    boolean updateUserExtSourceLastAccess(UserExtSource userExtSource);
+
+    /**
+     *
+     * @param user user
+     * @param vo vo
+     * @return member
+     */
+    Member getMemberByUser(User user, Vo vo);
+
 }

@@ -14,14 +14,14 @@ public interface DataAdapter {
      * @param uids list of user identifiers received from remote idp used as userExtSourceLogin
      * @return User or null if not exists
      */
-    User getPerunUser(long userId, long uids);
+    User getPerunUser(Long userId, List<String> uids);
 
     /**
      * @param userId the user id
      * @param voId vo we are working with
      * @return groups from VO that the user is a member of. Including VO members group.
      */
-    List<Group> getMemberGroups(long userId, long voId);
+    List<Group> getMemberGroups(Long userId, Long voId);
 
     /**
      *
@@ -29,7 +29,7 @@ public interface DataAdapter {
      * @return list of groups from vo which are assigned to all facilities with spEntityId.
      * Registering to those groups should allow access to the service
      */
-    List<Group> getSpGroups(long spEntityId);
+    List<Group> getSpGroups(Long spEntityId);
 
     /**
      *
@@ -37,7 +37,7 @@ public interface DataAdapter {
      * @param name group name. Note that name of group is without VO name prefix.
      * @return group
      */
-    Group getGroupByName(long voId, String name);
+    Group getGroupByName(Long voId, String name);
 
     /**
      *
@@ -51,7 +51,7 @@ public interface DataAdapter {
      * @param voId id
      * @return Vo
      */
-    Vo getVoById(long voId);
+    Vo getVoById(Long voId);
 
     /**
      *
@@ -60,7 +60,7 @@ public interface DataAdapter {
      * @param attributes list of attributes whose values we want to get
      * @return the map of the attributes with their names
      */
-    Map<String, PerunAttribute> getAttributesValues(Entity entity, long entityId, List<String> attributes);
+    Map<String, PerunAttribute> getAttributesValues(Entity entity, Long entityId, List<String> attributes);
 
     /**
      *
@@ -70,7 +70,7 @@ public interface DataAdapter {
      */
     List<Facility> getFacilitiesByAttribute(String name, String attrValue);
 
-    List<Group> getUsersGroupsOnFacility(long spEntityId, long userId);
+    List<Group> getUsersGroupsOnFacility(Long spEntityId, Long userId);
 
     List<Facility> searchFacilitiesByAttributeValue(PerunAttribute attribute);
 }

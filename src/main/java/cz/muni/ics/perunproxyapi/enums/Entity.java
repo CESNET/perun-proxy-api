@@ -4,5 +4,6 @@ public enum Entity {
     USER,
     VO,
     FACILITY,
-    GROUP
+    GROUP,
+    RESOURCE
 }
