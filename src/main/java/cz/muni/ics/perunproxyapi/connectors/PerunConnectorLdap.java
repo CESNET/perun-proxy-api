@@ -2,19 +2,15 @@ package cz.muni.ics.perunproxyapi.connectors;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.api.ldap.model.name.Dn;
-import org.apache.directory.ldap.client.api.DefaultLdapConnectionFactory;
-import org.apache.directory.ldap.client.api.DefaultPoolableLdapConnectionFactory;
-import org.apache.directory.ldap.client.api.LdapConnectionConfig;
-import org.apache.directory.ldap.client.api.LdapConnectionPool;
+import org.apache.directory.ldap.client.api.*;
 import org.apache.directory.ldap.client.api.search.FilterBuilder;
 import org.apache.directory.ldap.client.template.EntryMapper;
 import org.apache.directory.ldap.client.template.LdapConnectionTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -22,11 +18,18 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+import static java.lang.System.*;
+
+/**
+ * Connector for calling Perun LDAP. @Value annotations maps values from application.yml configuration file.
+ *
+ * @author Dominik Frantisek Bucik <bucik@ics.muni.cz>
+ * @author Pavol Pluta <pavol.pluta1@gmail.com>
+ */
 @Component
 @NoArgsConstructor
+@Slf4j
 public class PerunConnectorLdap implements DisposableBean {
-
-    private static final Logger log = LoggerFactory.getLogger(PerunConnectorLdap.class);
 
     private LdapConnectionPool pool;
     private LdapConnectionTemplate ldap;
@@ -50,6 +53,15 @@ public class PerunConnectorLdap implements DisposableBean {
 
     @Value("${connector.ldap.timeout_secs}")
     private long timeoutSecs;
+
+    @Value("${connector.ldap.use_tls}")
+    private boolean useTLS;
+
+    @Value("${connector.ldap.use_ssl}")
+    private boolean useSSL;
+
+    @Value("${connector.ldap.allow_untrusted_ssl}")
+    private boolean allowUntrustedSSL;
 
     @PostConstruct
     public void postInit() {
@@ -83,7 +95,11 @@ public class PerunConnectorLdap implements DisposableBean {
         LdapConnectionConfig config = new LdapConnectionConfig();
         config.setLdapHost(host);
         config.setLdapPort(PORT_NUMBER);
-        config.setUseSsl(true);
+        config.setUseSsl(useSSL);
+        config.setUseTls(useTLS);
+        if (allowUntrustedSSL) {
+            config.setTrustManagers(new NoVerificationTrustManager());
+        }
 
         return config;
     }
@@ -113,9 +129,13 @@ public class PerunConnectorLdap implements DisposableBean {
     public <T> T searchFirst(String dnPrefix, FilterBuilder filter, SearchScope scope, String[] attributes, EntryMapper<T> entryMapper) {
         log.trace("searchFirst({}, {}, {}, {} , {})", dnPrefix, filter, scope, attributes, entryMapper);
         Dn fullDn = getFullDn(dnPrefix);
+        long startTime = currentTimeMillis();
         T result = ldap.searchFirst(fullDn, filter, scope, attributes, entryMapper);
-
+        long endTime = currentTimeMillis();
+        long responseTime = endTime - startTime;
         log.trace("searchFirst({}, {}, {}, {} , {}) returns: {}", dnPrefix, filter, scope, attributes, entryMapper, result);
+        log.trace("searchFirst query proceeded in {} ms.", responseTime);
+
         return result;
     }
 
@@ -132,8 +152,12 @@ public class PerunConnectorLdap implements DisposableBean {
         log.trace("lookup({}, {}, {})", dnPrefix, attributes, entryMapper);
         Dn fullDn = getFullDn(dnPrefix);
 
+        long startTime = currentTimeMillis();
         T result = ldap.lookup(fullDn, attributes, entryMapper);
+        long endTime = currentTimeMillis();
+        long responseTime = endTime - startTime;
         log.trace("lookup({}, {}, {}) returns: {}", dnPrefix, attributes, entryMapper, result);
+        log.trace("lookup query proceeded in {} ms.", responseTime);
         return result;
     }
 
@@ -142,7 +166,7 @@ public class PerunConnectorLdap implements DisposableBean {
      * @param dnPrefix Prefix to be added to the base DN. (i.e. ou=People)
      *                 ! DO NOT END WITH A COMMA !
      * @param filter Filter for entries
-     * @param scope Seearch scope
+     * @param scope Search scope
      * @param attributes Attributes to be fetch for entry
      * @param entryMapper Mapper of entries to the target class T
      * @param <T> Class that the result should be mapped to.
@@ -152,8 +176,12 @@ public class PerunConnectorLdap implements DisposableBean {
         log.trace("search({}, {}, {}, {} , {})", dnPrefix, filter, scope, attributes, entryMapper);
         Dn fullDn = getFullDn(dnPrefix);
 
+        long startTime = currentTimeMillis();
         List<T> result = ldap.search(fullDn, filter, scope, attributes, entryMapper);
-        log.trace("searchFirst({}, {}, {}, {} , {}) returns: {}", dnPrefix, filter, scope, attributes, entryMapper, result);
+        long endTime = currentTimeMillis();
+        long responseTime = endTime - startTime;
+        log.trace("search({}, {}, {}, {} , {}) returns: {}", dnPrefix, filter, scope, attributes, entryMapper, result);
+        log.trace("search query proceeded in {} ms.", responseTime);
         return result;
     }
 

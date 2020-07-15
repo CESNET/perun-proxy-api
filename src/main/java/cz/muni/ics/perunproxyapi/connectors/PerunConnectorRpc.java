@@ -3,7 +3,8 @@ package cz.muni.ics.perunproxyapi.connectors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.client.config.RequestConfig;
@@ -13,8 +14,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -31,6 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.System.currentTimeMillis;
+
 /**
  * Connector for calling Perun RPC
  *
@@ -38,8 +39,8 @@ import java.util.Map;
  * @author Pavol Pluta <pavol.pluta1@gmail.com>
  */
 @Component
+@Slf4j
 public class PerunConnectorRpc {
-    private static final Logger log = LoggerFactory.getLogger(PerunConnectorRpc.class);
 
     private String perunUrl;
     private String perunUser;
@@ -64,10 +65,8 @@ public class PerunConnectorRpc {
     private int MAX_CONN_PER_ROUTE;
 
     @Value("${connector.rpc.perun_url}")
-    public void setPerunUrl(String perunUrl) {
-        if (perunUrl == null || perunUrl.trim().isEmpty()) {
-            throw new IllegalArgumentException("Perun URL cannot be null or empty");
-        } else if (perunUrl.endsWith("/")) {
+    public void setPerunUrl(@NonNull String perunUrl) {
+        if (perunUrl.endsWith("/")) {
             perunUrl = perunUrl.substring(0, perunUrl.length() - 1);
         }
 
@@ -75,20 +74,12 @@ public class PerunConnectorRpc {
     }
 
     @Value("${connector.rpc.perun_user}")
-    public void setPerunUser(String perunUser) {
-        if (perunUser == null || perunUser.trim().isEmpty()) {
-            throw new IllegalArgumentException("Perun USER cannot be null or empty");
-        }
-
+    public void setPerunUser(@NonNull String perunUser) {
         this.perunUser = perunUser;
     }
 
     @Value("${connector.rpc.perun_password}")
-    public void setPerunPassword(String perunPassword) {
-        if (perunPassword == null || perunPassword.trim().isEmpty()) {
-            throw new IllegalArgumentException("Perun PASSWORD cannot be null or empty");
-        }
-
+    public void setPerunPassword(@NonNull String perunPassword) {
         this.perunPassword = perunPassword;
     }
 
@@ -164,7 +155,13 @@ public class PerunConnectorRpc {
         // make the call
         try {
             log.trace("calling {} with {}", actionUrl, map);
-            return restTemplate.postForObject(actionUrl, map, JsonNode.class);
+            long startTime = currentTimeMillis();
+            JsonNode result = restTemplate.postForObject(actionUrl, map, JsonNode.class);
+            long endTime = currentTimeMillis();
+            long responseTime = endTime - startTime;
+            log.trace("POST call proceeded in {} ms.",responseTime);
+            return result;
+
         } catch (HttpClientErrorException ex) {
             MediaType contentType = ex.getResponseHeaders().getContentType();
             String body = ex.getResponseBodyAsString();

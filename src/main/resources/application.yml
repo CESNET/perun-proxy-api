@@ -1,9 +1,9 @@
 connector:
   rpc:
-    perun_url: "example.com"
+    perun_url: "https://perun-dev.cesnet.cz/ba/rpc"
     perun_user: "example user"
     perun_password: "example password"
-    is_enabled: "true"
+    is_enabled: true
     request:
       timeout: 30000
     connect:
@@ -14,9 +14,12 @@ connector:
       connections: 20
       per_route: 18
   ldap:
-    ldap_host: "example host"
+    ldap_host: "perun-dev.cesnet.cz"
     ldap_user: "example user"
     ldap_password: "example password"
     timeout_secs: 100
-    base_dn: "example dn"
+    base_dn: "dc=perun,dc=cesnet,dc=cz"
     port: 636
+    use_tls: true
+    use_ssl: true
+    allow_untrusted_ssl: false
