@@ -1,3 +1,4 @@
+---
 connector:
   rpc:
     perun_url: "https://perun-dev.cesnet.cz/ba/rpc"
@@ -23,3 +24,6 @@ connector:
     use_tls: true
     use_ssl: true
     allow_untrusted_ssl: false
+
+attributes:
+  path: /etc/perun/attributes.yml
