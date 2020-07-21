@@ -1,0 +1,3 @@
+proxyuser:
+  - find_by_identifiers:
+      adapter: "RPC"

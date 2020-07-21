@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 
 import org.apache.directory.ldap.client.api.search.FilterBuilder;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +25,7 @@ import static org.apache.directory.ldap.client.api.search.FilterBuilder.equal;
 import static org.apache.directory.ldap.client.api.search.FilterBuilder.or;
 import static cz.muni.ics.perunproxyapi.adapters.PerunAdapterLdapConstants.*;
 
+@Component
 public class LdapAdapterImpl implements DataAdapter {
 
 

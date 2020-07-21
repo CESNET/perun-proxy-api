@@ -11,12 +11,14 @@ import cz.muni.ics.perunproxyapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static cz.muni.ics.perunproxyapi.adapters.PerunAdapterRpcConstants.*;
 
+@Component
 public class RpcAdapterImpl extends PerunAdapterWithMappingServices implements FullAdapter {
 
     private final static Logger log = LoggerFactory.getLogger(RpcAdapterImpl.class);

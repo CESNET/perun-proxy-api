@@ -23,3 +23,6 @@ connector:
     use_tls: true
     use_ssl: true
     allow_untrusted_ssl: false
+spring:
+  profiles:
+    include: "apiConfiguration"
