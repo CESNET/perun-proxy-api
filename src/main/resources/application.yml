@@ -1,4 +1,7 @@
 ---
+attributes:
+  path: /etc/perun/attributes.yml
+
 connector:
   rpc:
     perun_url: "https://perun-dev.cesnet.cz/ba/rpc"
@@ -25,5 +28,7 @@ connector:
     use_ssl: true
     allow_untrusted_ssl: false
 
-attributes:
-  path: /etc/perun/attributes.yml
+facade:
+  config_path:
+    proxyuser: "/etc/perun/proxyuser-facade.yml"
+    relying_party: "/etc/perun/relying-party-facade.yml"

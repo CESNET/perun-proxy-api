@@ -20,6 +20,7 @@ import cz.muni.ics.perunproxyapi.persistence.models.Vo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapt
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.USERS_MANAGER;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.VOS_MANAGER;
 
+@Component(value = "rpcAdapter")
 @Slf4j
 public class RpcAdapterImpl implements FullAdapter {
 

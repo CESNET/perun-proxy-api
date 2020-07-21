@@ -26,6 +26,7 @@ import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.ldap.client.api.search.FilterBuilder;
 import org.apache.directory.ldap.client.template.EntryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ import static org.apache.directory.ldap.client.api.search.FilterBuilder.and;
 import static org.apache.directory.ldap.client.api.search.FilterBuilder.equal;
 import static org.apache.directory.ldap.client.api.search.FilterBuilder.or;
 
+@Component("ldapAdapter")
 @Slf4j
 public class LdapAdapterImpl implements DataAdapter {
 
