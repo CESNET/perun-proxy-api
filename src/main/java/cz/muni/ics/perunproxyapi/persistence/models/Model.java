@@ -1,4 +1,4 @@
-package cz.muni.ics.perunproxyapi.models;
+package cz.muni.ics.perunproxyapi.persistence.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

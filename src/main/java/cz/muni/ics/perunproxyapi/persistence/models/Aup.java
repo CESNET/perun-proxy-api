@@ -1,15 +1,13 @@
-package cz.muni.ics.perunproxyapi.models;
+package cz.muni.ics.perunproxyapi.persistence.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 
 /**
  * AUP object model.
@@ -48,15 +46,13 @@ public class Aup {
     }
 
 
-
     public void setVersion(String version) {
-        if (Strings.isNullOrEmpty(version)) {
+        if (version == null || version.length() == 0) {
             throw new IllegalArgumentException("version cannot be null or empty");
         }
 
         this.version = version;
     }
-
 
 
     @JsonIgnore
@@ -65,7 +61,7 @@ public class Aup {
     }
 
     public void setDate(String date) {
-        if (Strings.isNullOrEmpty(date)) {
+        if (date == null || date.length() == 0) {
             throw new IllegalArgumentException("date cannot be null or empty");
         }
 
@@ -73,15 +69,13 @@ public class Aup {
     }
 
 
-
     public void setLink(String link) {
-        if (Strings.isNullOrEmpty(link)) {
+        if (link == null || link.length() == 0) {
             throw new IllegalArgumentException("link cannot be null or empty");
         }
 
         this.link = link;
     }
-
 
 
     public void setText(String text) {
@@ -91,7 +85,6 @@ public class Aup {
 
         this.text = text;
     }
-
 
 
     public void setSignedOn(String signedOn) {
