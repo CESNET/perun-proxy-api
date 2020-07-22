@@ -1,5 +1,8 @@
 package cz.muni.ics.perunproxyapi.persistence.enums;
 
+/**
+ * Represents type of Value in Attribute from Perun.
+ */
 public enum PerunAttrValueType {
     STRING,
     LARGE_STRING,

@@ -1,9 +1,10 @@
-attributes:
-  - identifier: identifier1
-    rpcName: rpcName1
-    ldapName: ldapName1
-    attrType: type1
-  - identifier: identifier2
-    rpcName: rpcName2
-    ldapName: ldapName2
-    attrType: type2
+---
+
+- identifier: rpcName1
+  rpcName: rpcName1
+  ldapName: ldapName1
+  attrType: type1
+- identifier: rpcName1
+  rpcName: rpcName2
+  ldapName: ldapName2
+  attrType: type2

@@ -1,4 +1,4 @@
-package cz.muni.ics.perunproxyapi.persistence.model;
+package cz.muni.ics.perunproxyapi.persistence.models;
 
 import cz.muni.ics.perunproxyapi.persistence.AttributeMappingService;
 import cz.muni.ics.perunproxyapi.persistence.enums.PerunAttrValueType;
@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 import org.springframework.util.StringUtils;
 
@@ -24,15 +23,11 @@ import org.springframework.util.StringUtils;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class AttributeMapping {
+public class AttributeObjectMapping {
 
     @EqualsAndHashCode.Include private String identifier;
     @EqualsAndHashCode.Include private String rpcName;
-
-    @Setter
-    @EqualsAndHashCode.Include
-    private String ldapName;
-
+    @EqualsAndHashCode.Include private String ldapName;
     private PerunAttrValueType attrType;
 
     public void setIdentifier(@NonNull String identifier) {
@@ -51,16 +46,20 @@ public class AttributeMapping {
         this.rpcName = rpcName;
     }
 
+    public void setLdapName(String ldapName) {
+        if (StringUtils.isEmpty(ldapName)) {
+            this.ldapName = null;
+        } else {
+            this.ldapName = ldapName;
+        }
+    }
+
     public void setAttrType(String typeStr) {
         PerunAttrValueType type = PerunAttrValueType.parse(typeStr);
         this.setAttrType(type);
     }
 
-    public void setAttrType(PerunAttrValueType attrType) {
-        if (attrType == null) {
-            throw new IllegalArgumentException("Type cannot be null");
-        }
-
+    public void setAttrType(@NonNull PerunAttrValueType attrType) {
         this.attrType = attrType;
     }
 }
