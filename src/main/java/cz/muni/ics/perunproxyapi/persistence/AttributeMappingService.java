@@ -1,8 +1,9 @@
-package cz.muni.ics.perunproxyapi.attributes;
+package cz.muni.ics.perunproxyapi.persistence;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import cz.muni.ics.perunproxyapi.AttributesMappingFromFile.AttributesMappingFromYAML;
+import cz.muni.ics.perunproxyapi.persistence.model.AttributeMapping;
+import cz.muni.ics.perunproxyapi.persistence.model.AttributesMappingConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,7 +47,7 @@ import java.util.Set;
 @Slf4j
 public class AttributeMappingService {
 
-    private Map<String, AttributeObjectMapping> attributeMap;
+    private Map<String, AttributeMapping> attributeMap;
 
     @Value("${attributes.path}")
     private String path;
@@ -67,7 +68,7 @@ public class AttributeMappingService {
      * @param identifier String identifier of attribute
      * @return AttributeObjectMapping attribute
      */
-    public AttributeObjectMapping getMappingByIdentifier(String identifier) {
+    public AttributeMapping getMappingByIdentifier(String identifier) {
         if (!attributeMap.containsKey(identifier)) {
             throw new IllegalArgumentException("Unknown identifier, check your configuration");
         }
@@ -81,10 +82,10 @@ public class AttributeMappingService {
      * @param identifiers Collection of Strings identifiers of attributes
      * @return Set of AttributeObjectMapping objects
      */
-    public Set<AttributeObjectMapping> getMappingsByIdentifiers(Collection<String> identifiers) {
+    public Set<AttributeMapping> getMappingsByIdentifiers(Collection<String> identifiers) {
         log.trace("getMappingsForAttrNames({})", identifiers);
 
-        Set<AttributeObjectMapping> mappings = new HashSet<>();
+        Set<AttributeMapping> mappings = new HashSet<>();
         if (identifiers != null) {
             for (String identifier : identifiers) {
                 try {
@@ -109,12 +110,12 @@ public class AttributeMappingService {
         attributeMap = new HashMap<>();
 
         try {
-            AttributesMappingFromYAML attrsMapping = getAttributesFromFile(path);
+            AttributesMappingConfig attrsMapping = getAttributesFromFile(path);
 
             if (attrsMapping != null) {
-                List<AttributeObjectMapping> attributes = attrsMapping.getAttributes();
+                List<AttributeMapping> attributes = attrsMapping.getAttributes();
 
-                for (AttributeObjectMapping aom : attributes) {
+                for (AttributeMapping aom : attributes) {
 
                     if (aom.getLdapName() != null && aom.getLdapName().trim().isEmpty()) {
                         aom.setLdapName(null);
@@ -136,12 +137,12 @@ public class AttributeMappingService {
      * @return AttributesMappingFromYAML object with mapped attributes
      * @throws IOException thrown when file does not exist, is empty or does not have the right structure
      */
-    private AttributesMappingFromYAML getAttributesFromFile(String path) throws IOException {
+    private AttributesMappingConfig getAttributesFromFile(String path) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
         return mapper.readValue(
                 new File(path),
-                AttributesMappingFromYAML.class
+                AttributesMappingConfig.class
         );
     }
 }

@@ -1,6 +1,6 @@
-package cz.muni.ics.perunproxyapi.attributes;
+package cz.muni.ics.perunproxyapi.persistence.model;
 
-import cz.muni.ics.perunproxyapi.exceptions.InconvertibleValueException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.InconvertibleValueException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,7 +51,6 @@ public class PerunAttributeValue {
     private Object value;
 
     public PerunAttributeValue(String type, JsonNode value) {
-        super();
         this.setType(type);
         this.setValue(type, value);
     }

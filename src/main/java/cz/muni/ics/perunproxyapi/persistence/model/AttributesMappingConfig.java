@@ -1,6 +1,5 @@
-package cz.muni.ics.perunproxyapi.AttributesMappingFromFile;
+package cz.muni.ics.perunproxyapi.persistence.model;
 
-import cz.muni.ics.perunproxyapi.attributes.AttributeObjectMapping;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class AttributesMappingFromYAML {
+public class AttributesMappingConfig {
 
-    private List<AttributeObjectMapping> attributes;
+    private List<AttributeMapping> attributes;
 }

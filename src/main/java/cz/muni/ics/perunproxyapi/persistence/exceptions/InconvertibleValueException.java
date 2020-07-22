@@ -1,4 +1,4 @@
-package cz.muni.ics.perunproxyapi.exceptions;
+package cz.muni.ics.perunproxyapi.persistence.exceptions;
 
 public class InconvertibleValueException extends RuntimeException {
 

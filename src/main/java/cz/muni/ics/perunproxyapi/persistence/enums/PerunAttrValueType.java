@@ -1,4 +1,4 @@
-package cz.muni.ics.perunproxyapi.enums;
+package cz.muni.ics.perunproxyapi.persistence.enums;
 
 public enum PerunAttrValueType {
     STRING,
