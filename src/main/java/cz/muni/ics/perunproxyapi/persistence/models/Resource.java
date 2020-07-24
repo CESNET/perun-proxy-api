@@ -23,6 +23,7 @@ public class Resource {
     @NonNull private Long facilityId;
     @NonNull private String name;
     @NonNull private String description;
+    private Vo vo;
 
     public Resource(Long id, Long voId, Long facilityId, String name, String description) {
         this.setId(id);
@@ -30,6 +31,11 @@ public class Resource {
         this.setFacilityId(facilityId);
         this.setName(name);
         this.setDescription(description);
+    }
+
+    public Resource(Long id, Long voId, Long facilityId, String name, String description, Vo vo) {
+        this(id, voId, facilityId, name, description);
+        this.setVo(vo);
     }
 
     public void setName(String name) {

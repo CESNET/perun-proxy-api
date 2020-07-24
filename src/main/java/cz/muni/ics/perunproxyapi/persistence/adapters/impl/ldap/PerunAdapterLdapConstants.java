@@ -1,6 +1,10 @@
-package cz.muni.ics.perunproxyapi.persistence.adapters.impl;
+package cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap;
 
+/**
+ * Constants for the LDAP adapter.
+ */
 public class PerunAdapterLdapConstants {
+
     // COMMON
     public static final String O = "o";
     public static final String CN = "cn";
@@ -35,4 +39,5 @@ public class PerunAdapterLdapConstants {
     public static final String PERUN_FACILITY_ID = "perunFacilityId";
     public static final String ASSIGNED_GROUP_ID = "assignedGroupId";
     public static final String ENTITY_ID = "entityID";
+
 }
