@@ -20,15 +20,30 @@ import org.springframework.util.StringUtils;
  * @author Dominik Baranek <baranek@ics.muni.cz>
  */
 @Getter
-@NoArgsConstructor
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class AttributeObjectMapping {
 
-    @EqualsAndHashCode.Include private String identifier;
-    @EqualsAndHashCode.Include private String rpcName;
-    @EqualsAndHashCode.Include private String ldapName;
-    private PerunAttrValueType attrType;
+    public static final String DEFAULT_SEPARATOR = ",";
+
+    private String identifier;
+    private String rpcName;
+    private String ldapName;
+    @EqualsAndHashCode.Exclude private PerunAttrValueType attrType;
+    private String separator;
+
+    public AttributeObjectMapping() {
+        this.separator = DEFAULT_SEPARATOR;
+    }
+
+    public AttributeObjectMapping(String identifier, String rpcName, String ldapName,
+                                  PerunAttrValueType attrType, String separator) {
+        this.setIdentifier(identifier);
+        this.setRpcName(rpcName);
+        this.setLdapName(ldapName);
+        this.setAttrType(attrType);
+        this.setSeparator(separator);
+    }
 
     public void setIdentifier(@NonNull String identifier) {
         if (StringUtils.isEmpty(identifier)) {
@@ -62,4 +77,13 @@ public class AttributeObjectMapping {
     public void setAttrType(@NonNull PerunAttrValueType attrType) {
         this.attrType = attrType;
     }
+
+    public void setSeparator(String separator) {
+        if (separator == null || separator.length() == 0) {
+            this.separator = DEFAULT_SEPARATOR;
+        } else {
+            this.separator = separator;
+        }
+    }
+
 }
