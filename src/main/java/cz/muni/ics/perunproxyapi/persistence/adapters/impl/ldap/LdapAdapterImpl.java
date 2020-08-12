@@ -55,6 +55,7 @@ import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdap
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_GROUP_ID;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_PARENT_GROUP_ID;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_RESOURCE;
+import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_RESOURCE_ID;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_UNIQUE_GROUP_NAME;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_USER;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_USER_ID;
@@ -171,7 +172,15 @@ public class LdapAdapterImpl implements DataAdapter {
         String[] attributes = getAttributesFromMappings(mappings);
         if (attributes.length != 0) {
             EntryMapper<Map<String, PerunAttributeValue>> mapper = attrValueMapper(mappings);
-            resultMap = this.connectorLdap.lookup(null, attributes, mapper);
+            String prefix = null;
+            switch (entity) {
+                case USER: prefix = PERUN_USER_ID + '=' + entityId + ",ou=People"; break;
+                case VO: prefix = PERUN_VO_ID + '=' + entityId; break;
+                case GROUP: prefix = PERUN_GROUP_ID + '=' + entityId; break;
+                case FACILITY: prefix = PERUN_FACILITY_ID + '=' + entityId; break;
+                case RESOURCE: prefix = PERUN_RESOURCE_ID + '=' + entityId; break;
+            }
+            resultMap = this.connectorLdap.lookup(prefix, attributes, mapper);
         }
 
         return resultMap;
@@ -322,7 +331,7 @@ public class LdapAdapterImpl implements DataAdapter {
                 .toArray(new String[]{});
     }
 
-    private PerunAttributeValue parseValue(@NonNull Attribute attr, @NonNull AttributeObjectMapping mapping) {
+    private PerunAttributeValue parseValue(Attribute attr, @NonNull AttributeObjectMapping mapping) {
         PerunAttrValueType type = mapping.getAttrType();
         boolean isNull = (attr == null || attr.get() == null || attr.get().isNull());
         if (isNull && PerunAttrValueType.BOOLEAN.equals(type)) {
