@@ -1,5 +1,6 @@
 package cz.muni.ics.perunproxyapi.persistence.models;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -12,21 +13,12 @@ import lombok.ToString;
  * @author Dominik Frantisek Bucik <bucik@.ics.muni.cz>
  * @author Ondrej Ernst <ondra.ernst@gmail.com>
  */
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 public class User {
 
     @NonNull private Long id;
     @NonNull private String firstName;
     @NonNull private String lastName;
-
-    public User(Long id, String firstName, String lastName) {
-        this.setId(id);
-        this.setFirstName(firstName);
-        this.setLastName(lastName);
-    }
 
     public void setLastName(String lastName) {
         if (lastName.trim().isEmpty()) {
