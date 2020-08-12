@@ -336,7 +336,7 @@ public class LdapAdapterImpl implements DataAdapter {
         } else if (isNull && PerunAttrValueType.MAP_KEY_VALUE.equals(type)) {
             return new PerunAttributeValue(PerunAttributeValue.MAP_TYPE, jsonNodeFactory.objectNode());
         } else if (isNull) {
-            return PerunAttributeValue.NULL;
+            return new PerunAttributeValue(mapping.getAttrType(), jsonNodeFactory.nullNode());
         }
         //MAP_KEY_VALUE deleted for incompatibility with AttributeMappingService
         switch (type) {

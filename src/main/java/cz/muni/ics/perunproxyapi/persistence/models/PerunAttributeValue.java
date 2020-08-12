@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import cz.muni.ics.perunproxyapi.persistence.enums.PerunAttrValueType;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.InconvertibleValueException;
 import lombok.Data;
 import lombok.NonNull;
@@ -36,16 +37,41 @@ public class PerunAttributeValue {
     public final static String MAP_TYPE = "java.util.LinkedHashMap";
     public final static String LARGE_STRING_TYPE = "java.lang.LargeString";
     public final static String LARGE_ARRAY_LIST_TYPE = "java.util.LargeArrayList";
-    public final static String NULL_TYPE = "null";
-    public final static PerunAttributeValue NULL = new PerunAttributeValue(NULL_TYPE, JsonNodeFactory.instance.nullNode());
 
     private String type;
     private JsonNode value;
 
-    public PerunAttributeValue(String type, JsonNode value) {
-        super();
+    public PerunAttributeValue(@NonNull String type, JsonNode value) {
         this.setType(type);
         this.setValue(type, value);
+    }
+
+    public PerunAttributeValue(@NonNull PerunAttrValueType attrType, @NonNull JsonNode value) {
+        switch (attrType) {
+            case STRING: {
+                this.setType(STRING_TYPE);
+            } break;
+            case INTEGER: {
+                this.setType(INTEGER_TYPE);
+            } break;
+            case BOOLEAN: {
+                this.setType(BOOLEAN_TYPE);
+            } break;
+            case ARRAY: {
+                this.setType(ARRAY_TYPE);
+            } break;
+            case MAP_JSON:
+            case MAP_KEY_VALUE: {
+                this.setType(MAP_TYPE);
+            } break;
+            case LARGE_ARRAY: {
+                this.setType(LARGE_ARRAY_LIST_TYPE);
+            } break;
+            case LARGE_STRING: {
+                this.setType(LARGE_STRING_TYPE);
+            } break;
+        }
+        this.setValue(this.type, value);
     }
 
     public void setType(@NonNull String type) {
@@ -56,7 +82,7 @@ public class PerunAttributeValue {
         this.type = type;
     }
 
-    public void setValue(String type, JsonNode value) {
+    public void setValue(@NonNull String type, JsonNode value) {
         if (isNullValue(value)) {
             if (!BOOLEAN_TYPE.equals(type)) {
                 this.value = JsonNodeFactory.instance.nullNode();
