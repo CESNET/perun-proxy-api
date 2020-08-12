@@ -23,11 +23,11 @@ public class ProxyUserApiController {
         this.facade = facade;
     }
 
-    @RequestMapping(value = "/findByIdentifiers",method = RequestMethod.GET)
-    public User findByIdentifiers(@RequestParam(value = "IdPIdentifier") String IdPIdentifier,
-                                  @RequestParam(value = "identifiers") List<String> identifiers) {
+    @RequestMapping(value = "/findByExtLogins",method = RequestMethod.GET)
+    public User findByExtLogins(@RequestParam(value = "IdPIdentifier") String IdPIdentifier,
+                                @RequestParam(value = "identifiers") List<String> identifiers) {
         // Should be automatically converted to JSON - needs to be tested
-        return facade.findByIdentifiers(IdPIdentifier, identifiers);
+        return facade.findByExtLogins(IdPIdentifier, identifiers);
     }
 
     @RequestMapping(value = "/{login}", method = RequestMethod.GET)

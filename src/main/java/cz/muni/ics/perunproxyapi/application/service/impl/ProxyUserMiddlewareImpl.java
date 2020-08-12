@@ -14,7 +14,7 @@ import java.util.Map;
 @Component
 public class ProxyUserMiddlewareImpl implements ProxyUserMiddleware {
 
-    public User findByIdentifiers(DataAdapter preferredAdapter, String idpEntityId, List<String> userIdentifiers) {
+    public User findByExtLogins(DataAdapter preferredAdapter, String idpEntityId, List<String> userIdentifiers) {
         return preferredAdapter.getPerunUser(idpEntityId, userIdentifiers);
     }
 

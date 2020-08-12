@@ -24,7 +24,7 @@ public interface ProxyUserMiddleware {
      * @param userIdentifiers List of users identifiers.
      * @return User or null.
      */
-    User findByIdentifiers(DataAdapter preferredAdapter, String idpEntityId, List<String> userIdentifiers);
+    User findByExtLogins(DataAdapter preferredAdapter, String idpEntityId, List<String> userIdentifiers);
 
     /**
      * Get user by given IdP identifier and attribute.

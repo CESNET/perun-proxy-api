@@ -43,12 +43,12 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         this.defaultIdpIdentifier = defaultIdp;
     }
 
-    public User findByIdentifiers(String idpIdentifier, List<String> userIdentifiers) {
+    public User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) {
         JsonNode options = methodConfigurations.getOrDefault(FIND_BY_IDENTIFIERS, JsonNodeFactory.instance.nullNode());
         DataAdapter adapter = adaptersContainer.getPreferredAdapter(
                 options.has("adapter") ? options.get("adapter").asText() : "RPC");
 
-        return userMiddleware.findByIdentifiers(adapter, idpIdentifier, userIdentifiers);
+        return userMiddleware.findByExtLogins(adapter, idpIdentifier, userIdentifiers);
     }
 
     public UserDTO getUserByLogin(String login, List<String> fields) {

@@ -22,7 +22,7 @@ public interface ProxyuserFacade {
      * @param userIdentifiers List of User users identifiers.
      * @return User or null.
      */
-    User findByIdentifiers(String idpIdentifier, List<String> userIdentifiers);
+    User findByExtLogins(String idpIdentifier, List<String> userIdentifiers);
 
     /**
      *
