@@ -18,8 +18,10 @@ import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.persistence.models.UserExtSource;
 import cz.muni.ics.perunproxyapi.persistence.models.Vo;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -31,40 +33,48 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.ENTITY_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.ATTRIBUTES_MANAGER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.FACILITIES_MANAGER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.GROUPS_MANAGER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.MEMBERS_MANAGER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_ATTRIBUTES;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_ATTRIBUTES_WITH_SEARCHING_VALUES;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_ATTRIBUTE_NAME;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_ATTRIBUTE_VALUE;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_ATTR_NAMES;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_EXT_LOGIN;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_EXT_SOURCE_LOGIN;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_EXT_SOURCE_NAME;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_FACILITY;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_GROUP;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_MEMBER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_NAME;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_RESOURCE;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_SHORT_NAME;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_USER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_USER_EXT_SOURCE;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.PARAM_VO;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.RESOURCES_MANAGER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.SEARCHER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.USERS_MANAGER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.PerunAdapterRpcConstants.VOS_MANAGER;
 
 @Component(value = "rpcAdapter")
 @Slf4j
 public class RpcAdapterImpl implements FullAdapter {
 
+    // MANAGERS
+    public static final String ATTRIBUTES_MANAGER = "attributesManager";
+    public static final String FACILITIES_MANAGER = "facilitiesManager";
+    public static final String GROUPS_MANAGER = "groupsManager";
+    public static final String MEMBERS_MANAGER = "membersManager";
+    public static final String REGISTRAR_MANAGER = "registrarManager";
+    public static final String SEARCHER = "searcher";
+    public static final String USERS_MANAGER = "usersManager";
+    public static final String VOS_MANAGER = "vosManager";
+    public static final String RESOURCES_MANAGER = "resourcesManager";
+
+    // PARAMS
+    public static final String PARAM_USER = "user";
+    public static final String PARAM_ATTR_NAMES = "attrNames";
+    public static final String PARAM_EXT_SOURCE_NAME = "extSourceName";
+    public static final String PARAM_EXT_SOURCE_LOGIN = "extSourceLogin";
+    public static final String PARAM_ATTRIBUTES = "attributes";
+    public static final String PARAM_USER_EXT_SOURCE = "userExtSource";
+    public static final String PARAM_VO = "vo";
+    public static final String PARAM_NAME = "name";
+    public static final String PARAM_SHORT_NAME = "shortName";
+    public static final String PARAM_ID = "id";
+    public static final String PARAM_ATTRIBUTE_NAME = "attributeName";
+    public static final String PARAM_ATTRIBUTE_VALUE = "attributeValue";
+    public static final String PARAM_FACILITY = "facility";
+    public static final String PARAM_ATTRIBUTES_WITH_SEARCHING_VALUES = "attributesWithSearchingValues";
+    public static final String PARAM_RESOURCE = "resource";
+    public static final String PARAM_GROUP = "group";
+    public static final String PARAM_MEMBER = "member";
+    public static final String PARAM_EXT_LOGIN = "extLogin";
+
     private final PerunConnectorRpc connectorRpc;
     private final AttributeMappingService attributeMappingService;
+
+    @Value("${attributes.identifiers.facility}")
+    @Setter
+    private String facilityIdentifierAttrName;
 
     @Autowired
     public RpcAdapterImpl(@NonNull PerunConnectorRpc perunConnectorRpc,
@@ -211,7 +221,7 @@ public class RpcAdapterImpl implements FullAdapter {
             return new ArrayList<>();
         }
 
-        List<Facility> facilities = getFacilitiesByAttribute(ENTITY_ID, spIdentifier);
+        List<Facility> facilities = getFacilitiesByAttribute(facilityIdentifierAttrName, spIdentifier);
         if (facilities == null || facilities.size() == 0) {
             return new ArrayList<>();
         }

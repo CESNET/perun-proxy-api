@@ -28,6 +28,8 @@ connector:
 
 attributes:
   path: "${PWD}/src/test/resources/attributes.yml"
+  identifiers:
+    facility: 'urn:perun:facility:attribute-def:def:entityID'
 
 facade:
   default_idp: "https://idp.example.com/idp/"

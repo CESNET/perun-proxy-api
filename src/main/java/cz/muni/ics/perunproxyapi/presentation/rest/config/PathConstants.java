@@ -1,11 +1,15 @@
 package cz.muni.ics.perunproxyapi.presentation.rest.config;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /**
  * Constants for PATHs mapping.
  *
  * @author Dominik Frantisek Bucik <bucik@ics.muni.cz>
  */
-public class PathConstants {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class PathConstants {
 
     // auth, non-auth, ...
     public static final String NO_AUTH_PATH = "/non";

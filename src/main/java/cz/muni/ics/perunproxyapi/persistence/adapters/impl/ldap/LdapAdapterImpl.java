@@ -40,28 +40,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.ASSIGNED_GROUP_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.CN;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.DESCRIPTION;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.EDU_PERSON_PRINCIPAL_NAMES;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.ENTITY_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.GIVEN_NAME;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.MEMBER_OF;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.O;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.OBJECT_CLASS;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_FACILITY;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_FACILITY_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_GROUP;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_GROUP_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_PARENT_GROUP_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_RESOURCE;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_RESOURCE_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_UNIQUE_GROUP_NAME;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_USER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_USER_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_VO;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.PERUN_VO_ID;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.ldap.PerunAdapterLdapConstants.SN;
 import static org.apache.directory.ldap.client.api.search.FilterBuilder.and;
 import static org.apache.directory.ldap.client.api.search.FilterBuilder.equal;
 import static org.apache.directory.ldap.client.api.search.FilterBuilder.or;
@@ -69,6 +47,41 @@ import static org.apache.directory.ldap.client.api.search.FilterBuilder.or;
 @Component("ldapAdapter")
 @Slf4j
 public class LdapAdapterImpl implements DataAdapter {
+
+    // COMMON
+    public static final String O = "o";
+    public static final String CN = "cn";
+    public static final String SN = "sn";
+    public static final String DESCRIPTION = "description";
+    public static final String OBJECT_CLASS = "objectClass";
+
+    // USER
+    public static final String PERUN_USER = "perunUser";
+    public static final String PERUN_USER_ID = "perunUserId";
+    public static final String GIVEN_NAME = "givenName";
+    public static final String MEMBER_OF = "memberOf";
+    public static final String EDU_PERSON_PRINCIPAL_NAMES = "eduPersonPrincipalNames";
+
+    // GROUP
+    public static final String PERUN_GROUP = "perunGroup";
+    public static final String PERUN_GROUP_ID = "perunGroupId";
+    public static final String PERUN_PARENT_GROUP_ID = "perunParentGroupId";
+    public static final String PERUN_UNIQUE_GROUP_NAME = "perunUniqueGroupName";
+    public static final String UNIQUE_MEMBER = "uniqueMember";
+
+    // VO
+    public static final String PERUN_VO = "perunVO";
+    public static final String PERUN_VO_ID = "perunVoId";
+
+    // RESOURCE
+    public static final String PERUN_RESOURCE = "perunResource";
+    public static final String PERUN_RESOURCE_ID = "perunResourceId";
+
+    // FACILITY
+    public static final String PERUN_FACILITY = "perunFacility";
+    public static final String PERUN_FACILITY_ID = "perunFacilityId";
+    public static final String ASSIGNED_GROUP_ID = "assignedGroupId";
+    public static final String ENTITY_ID = "entityID";
 
     private final PerunConnectorLdap connectorLdap;
     private final AttributeMappingService attributeMappingService;
