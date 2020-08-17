@@ -18,6 +18,7 @@ import lombok.NonNull;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,7 +74,7 @@ public class RpcMapper {
      */
     public static List<Group> mapGroups(@NonNull JsonNode jsonArray) {
         if (jsonArray.isNull()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<Group> result = new ArrayList<>();
@@ -110,7 +111,7 @@ public class RpcMapper {
      */
     public static List<Facility> mapFacilities(@NonNull JsonNode jsonArray) {
         if (jsonArray.isNull()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<Facility> result = new ArrayList<>();
@@ -148,7 +149,7 @@ public class RpcMapper {
      */
     public static List<Member> mapMembers(@NonNull JsonNode jsonArray) {
         if (jsonArray.isNull()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<Member> members = new ArrayList<>();
@@ -194,7 +195,7 @@ public class RpcMapper {
      */
     public static List<Resource> mapResources(@NonNull JsonNode jsonArray) {
         if (jsonArray.isNull()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<Resource> resources = new ArrayList<>();
@@ -231,7 +232,7 @@ public class RpcMapper {
      */
     public static List<ExtSource> mapExtSources(@NonNull JsonNode jsonArray) {
         if (jsonArray.isNull()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<ExtSource> extSources = new ArrayList<>();
@@ -269,7 +270,7 @@ public class RpcMapper {
      */
     public static List<Vo> mapVos(@NonNull JsonNode jsonArray) {
         if (jsonArray.isNull()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<Vo> vos = new ArrayList<>();
@@ -310,7 +311,7 @@ public class RpcMapper {
      */
     public static List<UserExtSource> mapUserExtSources(@NonNull JsonNode jsonArray) {
         if (jsonArray.isNull()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<UserExtSource> userExtSources = new ArrayList<>();
@@ -364,7 +365,7 @@ public class RpcMapper {
     public static Map<String, PerunAttribute> mapAttributes(@NonNull JsonNode jsonArray,
                                                             @NonNull Set<AttributeObjectMapping> attrMappings) {
         if (jsonArray.isNull()) {
-            return null;
+            return new HashMap<>();
         }
 
         Map<String, PerunAttribute> map = new HashMap<>(); //key is internal identifier
