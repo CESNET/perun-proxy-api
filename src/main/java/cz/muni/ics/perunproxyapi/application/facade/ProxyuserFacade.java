@@ -38,4 +38,10 @@ public interface ProxyuserFacade {
      */
     UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, PerunConnectionException;
 
+    /**
+     * Get user by id.
+     * @param userId Id of a Perun user.
+     * @return User or null
+     */
+    User getUserById(int userId);
 }

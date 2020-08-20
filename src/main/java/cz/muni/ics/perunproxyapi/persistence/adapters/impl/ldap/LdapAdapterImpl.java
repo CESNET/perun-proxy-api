@@ -128,6 +128,28 @@ public class LdapAdapterImpl implements DataAdapter {
     }
 
     @Override
+    public User getPerunUserById(@NonNull int userId) {
+        String dnPrefix = "ou=People";
+
+        FilterBuilder userFilter = and(
+                equal(OBJECT_CLASS, PERUN_GROUP),
+                equal(PERUN_USER_ID, String.valueOf(userId))
+        );
+        String[] attributes = new String[] { PERUN_USER_ID, GIVEN_NAME, SN };
+        EntryMapper<User> mapper = e -> {
+            if (!checkHasAttributes(e, new String[] { PERUN_USER_ID, SN })) {
+                return null;
+            }
+
+            Long id = Long.parseLong(e.get(PERUN_USER_ID).getString());
+            String firstName = (e.get(GIVEN_NAME) != null) ? e.get(GIVEN_NAME).getString() : null;
+            String lastName = e.get(SN).getString();
+            return new User(id, firstName, lastName);
+        };
+        return connectorLdap.searchFirst(dnPrefix, userFilter, SearchScope.ONELEVEL, attributes, mapper);
+    }
+
+    @Override
     public List<Group> getUserGroupsInVo(@NonNull Long userId, @NonNull Long voId) {
         Set<Long> groupIds = this.getUserGroupIds(userId, voId);
         return this.getGroupsByIds(groupIds);

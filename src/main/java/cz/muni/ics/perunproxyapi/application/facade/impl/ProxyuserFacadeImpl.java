@@ -95,4 +95,15 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         return userDTO;
     }
 
+    @Override
+    public User getUserById(int userId) {
+        JsonNode options = methodConfigurations.getOrDefault(FIND_BY_PERUN_USER_ID, JsonNodeFactory.instance.nullNode());
+        DataAdapter adapter = adaptersContainer.getPreferredAdapter(
+                options.has(ADAPTER) ? options.get(ADAPTER).asText() : RPC);
+
+        log.debug("Calling userMiddleware.findByPerunUserId on adapter {}", adapter.getClass());
+
+        return userMiddleware.findByPerunUserId(adapter, userId);
+    }
+
 }

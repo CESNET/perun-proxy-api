@@ -31,4 +31,9 @@ public class ProxyUserMiddlewareImpl implements ProxyUserMiddleware {
         return preferredAdapter.getAttributesValues(entity, id, attributes);
     }
 
+    @Override
+    public User findByPerunUserId(DataAdapter preferredAdapter, int userId) {
+        return preferredAdapter.getPerunUserById(userId);
+    }
+
 }

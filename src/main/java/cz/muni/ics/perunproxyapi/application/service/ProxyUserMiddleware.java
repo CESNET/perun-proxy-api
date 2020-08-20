@@ -59,4 +59,11 @@ public interface ProxyUserMiddleware {
                                                          long id, List<String> attributes)
             throws PerunUnknownException, PerunConnectionException;
 
+    /**
+     * Get user by id.
+     * @param preferredAdapter Adapter for connection to be used.
+     * @param userId Id of a Perun user.
+     * @return User or null
+     */
+    User findByPerunUserId(DataAdapter preferredAdapter, int userId);
 }

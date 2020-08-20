@@ -62,4 +62,17 @@ public class ProxyUserProtectedController {
         return facade.getUserByLogin(login, fields);
     }
 
+    /**
+     * Search Perun user by its id.
+     *
+     * EXAMPLE CURL: TODO
+     *
+     * @param userId Id of a Perun user.
+     * @return JSON representation of the User object.
+     */
+    @RequestMapping(value = "/findByPerunUserId", method = RequestMethod.GET,
+        produces = MediaType.APPLICATION_JSON_VALUE )
+    public User findByPerunUserId(@RequestParam(value = PARAM_USER_ID) int userId) {
+        return facade.getUserById(userId);
+    }
 }
