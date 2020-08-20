@@ -32,7 +32,6 @@ attributes:
     facility: 'urn:perun:facility:attribute-def:def:entityID'
 
 facade:
-  default_idp: "https://idp.example.com/idp/"
   config_path:
     proxyuser: "/etc/perun/proxyuser-facade.yml"
     relying_party: "/etc/perun/relying-party-facade.yml"
@@ -52,3 +51,5 @@ management:
       enabled: false
     build:
       enabled: false
+
+idp_identifier_api: "https://idp.example.com/idp/"
