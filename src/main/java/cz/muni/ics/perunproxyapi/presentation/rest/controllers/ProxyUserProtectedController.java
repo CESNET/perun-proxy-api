@@ -17,10 +17,6 @@ import java.util.List;
 
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.PathConstants.AUTH_PATH;
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.PathConstants.PROXY_USER;
-import static cz.muni.ics.perunproxyapi.presentation.rest.controllers.ParameterConstants.PARAM_FIELDS;
-import static cz.muni.ics.perunproxyapi.presentation.rest.controllers.ParameterConstants.PARAM_IDENTIFIERS;
-import static cz.muni.ics.perunproxyapi.presentation.rest.controllers.ParameterConstants.PARAM_IDP_IDENTIFIER;
-import static cz.muni.ics.perunproxyapi.presentation.rest.controllers.ParameterConstants.PARAM_LOGIN;
 
 /**
  * Controller containing methods related to proxy user. Basic Auth is required.
@@ -34,6 +30,11 @@ import static cz.muni.ics.perunproxyapi.presentation.rest.controllers.ParameterC
 public class ProxyUserProtectedController {
 
     private final ProxyuserFacadeImpl facade;
+
+    public static final String PARAM_IDP_IDENTIFIER = "IdPIdentifier";
+    public static final String PARAM_IDENTIFIERS = "identifiers";
+    public static final String PARAM_LOGIN = "login";
+    public static final String PARAM_FIELDS = "fields";
 
     @Autowired
     public ProxyUserProtectedController(ProxyuserFacadeImpl facade) {
@@ -51,7 +52,7 @@ public class ProxyUserProtectedController {
     @RequestMapping(value = "/{login}", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDTO getUserByLogin(@PathVariable(value = PARAM_LOGIN) String login,
-                                  @RequestParam(value = PARAM_FIELDS) List<String> fields) {
+                                  @RequestParam(required = false, value = PARAM_FIELDS) List<String> fields) {
         return facade.getUserByLogin(login, fields);
     }
 
