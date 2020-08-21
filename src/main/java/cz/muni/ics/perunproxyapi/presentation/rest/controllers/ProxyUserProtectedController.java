@@ -1,6 +1,8 @@
 package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
 import cz.muni.ics.perunproxyapi.application.facade.impl.ProxyuserFacadeImpl;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.RpcConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -44,14 +46,14 @@ public class ProxyUserProtectedController {
     @RequestMapping(value = "/findByExtLogins", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public User findByExtLogins(@RequestParam(value = PARAM_IDP_IDENTIFIER) String idpIdentifier,
-                                @RequestParam(value = PARAM_IDENTIFIERS) List<String> identifiers) {
+                                @RequestParam(value = PARAM_IDENTIFIERS) List<String> identifiers) throws PerunUnknownException, RpcConnectionException {
         return facade.findByExtLogins(idpIdentifier, identifiers);
     }
 
     @RequestMapping(value = "/{login}", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDTO getUserByLogin(@PathVariable(value = PARAM_LOGIN) String login,
-                                  @RequestParam(value = PARAM_FIELDS) List<String> fields) {
+                                  @RequestParam(value = PARAM_FIELDS) List<String> fields) throws PerunUnknownException, RpcConnectionException {
         return facade.getUserByLogin(login, fields);
     }
 

@@ -7,6 +7,8 @@ import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
 import cz.muni.ics.perunproxyapi.persistence.connectors.PerunConnectorRpc;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.enums.MemberStatus;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.RpcConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.models.AttributeObjectMapping;
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
 import cz.muni.ics.perunproxyapi.persistence.models.Group;
@@ -86,7 +88,7 @@ public class RpcAdapterImpl implements FullAdapter {
     @Override
     public Map<String, PerunAttribute> getAttributes(@NonNull Entity entity,
                                                      @NonNull Long entityId,
-                                                     @NonNull List<String> attrsToFetch) {
+                                                     @NonNull List<String> attrsToFetch) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new HashMap<>();
         } else if (attrsToFetch == null || attrsToFetch.isEmpty()) {
@@ -110,7 +112,7 @@ public class RpcAdapterImpl implements FullAdapter {
 
     @Override
     public UserExtSource getUserExtSource(@NonNull String extSourceName,
-                                          @NonNull String extSourceLogin) {
+                                          @NonNull String extSourceLogin) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }
@@ -124,7 +126,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public MemberStatus getMemberStatusByUserAndVo(@NonNull Long userId, @NonNull Long voId) {
+    public MemberStatus getMemberStatusByUserAndVo(@NonNull Long userId, @NonNull Long voId) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }
@@ -140,7 +142,7 @@ public class RpcAdapterImpl implements FullAdapter {
     @Override
     public boolean setAttributes(@NonNull Entity entity,
                                  @NonNull Long entityId,
-                                 @NonNull List<PerunAttribute> attributes) {
+                                 @NonNull List<PerunAttribute> attributes) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return false;
         }
@@ -154,7 +156,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public boolean updateUserExtSourceLastAccess(@NonNull UserExtSource userExtSource) {
+    public boolean updateUserExtSourceLastAccess(@NonNull UserExtSource userExtSource) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return false;
         }
@@ -167,7 +169,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public Member getMemberByUser(@NonNull Long userId, @NonNull Long voId) {
+    public Member getMemberByUser(@NonNull Long userId, @NonNull Long voId) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }
@@ -181,7 +183,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids) {
+    public User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }
@@ -198,7 +200,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public List<Group> getUserGroupsInVo(@NonNull Long userId, @NonNull Long voId) {
+    public List<Group> getUserGroupsInVo(@NonNull Long userId, @NonNull Long voId) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new ArrayList<>();
         }
@@ -216,7 +218,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public List<Group> getSpGroups(@NonNull String spIdentifier) {
+    public List<Group> getSpGroups(@NonNull String spIdentifier) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new ArrayList<>();
         }
@@ -240,7 +242,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public Group getGroupByName(@NonNull Long voId, @NonNull String name) {
+    public Group getGroupByName(@NonNull Long voId, @NonNull String name) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }
@@ -254,7 +256,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public Vo getVoByShortName(@NonNull String shortName) {
+    public Vo getVoByShortName(@NonNull String shortName) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }
@@ -267,7 +269,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public Vo getVoById(@NonNull Long id) {
+    public Vo getVoById(@NonNull Long id) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }
@@ -282,7 +284,7 @@ public class RpcAdapterImpl implements FullAdapter {
     @Override
     public Map<String, PerunAttributeValue> getAttributesValues(@NonNull Entity entity,
                                                                 @NonNull Long entityId,
-                                                                @NonNull List<String> attributes) {
+                                                                @NonNull List<String> attributes) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new HashMap<>();
         }
@@ -292,7 +294,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public List<Facility> getFacilitiesByAttribute(@NonNull String attributeName, @NonNull String attrValue) {
+    public List<Facility> getFacilitiesByAttribute(@NonNull String attributeName, @NonNull String attrValue) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new ArrayList<>();
         }
@@ -306,7 +308,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public List<Group> getUsersGroupsOnFacility(@NonNull Long facilityId, @NonNull Long userId) {
+    public List<Group> getUsersGroupsOnFacility(@NonNull Long facilityId, @NonNull Long userId) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new ArrayList<>();
         }
@@ -320,7 +322,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public List<Facility> searchFacilitiesByAttributeValue(@NonNull PerunAttribute attribute) {
+    public List<Facility> searchFacilitiesByAttributeValue(@NonNull PerunAttribute attribute) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new ArrayList<>();
         }
@@ -352,7 +354,7 @@ public class RpcAdapterImpl implements FullAdapter {
         return resultMap;
     }
 
-    private List<Group> getAssignedGroups(@NonNull Long resourceId) {
+    private List<Group> getAssignedGroups(@NonNull Long resourceId) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new ArrayList<>();
         }
@@ -364,7 +366,7 @@ public class RpcAdapterImpl implements FullAdapter {
         return RpcMapper.mapGroups(perunResponse);
     }
 
-    private void fillGroupUniqueNames(@NonNull List<Group> groups) {
+    private void fillGroupUniqueNames(@NonNull List<Group> groups) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return;
         }
@@ -381,7 +383,7 @@ public class RpcAdapterImpl implements FullAdapter {
         }
     }
 
-    private List<Resource> getAssignedResources(@NonNull Long facilityId) {
+    private List<Resource> getAssignedResources(@NonNull Long facilityId) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new ArrayList<>();
         }
@@ -393,7 +395,7 @@ public class RpcAdapterImpl implements FullAdapter {
         return RpcMapper.mapResources(perunResponse);
     }
 
-    private List<Group> getMemberGroups(@NonNull Long memberId) {
+    private List<Group> getMemberGroups(@NonNull Long memberId) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return new ArrayList<>();
         }
@@ -405,7 +407,7 @@ public class RpcAdapterImpl implements FullAdapter {
         return RpcMapper.mapGroups(perunResponse);
     }
 
-    private User getUserByExtSourceNameAndExtLogin(@NonNull String extSourceName, @NonNull String extLogin) {
+    private User getUserByExtSourceNameAndExtLogin(@NonNull String extSourceName, @NonNull String extLogin) throws PerunUnknownException, RpcConnectionException {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }

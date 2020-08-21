@@ -2,6 +2,8 @@ package cz.muni.ics.perunproxyapi.application.service;
 
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.RpcConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 
@@ -24,7 +26,7 @@ public interface ProxyUserMiddleware {
      * @param userIdentifiers List of users identifiers.
      * @return User or null.
      */
-    User findByExtLogins(DataAdapter preferredAdapter, String idpEntityId, List<String> userIdentifiers);
+    User findByExtLogins(DataAdapter preferredAdapter, String idpEntityId, List<String> userIdentifiers) throws PerunUnknownException, RpcConnectionException;
 
     /**
      * Get user by given IdP identifier and attribute.
@@ -34,7 +36,7 @@ public interface ProxyUserMiddleware {
      * @param login User login attribute.
      * @return User or null.
      */
-    User findByExtLogin(DataAdapter preferredAdapter, String idpIdentifier, String login);
+    User findByExtLogin(DataAdapter preferredAdapter, String idpIdentifier, String login) throws PerunUnknownException, RpcConnectionException;
 
     /**
      * Get attribute values for a given entity.
@@ -45,6 +47,6 @@ public interface ProxyUserMiddleware {
      * @param attributes Attributes.
      * @return Map of attribute values for a given entity.
      */
-    Map<String, PerunAttributeValue> getAttributesValues(DataAdapter preferredAdapter, Entity entity, long id, List<String> attributes);
+    Map<String, PerunAttributeValue> getAttributesValues(DataAdapter preferredAdapter, Entity entity, long id, List<String> attributes) throws PerunUnknownException, RpcConnectionException;
 
 }
