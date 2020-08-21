@@ -79,7 +79,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
                     user.getId()
             );
 
-            if (!fields.isEmpty()){
+            if (fields != null && !fields.isEmpty()){
                 Map<String, PerunAttributeValue> attributeValues =
                         userMiddleware.getAttributesValues(adapter, Entity.USER , user.getId() , fields);
                 userDTO.setPerunAttributes(attributeValues);
