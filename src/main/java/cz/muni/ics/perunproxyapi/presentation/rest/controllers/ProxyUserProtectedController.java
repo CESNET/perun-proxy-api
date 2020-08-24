@@ -63,16 +63,20 @@ public class ProxyUserProtectedController {
     }
 
     /**
-     * Search Perun user by its id.
-     *
-     * EXAMPLE CURL: TODO
+     * Find Perun user by its id.<br>
+     * <br>
+     * <b>EXAMPLE CURL:</b>
+     * <br>
+     * curl --request GET --url 'http://127.0.0.1:8081/proxyapi/auth/proxy-user/findByPerunUserId?userId=62692'
+     * --header 'authorization: Basic auth'
      *
      * @param userId Id of a Perun user.
      * @return JSON representation of the User object.
      */
     @RequestMapping(value = "/findByPerunUserId", method = RequestMethod.GET,
         produces = MediaType.APPLICATION_JSON_VALUE )
-    public User findByPerunUserId(@RequestParam(value = PARAM_USER_ID) int userId) {
-        return facade.getUserById(userId);
+    public User findByPerunUserId(@RequestParam(value = PARAM_USER_ID) long userId) {
+        return facade.findByPerunUserId(userId);
     }
+
 }

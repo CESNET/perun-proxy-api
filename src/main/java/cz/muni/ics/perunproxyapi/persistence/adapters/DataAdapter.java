@@ -35,8 +35,7 @@ public interface DataAdapter {
      * @param userId ID of a Perun user.
      * @return User or null.
      */
-    User getPerunUserById(@NonNull int userId);
-
+    User findPerunUserById(long userId);
 
     /**
      * Get groups the user is member of in particular VO.

@@ -65,5 +65,6 @@ public interface ProxyUserMiddleware {
      * @param userId Id of a Perun user.
      * @return User or null
      */
-    User findByPerunUserId(DataAdapter preferredAdapter, int userId);
+    User findByPerunUserId(DataAdapter preferredAdapter, long userId);
+    
 }

@@ -32,8 +32,8 @@ public class ProxyUserMiddlewareImpl implements ProxyUserMiddleware {
     }
 
     @Override
-    public User findByPerunUserId(DataAdapter preferredAdapter, int userId) {
-        return preferredAdapter.getPerunUserById(userId);
+    public User findByPerunUserId(DataAdapter preferredAdapter, long userId) {
+        return preferredAdapter.findPerunUserById(userId);
     }
 
 }

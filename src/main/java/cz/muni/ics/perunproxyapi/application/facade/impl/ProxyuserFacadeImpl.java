@@ -96,7 +96,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public User getUserById(int userId) {
+    public User findByPerunUserId(long userId) {
         JsonNode options = methodConfigurations.getOrDefault(FIND_BY_PERUN_USER_ID, JsonNodeFactory.instance.nullNode());
         DataAdapter adapter = adaptersContainer.getPreferredAdapter(
                 options.has(ADAPTER) ? options.get(ADAPTER).asText() : RPC);

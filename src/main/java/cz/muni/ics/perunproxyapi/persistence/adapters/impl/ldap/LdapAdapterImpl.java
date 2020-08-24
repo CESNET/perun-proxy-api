@@ -109,7 +109,7 @@ public class LdapAdapterImpl implements DataAdapter {
         LdapQuery query = query().base("ou=People")
                 .attributes(PERUN_USER_ID, GIVEN_NAME, SN)
                 .filter(filter);
-        
+
         ContextMapper<User> mapper = ctx -> {
             DirContextAdapter context = (DirContextAdapter) ctx;
 
@@ -128,25 +128,15 @@ public class LdapAdapterImpl implements DataAdapter {
     }
 
     @Override
-    public User getPerunUserById(@NonNull int userId) {
-        String dnPrefix = "ou=People";
+    public User findPerunUserById(long userId) {
 
         FilterBuilder userFilter = and(
-                equal(OBJECT_CLASS, PERUN_GROUP),
+                equal(OBJECT_CLASS, PERUN_USER),
                 equal(PERUN_USER_ID, String.valueOf(userId))
         );
         String[] attributes = new String[] { PERUN_USER_ID, GIVEN_NAME, SN };
-        EntryMapper<User> mapper = e -> {
-            if (!checkHasAttributes(e, new String[] { PERUN_USER_ID, SN })) {
-                return null;
-            }
 
-            Long id = Long.parseLong(e.get(PERUN_USER_ID).getString());
-            String firstName = (e.get(GIVEN_NAME) != null) ? e.get(GIVEN_NAME).getString() : null;
-            String lastName = e.get(SN).getString();
-            return new User(id, firstName, lastName);
-        };
-        return connectorLdap.searchFirst(dnPrefix, userFilter, SearchScope.ONELEVEL, attributes, mapper);
+        return this.getUser(userFilter, attributes);
     }
 
     @Override
@@ -176,12 +166,12 @@ public class LdapAdapterImpl implements DataAdapter {
         Filter filter = new AndFilter()
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_GROUP))
                 .and(new EqualsFilter(PERUN_UNIQUE_GROUP_NAME, groupName));
-        
+
         LdapQuery query = query()
                 .attributes(PERUN_GROUP_ID, CN, PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, DESCRIPTION)
                 .searchScope(ONELEVEL)
                 .filter(filter);
-        
+
         ContextMapper<Group> mapper = this.groupMapper(query.attributes());
 
         return connectorLdap.searchForObject(query, mapper);

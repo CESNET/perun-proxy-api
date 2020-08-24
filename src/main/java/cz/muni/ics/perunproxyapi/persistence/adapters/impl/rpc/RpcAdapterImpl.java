@@ -188,13 +188,13 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public User getPerunUserById(@NonNull int userId) {
+    public User findPerunUserById(long userId) {
         if (!this.connectorRpc.isEnabled()) {
             return null;
         }
 
         Map<String, Object> params = new LinkedHashMap<>();
-        params.put(PARAM_MEMBER, userId);
+        params.put(PARAM_ID, userId);
 
         JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUserById", params);
         return RpcMapper.mapUser(perunResponse);

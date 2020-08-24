@@ -7,7 +7,7 @@
 ## Types of changes
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
 - [ ] Bug fix (non-breaking change which fixes an issue)
-- [x] New feature (non-breaking change which adds functionality)
+- [] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Code or performance improvement
 - [ ] Documentation changes or improvements
@@ -15,8 +15,8 @@
 ## Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
-- [x] My code follows the code style of this project.
+- [] My code follows the code style of this project.
 - [ ] My code has tests
 - [ ] My code has been tested manually
 - [ ] My change requires a change to the documentation.
-- [x] I have updated the documentation accordingly.
+- [] I have updated the documentation accordingly.
