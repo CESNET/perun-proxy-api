@@ -84,4 +84,8 @@ public class AttributeObjectMapping {
         }
     }
 
+    public boolean hasLdapName() {
+        return (this.ldapName != null) && (this.ldapName.trim().length() != 0);
+    }
+
 }
