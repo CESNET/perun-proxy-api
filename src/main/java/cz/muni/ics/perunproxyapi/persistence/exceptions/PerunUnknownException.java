@@ -1,5 +1,11 @@
 package cz.muni.ics.perunproxyapi.persistence.exceptions;
 
+/**
+ * Wrapper around different exceptions thrown by Perun. Usually means we cannot take any meaningful action to fix
+ * the cause.
+ *
+ * @author Dominik Baranek <baranek@ics.muni.cz>
+ */
 public class PerunUnknownException extends Exception {
 
     public PerunUnknownException() {

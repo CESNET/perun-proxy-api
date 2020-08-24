@@ -9,7 +9,7 @@ import cz.muni.ics.perunproxyapi.application.service.ProxyUserMiddleware;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
-import cz.muni.ics.perunproxyapi.persistence.exceptions.RpcConnectionException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
@@ -51,7 +51,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, RpcConnectionException {
+    public User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException {
         JsonNode options = methodConfigurations.getOrDefault(FIND_BY_EXT_LOGINS, JsonNodeFactory.instance.nullNode());
         DataAdapter adapter = adaptersContainer.getPreferredAdapter(
                 options.has(ADAPTER) ? options.get(ADAPTER).asText() : RPC);
@@ -62,7 +62,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, RpcConnectionException {
+    public UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, PerunConnectionException {
         JsonNode options = methodConfigurations.getOrDefault(GET_USER_BY_LOGIN, JsonNodeFactory.instance.nullNode());
         DataAdapter adapter = adaptersContainer.getPreferredAdapter(
                 options.has(ADAPTER) ? options.get(ADAPTER).asText() : RPC);

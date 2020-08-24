@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
-import cz.muni.ics.perunproxyapi.persistence.exceptions.RpcConnectionException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
@@ -146,9 +146,11 @@ public class PerunConnectorRpc {
      * @param method Method to be called (i.e. getUserById)
      * @param map Map of parameters to be passed as request body
      * @return Response from Perun
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
     public JsonNode post(String manager, String method, Map<String, Object> map)
-            throws PerunUnknownException, RpcConnectionException {
+            throws PerunUnknownException, PerunConnectionException {
         if (!this.isEnabled) {
             return JsonNodeFactory.instance.nullNode();
         }
@@ -164,45 +166,46 @@ public class PerunConnectorRpc {
             long responseTime = endTime - startTime;
             log.trace("POST call proceeded in {} ms.",responseTime);
             return result;
-
         } catch (HttpClientErrorException ex) {
-            MediaType contentType = ex.getResponseHeaders().getContentType();
-            String body = ex.getResponseBodyAsString();
-
-            if ("json".equals(contentType.getSubtype())) {
-                try {
-                    JsonNode json = new ObjectMapper().readValue(body,JsonNode.class);
-
-                    if (json.has("errorId") && json.has("name")) {
-                        switch (json.get("name").asText()) {
-                            case "ExtSourceNotExistsException":
-                            case "FacilityNotExistsException":
-                            case "GroupNotExistsException":
-                            case "MemberNotExistsException":
-                            case "ResourceNotExistsException":
-                            case "VoNotExistsException":
-                            case "UserNotExistsException":
-                                return JsonNodeFactory.instance.nullNode();
-                            default:
-                                log.error("HTTP ERROR " + ex.getRawStatusCode() + " URL " + actionUrl + " Content-Type: " + contentType);
-                                log.error(json.path("message").asText());
-                                throw new PerunUnknownException(ex);
-                        }
-                    } else if (json.has("errorId") && !json.has("name")) {
-                        log.error("HTTP ERROR " + ex.getRawStatusCode() + " URL " + actionUrl + " Content-Type: " + contentType);
-                        log.error(json.path("message").asText());
-                        throw new PerunUnknownException(ex);
-                    }
-                } catch (IOException e) {
-                    log.error("cannot parse error message from JSON", e);
-                }
-            } else {
-                log.error("HTTP ERROR " + ex.getRawStatusCode() + " URL " + actionUrl + " Content-Type: " + contentType);
-                log.error(ex.getMessage());
-            }
-            throw new PerunUnknownException(ex);
+            return handleHttpClientErrorException(ex, actionUrl);
         } catch (Exception e) {
-            throw new RpcConnectionException(e);
+            throw new PerunConnectionException(e);
         }
     }
+
+    private JsonNode handleHttpClientErrorException(HttpClientErrorException ex, String actionUrl)
+            throws PerunUnknownException
+    {
+        MediaType contentType = null;
+        if (ex.getResponseHeaders() != null) {
+            contentType = ex.getResponseHeaders().getContentType();
+        }
+
+        String body = ex.getResponseBodyAsString();
+
+        if (contentType != null && "json".equalsIgnoreCase(contentType.getSubtype())) {
+            try {
+                JsonNode json = new ObjectMapper().readValue(body,JsonNode.class);
+                if (json.has("errorId") && json.has("name")) {
+                    switch (json.get("name").asText()) {
+                        case "ExtSourceNotExistsException":
+                        case "FacilityNotExistsException":
+                        case "GroupNotExistsException":
+                        case "MemberNotExistsException":
+                        case "ResourceNotExistsException":
+                        case "VoNotExistsException":
+                        case "UserNotExistsException":
+                            return JsonNodeFactory.instance.nullNode();
+                    }
+                }
+            } catch (IOException e) {
+                log.error("cannot parse error message from JSON", e);
+                throw new PerunUnknownException(ex);
+            }
+        }
+
+        log.error("HTTP ERROR {} URL {} Content-Type: {}", ex.getRawStatusCode(), actionUrl, contentType, ex);
+        throw new PerunUnknownException(ex);
+    }
+
 }
