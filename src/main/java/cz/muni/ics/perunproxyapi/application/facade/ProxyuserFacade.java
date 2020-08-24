@@ -1,6 +1,8 @@
 package cz.muni.ics.perunproxyapi.application.facade;
 
 
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 
@@ -21,15 +23,19 @@ public interface ProxyuserFacade {
      * @param idpIdentifier Identifier of source Identity Provider.
      * @param userIdentifiers List of string containing identifiers of a user.
      * @return User or null.
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findByExtLogins(String idpIdentifier, List<String> userIdentifiers);
+    User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException;
 
     /**
      *
      * @param login User's login.
      * @param fields List of user's attributes.
      * @return User with attributes values or null.
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    UserDTO getUserByLogin(String login, List<String> fields);
+    UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, PerunConnectionException;
 
 }

@@ -2,10 +2,8 @@ package cz.muni.ics.perunproxyapi.persistence.models;
 
 import cz.muni.ics.perunproxyapi.persistence.AttributeMappingService;
 import cz.muni.ics.perunproxyapi.persistence.enums.PerunAttrValueType;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
 import org.springframework.util.StringUtils;
@@ -21,7 +19,7 @@ import org.springframework.util.StringUtils;
  */
 @Getter
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 public class AttributeObjectMapping {
 
     public static final String DEFAULT_SEPARATOR = ",";

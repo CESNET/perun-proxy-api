@@ -8,6 +8,8 @@ import cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfigur
 import cz.muni.ics.perunproxyapi.application.service.ProxyUserMiddleware;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
@@ -51,7 +53,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) {
+    public User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException {
         JsonNode options = methodConfigurations.getOrDefault(FIND_BY_EXT_LOGINS, JsonNodeFactory.instance.nullNode());
         DataAdapter adapter = adaptersContainer.getPreferredAdapter(
                 options.has(ADAPTER) ? options.get(ADAPTER).asText() : ADAPTER_RPC);
@@ -62,7 +64,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public UserDTO getUserByLogin(String login, List<String> fields) {
+    public UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, PerunConnectionException {
         JsonNode options = methodConfigurations.getOrDefault(GET_USER_BY_LOGIN, JsonNodeFactory.instance.nullNode());
         DataAdapter adapter = adaptersContainer.getPreferredAdapter(
                 options.has(ADAPTER) ? options.get(ADAPTER).asText() : ADAPTER_RPC);
@@ -70,17 +72,22 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
                 options.has(IDP_IDENTIFIER) ? options.get(IDP_IDENTIFIER).asText() : defaultIdpIdentifier;
 
         User user = userMiddleware.findByExtLogin(adapter, idpIdentifier , login);
-        UserDTO userDTO =
-                new UserDTO(login,
-                        user.getFirstName(),
-                        user.getLastName(),
-                        String.format("%s %s", user.getFirstName(), user.getLastName()),
-                        user.getId());
+        UserDTO userDTO = null;
 
-        if (!fields.isEmpty()){
-            Map<String, PerunAttributeValue> attributeValues =
-                    userMiddleware.getAttributesValues(adapter, Entity.USER , user.getId() , fields);
-            userDTO.setPerunAttributes(attributeValues);
+        if (user != null) {
+            userDTO = new UserDTO(
+                    login,
+                    user.getFirstName(),
+                    user.getLastName(),
+                    String.format("%s %s", user.getFirstName(), user.getLastName()),
+                    user.getId()
+            );
+
+            if (fields != null && !fields.isEmpty()){
+                Map<String, PerunAttributeValue> attributeValues =
+                        userMiddleware.getAttributesValues(adapter, Entity.USER , user.getId() , fields);
+                userDTO.setPerunAttributes(attributeValues);
+            }
         }
 
         return userDTO;
