@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +81,8 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
                     user.getFirstName(),
                     user.getLastName(),
                     String.format("%s %s", user.getFirstName(), user.getLastName()),
-                    user.getId()
+                    user.getId(),
+                    new HashMap<>()
             );
 
             if (fields != null && !fields.isEmpty()){

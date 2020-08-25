@@ -19,6 +19,6 @@ public class UserDTO {
     @NonNull private String lastName;
     @NonNull private String displayName;
     @NonNull private long perunUserId;
-    private Map<String, PerunAttributeValue> perunAttributes;
+    @NonNull private Map<String, PerunAttributeValue> perunAttributes;
 
 }
