@@ -65,7 +65,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         }
 
         for (BasicAuthCredentials user: credentials) {
-            log.debug("Configuring credentials {} for Basic Auth with role {}.", credentials, ROLE_API_USER);
+            log.debug("Configuring credentials {} for Basic Auth with role {}.", user, ROLE_API_USER);
             auth.inMemoryAuthentication()
                     .withUser(user.getUsername())
                     .password(passwordEncoder().encode(user.getPassword()))
