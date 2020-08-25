@@ -91,9 +91,7 @@ public class RpcAdapterImpl implements FullAdapter {
                                                      @NonNull List<String> attrsToFetch)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new HashMap<>();
-        } else if (attrsToFetch == null || attrsToFetch.isEmpty()) {
+        if (attrsToFetch == null || attrsToFetch.isEmpty()) {
             log.debug("No attrs to fetch - attrsToFetch: {}", (attrsToFetch == null ? "null" : "empty"));
             return new HashMap<>();
         }
@@ -117,10 +115,6 @@ public class RpcAdapterImpl implements FullAdapter {
                                           @NonNull String extSourceLogin)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_EXT_SOURCE_NAME, extSourceName);
         params.put(PARAM_EXT_SOURCE_LOGIN, extSourceLogin);
@@ -133,10 +127,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public MemberStatus getMemberStatusByUserAndVo(@NonNull Long userId, @NonNull Long voId)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
         Member member = getMemberByUser(userId, voId);
         if (member != null) {
             return member.getStatus();
@@ -151,10 +141,6 @@ public class RpcAdapterImpl implements FullAdapter {
                                  @NonNull List<PerunAttribute> attributes)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return false;
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(entity.toString().toLowerCase(), entityId);
         params.put(PARAM_ATTRIBUTES, attributes);
@@ -167,10 +153,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public boolean updateUserExtSourceLastAccess(@NonNull UserExtSource userExtSource)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return false;
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_USER_EXT_SOURCE, userExtSource);
 
@@ -182,10 +164,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public Member getMemberByUser(@NonNull Long userId, @NonNull Long voId)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_USER, userId);
         params.put(PARAM_VO, voId);
@@ -198,10 +176,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
         User user = null;
         for (String uid : uids) {
             user = this.getUserByExtSourceNameAndExtLogin(idpEntityId, uid);
@@ -217,10 +191,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public List<Group> getUserGroupsInVo(@NonNull Long userId, @NonNull Long voId)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new ArrayList<>();
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_USER, userId);
         params.put(PARAM_VO, voId);
@@ -237,10 +207,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public List<Group> getSpGroups(@NonNull String spIdentifier)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new ArrayList<>();
-        }
-
         List<Facility> facilities = getFacilitiesByAttribute(facilityIdentifierAttrName, spIdentifier);
         if (facilities == null || facilities.size() == 0) {
             return new ArrayList<>();
@@ -263,10 +229,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public Group getGroupByName(@NonNull Long voId, @NonNull String name)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_VO, voId);
         params.put(PARAM_NAME, name);
@@ -277,10 +239,6 @@ public class RpcAdapterImpl implements FullAdapter {
 
     @Override
     public Vo getVoByShortName(@NonNull String shortName) throws PerunUnknownException, PerunConnectionException {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
         Map<String, Object> map = new LinkedHashMap<>();
         map.put(PARAM_SHORT_NAME, shortName);
 
@@ -290,10 +248,6 @@ public class RpcAdapterImpl implements FullAdapter {
 
     @Override
     public Vo getVoById(@NonNull Long id) throws PerunUnknownException, PerunConnectionException {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_ID, id);
 
@@ -307,10 +261,6 @@ public class RpcAdapterImpl implements FullAdapter {
                                                                 @NonNull List<String> attributes)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new HashMap<>();
-        }
-
         Map<String, PerunAttribute> userAttributes = this.getAttributes(entity, entityId, attributes);
         return extractAttrValues(userAttributes);
     }
@@ -319,10 +269,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public List<Facility> getFacilitiesByAttribute(@NonNull String attributeName, @NonNull String attrValue)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new ArrayList<>();
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_ATTRIBUTE_NAME, attributeName);
         params.put(PARAM_ATTRIBUTE_VALUE, attrValue);
@@ -335,10 +281,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public List<Group> getUsersGroupsOnFacility(@NonNull Long facilityId, @NonNull Long userId)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new ArrayList<>();
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_USER, userId);
         params.put(PARAM_FACILITY, facilityId);
@@ -351,10 +293,6 @@ public class RpcAdapterImpl implements FullAdapter {
     public List<Facility> searchFacilitiesByAttributeValue(@NonNull PerunAttribute attribute)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new ArrayList<>();
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         Map<String, String> attributeValue = new LinkedHashMap<>();
 
@@ -369,9 +307,7 @@ public class RpcAdapterImpl implements FullAdapter {
     // private methods
 
     private Map<String, PerunAttributeValue> extractAttrValues(@NonNull Map<String, PerunAttribute> attributeMap) {
-        if (!this.connectorRpc.isEnabled()) {
-            return new HashMap<>();
-        } else if (attributeMap == null || attributeMap.isEmpty()) {
+        if (attributeMap == null || attributeMap.isEmpty()) {
             log.debug("Given attributeMap is {}", (attributeMap == null ? "null" : "empty"));
             return new HashMap<>();
         }
@@ -385,10 +321,6 @@ public class RpcAdapterImpl implements FullAdapter {
     private List<Group> getAssignedGroups(@NonNull Long resourceId)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new ArrayList<>();
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_RESOURCE, resourceId);
 
@@ -399,10 +331,6 @@ public class RpcAdapterImpl implements FullAdapter {
     private void fillGroupUniqueNames(@NonNull List<Group> groups)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return;
-        }
-
         for (Group group: groups) {
             Map<String, Object> params = new LinkedHashMap<>();
             params.put(PARAM_GROUP, group.getId());
@@ -418,10 +346,6 @@ public class RpcAdapterImpl implements FullAdapter {
     private List<Resource> getAssignedResources(@NonNull Long facilityId)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return new ArrayList<>();
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_FACILITY, facilityId);
 
@@ -430,10 +354,6 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     private List<Group> getMemberGroups(@NonNull Long memberId) throws PerunUnknownException, PerunConnectionException {
-        if (!this.connectorRpc.isEnabled()) {
-            return new ArrayList<>();
-        }
-
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_MEMBER, memberId);
 
@@ -444,10 +364,6 @@ public class RpcAdapterImpl implements FullAdapter {
     private User getUserByExtSourceNameAndExtLogin(@NonNull String extSourceName, @NonNull String extLogin)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
         Map<String, Object> map = new LinkedHashMap<>();
         map.put(PARAM_EXT_SOURCE_NAME, extSourceName);
         map.put(PARAM_EXT_LOGIN, extLogin);

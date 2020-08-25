@@ -3,9 +3,9 @@ package cz.muni.ics.perunproxyapi.persistence.connectors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.connectors.properties.RpcConnectorProperties;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
-import lombok.NonNull;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
@@ -16,7 +16,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -44,68 +44,27 @@ import static java.lang.System.currentTimeMillis;
 @Slf4j
 public class PerunConnectorRpc {
 
-    private String perunUrl;
-    private String perunUser;
-    private String perunPassword;
-    private boolean isEnabled;
-    private RestTemplate restTemplate;
+    private final RpcConnectorProperties properties;
+    private final String perunUrl;
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    // Values from config
-    @Value("${connector.rpc.request.timeout}")
-    private int REQUEST_TIMEOUT;
-
-    @Value("${connector.rpc.connect.timeout}")
-    private int CONNECT_TIMEOUT;
-
-    @Value("${connector.rpc.socket.timeout}")
-    private int SOCKET_TIMEOUT;
-
-    @Value("${connector.rpc.max.connections}")
-    private int MAX_CONNECTIONS;
-
-    @Value("${connector.rpc.max.per_route}")
-    private int MAX_CONN_PER_ROUTE;
-
-    @Value("${connector.rpc.perun_url}")
-    public void setPerunUrl(@NonNull String perunUrl) {
-        if (perunUrl.endsWith("/")) {
-            perunUrl = perunUrl.substring(0, perunUrl.length() - 1);
-        }
-
-        this.perunUrl = perunUrl;
-    }
-
-    @Value("${connector.rpc.perun_user}")
-    public void setPerunUser(@NonNull String perunUser) {
-        this.perunUser = perunUser;
-    }
-
-    @Value("${connector.rpc.perun_password}")
-    public void setPerunPassword(@NonNull String perunPassword) {
-        this.perunPassword = perunPassword;
-    }
-
-    @Value("${connector.rpc.is_enabled}")
-    public void setEnabled(String enabled) {
-        this.isEnabled = Boolean.parseBoolean(enabled);
-    }
-
-    public boolean isEnabled() {
-        return isEnabled;
+    @Autowired
+    public PerunConnectorRpc(RpcConnectorProperties properties) {
+        this.properties = properties;
+        this.perunUrl = properties.getPerunUrl();
     }
 
     @PostConstruct
     public void postInit() {
-        restTemplate = new RestTemplate();
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(REQUEST_TIMEOUT) // The timeout when requesting a connection from the connection manager
-                .setConnectTimeout(CONNECT_TIMEOUT) // Determines the timeout in milliseconds until a connection is established
-                .setSocketTimeout(SOCKET_TIMEOUT) // The timeout for waiting for data
+                .setConnectionRequestTimeout(properties.getRequestTimeout()) // The timeout when requesting a connection from the connection manager
+                .setConnectTimeout(properties.getConnectTimeout()) // Determines the timeout in milliseconds until a connection is established
+                .setSocketTimeout(properties.getSocketTimeout()) // The timeout for waiting for data
                 .build();
 
         PoolingHttpClientConnectionManager poolingConnectionManager = new PoolingHttpClientConnectionManager();
-        poolingConnectionManager.setMaxTotal(MAX_CONNECTIONS); // max total connections
-        poolingConnectionManager.setDefaultMaxPerRoute(MAX_CONN_PER_ROUTE);
+        poolingConnectionManager.setMaxTotal(properties.getMaxConnections()); // max total connections
+        poolingConnectionManager.setDefaultMaxPerRoute(properties.getMaxConnectionsPerRoute());
 
         ConnectionKeepAliveStrategy connectionKeepAliveStrategy = (response, context) -> {
             HeaderElementIterator it = new BasicHeaderElementIterator
@@ -133,12 +92,12 @@ public class PerunConnectorRpc {
 
         // basic auth
         List<ClientHttpRequestInterceptor> interceptors =
-                Collections.singletonList(new BasicAuthenticationInterceptor(perunUser, perunPassword));
+                Collections.singletonList(new BasicAuthenticationInterceptor(properties.getPerunUser(),
+                        properties.getPerunPassword()));
         InterceptingClientHttpRequestFactory authenticatingRequestFactory =
                 new InterceptingClientHttpRequestFactory(poolingRequestFactory, interceptors);
         restTemplate.setRequestFactory(authenticatingRequestFactory);
     }
-
 
     /**
      * Make post call to Perun RPC
@@ -151,7 +110,7 @@ public class PerunConnectorRpc {
      */
     public JsonNode post(String manager, String method, Map<String, Object> map)
             throws PerunUnknownException, PerunConnectionException {
-        if (!this.isEnabled) {
+        if (!properties.isEnabled()) {
             return JsonNodeFactory.instance.nullNode();
         }
 

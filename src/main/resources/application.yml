@@ -3,18 +3,14 @@
 connector:
   rpc:
     perun_url: "https://perun-dev.cesnet.cz/ba/rpc"
-    perun_user: "example user"
-    perun_password: "example password"
-    is_enabled: true
-    request:
-      timeout: 30000
-    connect:
-      timeout: 30000
-    socket:
-      timeout: 60000
-    max:
-      connections: 20
-      per_route: 18
+    perun_user: "user"
+    perun_password: "pass"
+    enabled: true
+    request_timeout: 30000
+    connect_timeout: 30000
+    socket_timeout: 60000
+    max_connections: 20
+    max_connections_per_route: 18
   ldap:
     ldap_host: "perun-dev.cesnet.cz"
     ldap_user: "example user"
