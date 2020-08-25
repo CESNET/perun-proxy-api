@@ -16,15 +16,13 @@ connector:
       connections: 20
       per_route: 18
   ldap:
-    ldap_host: "perun-dev.cesnet.cz"
+    ldap_hosts: "ldaps://perun-dev.cesnet.cz:636,ldaps://perun-dev2.cesnet.cz:582"
     ldap_user: "example user"
     ldap_password: "example password"
     timeout_secs: 100
+    pool_size: 20
     base_dn: "dc=perun,dc=cesnet,dc=cz"
-    port: 636
     use_tls: true
-    use_ssl: true
-    allow_untrusted_ssl: false
 
 attributes:
   path: "${PWD}/src/test/resources/attributes.yml"

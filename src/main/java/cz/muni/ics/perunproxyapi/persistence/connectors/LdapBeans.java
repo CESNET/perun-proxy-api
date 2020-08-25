@@ -1,6 +1,5 @@
 package cz.muni.ics.perunproxyapi.persistence.connectors;
 
-import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,19 +13,16 @@ import org.springframework.ldap.pool2.factory.PooledContextSource;
 import org.springframework.ldap.pool2.validation.DefaultDirContextValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @Setter
 public class LdapBeans {
 
     // Values from config
     @Value("${connector.ldap.base_dn}")
-    @Getter
     private String baseDN;
 
     @Value("${connector.ldap.ldap_hosts}")
-    private List<String> ldapHosts;
+    private String[] ldapHosts;
 
     @Value("${connector.ldap.ldap_user}")
     private String ldapUser;
@@ -34,19 +30,19 @@ public class LdapBeans {
     @Value("${connector.ldap.ldap_password}")
     private String ldapPassword;
 
-    @Value("${connector.ldap.timeout_secs}")
+    @Value("${connector.ldap.timeout_secs:5000}")
     private int timeoutSecs;
 
-    @Value("${connector.ldap.use_tls}")
+    @Value("${connector.ldap.use_tls:false}")
     private boolean useTLS;
 
-    @Value("${connector.ldap.allow_untrusted_ssl}")
-    private boolean allowUntrustedSSL;
+    @Value("${connector.ldap.pool_size:20}")
+    private int poolSize;
 
     @Bean
     public ContextSource targetContextSource() {
         LdapContextSource cs = new LdapContextSource();
-        cs.setUrls(ldapHosts.toArray(new String[] {}));
+        cs.setUrls(ldapHosts);
         cs.setBase(baseDN);
         if (ldapUser != null) {
             cs.setUserDn(ldapUser);
@@ -67,7 +63,8 @@ public class LdapBeans {
     @Autowired
     public ContextSource contextSource(ContextSource targetContextSource) {
         PoolConfig poolConfig = new PoolConfig();
-        poolConfig.setMaxTotal(100);
+        poolConfig.setBlockWhenExhausted(true);
+        poolConfig.setMaxTotal(poolSize);
 
         PooledContextSource pcs = new PooledContextSource(poolConfig);
         pcs.setContextSource(targetContextSource);
