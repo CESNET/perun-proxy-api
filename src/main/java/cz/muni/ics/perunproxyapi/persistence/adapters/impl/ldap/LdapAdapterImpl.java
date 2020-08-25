@@ -10,6 +10,7 @@ import cz.muni.ics.perunproxyapi.persistence.connectors.PerunConnectorLdap;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.enums.PerunAttrValueType;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.InconvertibleValueException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.LookupException;
 import cz.muni.ics.perunproxyapi.persistence.models.AttributeObjectMapping;
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
 import cz.muni.ics.perunproxyapi.persistence.models.Group;
@@ -185,7 +186,7 @@ public class LdapAdapterImpl implements DataAdapter {
     @Override
     public Map<String, PerunAttributeValue> getAttributesValues(@NonNull Entity entity, @NonNull Long entityId,
                                                                 @NonNull List<String> attrs) {
-        Map<String, PerunAttributeValue> resultMap = new HashMap<>();
+        Map<String, PerunAttributeValue> resultMap = new HashMap<>();;
 
         Set<AttributeObjectMapping> mappings = this.getMappingsForAttrNames(attrs);
         String[] attributes = this.getAttributesFromMappings(mappings);
@@ -200,7 +201,12 @@ public class LdapAdapterImpl implements DataAdapter {
                 case RESOURCE: prefix = PERUN_RESOURCE_ID + '=' + entityId; break;
             }
 
-            resultMap = connectorLdap.lookup(prefix, attributes, mapper);
+            try {
+                resultMap = connectorLdap.lookup(prefix, attributes, mapper);
+            } catch (LookupException e) {
+                log.warn("Caught exception from lookup", e);
+                resultMap = new HashMap<>();
+            }
         }
 
         return resultMap;

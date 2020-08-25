@@ -1,8 +1,8 @@
 package cz.muni.ics.perunproxyapi.persistence.connectors;
 
-import lombok.Setter;
+import cz.muni.ics.perunproxyapi.persistence.connectors.properties.LdapProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.LdapTemplate;
@@ -12,59 +12,47 @@ import org.springframework.ldap.pool2.factory.PoolConfig;
 import org.springframework.ldap.pool2.factory.PooledContextSource;
 import org.springframework.ldap.pool2.validation.DefaultDirContextValidator;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
-@Setter
 public class LdapBeans {
 
-    // Values from config
-    @Value("${connector.ldap.base_dn}")
-    private String baseDN;
+    private final LdapProperties ldapProperties;
 
-    @Value("${connector.ldap.ldap_hosts}")
-    private String[] ldapHosts;
+    @Autowired
+    public LdapBeans(LdapProperties ldapProperties) {
+        this.ldapProperties = ldapProperties;
+    }
 
-    @Value("${connector.ldap.ldap_user}")
-    private String ldapUser;
-
-    @Value("${connector.ldap.ldap_password}")
-    private String ldapPassword;
-
-    @Value("${connector.ldap.timeout_secs:5000}")
-    private int timeoutSecs;
-
-    @Value("${connector.ldap.use_tls:false}")
-    private boolean useTLS;
-
-    @Value("${connector.ldap.pool_size:20}")
-    private int poolSize;
-
-    @Bean
-    public ContextSource targetContextSource() {
+    @Bean(name = "targetContextSource")
+    @Autowired
+    public ContextSource targetContextSource(LdapProperties ldapProperties) {
         LdapContextSource cs = new LdapContextSource();
-        cs.setUrls(ldapHosts);
-        cs.setBase(baseDN);
-        if (ldapUser != null) {
-            cs.setUserDn(ldapUser);
+        cs.setUrls(ldapProperties.getLdapHosts());
+        cs.setBase(ldapProperties.getBaseDn());
+        if (StringUtils.hasText(ldapProperties.getLdapUser())) {
+            cs.setUserDn(ldapProperties.getLdapUser());
+        } else {
+            cs.setAnonymousReadOnly(true);
         }
 
-        if (ldapPassword != null) {
-            cs.setPassword(ldapPassword);
+        if (StringUtils.hasText(ldapProperties.getLdapPassword())) {
+            cs.setPassword(ldapProperties.getLdapPassword());
         }
 
-        if (useTLS) {
+        if (ldapProperties.isUseTLS()) {
             cs.setAuthenticationStrategy(new DefaultTlsDirContextAuthenticationStrategy());
         }
         cs.afterPropertiesSet();
         return cs;
     }
 
-    @Bean
+    @Bean(name = "contextSource")
     @Autowired
-    public ContextSource contextSource(ContextSource targetContextSource) {
+    public ContextSource contextSource(@Qualifier("targetContextSource") ContextSource targetContextSource) {
         PoolConfig poolConfig = new PoolConfig();
         poolConfig.setBlockWhenExhausted(true);
-        poolConfig.setMaxTotal(poolSize);
+        poolConfig.setMaxTotal(ldapProperties.getConnectionPoolSize());
 
         PooledContextSource pcs = new PooledContextSource(poolConfig);
         pcs.setContextSource(targetContextSource);
@@ -74,9 +62,9 @@ public class LdapBeans {
 
     @Bean
     @Autowired
-    public LdapTemplate ldapTemplate(ContextSource contextSource) {
+    public LdapTemplate ldapTemplate(@Qualifier("contextSource") ContextSource contextSource) {
         LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
-        ldapTemplate.setDefaultTimeLimit(timeoutSecs);
+        ldapTemplate.setDefaultTimeLimit(ldapProperties.getTimeout());
         return ldapTemplate;
     }
 
