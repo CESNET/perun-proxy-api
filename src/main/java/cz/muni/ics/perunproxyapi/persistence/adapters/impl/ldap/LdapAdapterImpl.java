@@ -20,7 +20,6 @@ import cz.muni.ics.perunproxyapi.persistence.models.Vo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.filter.AndFilter;
@@ -123,12 +122,8 @@ public class LdapAdapterImpl implements DataAdapter {
             String lastName = context.getStringAttribute(SN);
             return new User(id, firstName, lastName);
         };
-        
-        try {
-            return connectorLdap.searchForObject(query, mapper);
-        } catch (IncorrectResultSizeDataAccessException e) {
-            return null;
-        }
+
+        return connectorLdap.searchForObject(query, mapper);
     }
 
     @Override
@@ -166,11 +161,7 @@ public class LdapAdapterImpl implements DataAdapter {
         
         ContextMapper<Group> mapper = this.groupMapper(query.attributes());
 
-        try {
-            return connectorLdap.searchForObject(query, mapper);
-        } catch (IncorrectResultSizeDataAccessException ex) {
-            return null;
-        }
+        return connectorLdap.searchForObject(query, mapper);
     }
 
     @Override
@@ -468,11 +459,7 @@ public class LdapAdapterImpl implements DataAdapter {
 
         ContextMapper<Vo> mapper = this.voMapper(query.attributes());
 
-        try {
-            return connectorLdap.searchForObject(query, mapper);
-        } catch (IncorrectResultSizeDataAccessException ex) {
-            return null;
-        }
+        return connectorLdap.searchForObject(query, mapper);
     }
 
     // mappers

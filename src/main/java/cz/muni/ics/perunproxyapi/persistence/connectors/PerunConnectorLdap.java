@@ -3,6 +3,7 @@ package cz.muni.ics.perunproxyapi.persistence.connectors;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
@@ -41,7 +42,12 @@ public class PerunConnectorLdap {
     public <T> T searchForObject(LdapQuery query, ContextMapper<T> mapper) {
         log.trace("searchForObject({}, {})", query, mapper);
         long startTime = currentTimeMillis();
-        T result = ldapTemplate.searchForObject(query, mapper);
+        T result = null;
+        try {
+            result = ldapTemplate.searchForObject(query, mapper);
+        } catch (IncorrectResultSizeDataAccessException e) {
+            //this is ok, we want the result to be null instead of throwing the exception
+        }
         long endTime = currentTimeMillis();
         long responseTime = endTime - startTime;
         log.trace("searchForObject query proceeded in {} ms.", responseTime);
