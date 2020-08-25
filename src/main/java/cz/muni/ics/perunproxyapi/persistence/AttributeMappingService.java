@@ -110,7 +110,7 @@ public class AttributeMappingService {
                     if (aom.getLdapName() != null && aom.getLdapName().trim().isEmpty()) {
                         aom.setLdapName(null);
                     }
-                    attributeMap.put(aom.getRpcName(), aom);
+                    attributeMap.put(aom.getIdentifier(), aom);
                 }
                 log.trace("Attributes were initialized: {}", attributeMap.toString());
             }
