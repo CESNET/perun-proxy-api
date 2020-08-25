@@ -107,6 +107,12 @@ public class AttributeMappingService {
             List<AttributeObjectMapping> attrsMapping = getAttributesFromYamlFile(path);
             if (attrsMapping != null) {
                 for (AttributeObjectMapping aom : attrsMapping) {
+                    if (attributeMap.containsKey(aom.getIdentifier())) {
+                        log.error("Duplicate identifier found: {}, {}. Correct your config.",
+                                aom, attributeMap.get(aom.getIdentifier()));
+                        throw new IllegalStateException("Identifier (" + aom.getIdentifier()
+                                + ") for attribute was already used, check your config!");
+                    }
                     if (aom.getLdapName() != null && aom.getLdapName().trim().isEmpty()) {
                         aom.setLdapName(null);
                     }
