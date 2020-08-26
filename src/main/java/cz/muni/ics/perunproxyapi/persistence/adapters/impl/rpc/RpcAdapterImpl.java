@@ -475,11 +475,11 @@ public class RpcAdapterImpl implements FullAdapter {
             throw new IllegalArgumentException("Cannot fetch unknown attribute");
         }
 
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put(PARAM_ATTRIBUTE_NAME, attributeName);
-        map.put(PARAM_ATTRIBUTE_VALUE, attributeValue);
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put(PARAM_ATTRIBUTE_NAME, attributeName);
+        params.put(PARAM_ATTRIBUTE_VALUE, attributeValue);
 
-        JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUsersByAttributeValue", map);
+        JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUsersByAttributeValue", params);
         return RpcMapper.mapUsers(perunResponse);
     }
 

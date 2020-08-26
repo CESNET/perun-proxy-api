@@ -68,7 +68,7 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
         String facilityCapabilitiesAttrIdentifier = FacadeUtils.getStringOption(FACILITY_CAPABILITIES, options);
 
         User user = proxyUserService.findByExtLogin(adapter, defaultIdpIdentifier, login);
-        if (user == null || user.getId() == null) {
+        if (user == null || user.getPerunId() == null) {
             log.error("No user found for login {} with Idp {}. Cannot look for entitlements, return error.",
                     login, defaultIdpIdentifier);
             throw new IllegalArgumentException("User for given login could not be found");
@@ -82,7 +82,7 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
         }
 
         List<String> entitlements = relyingPartyService.getEntitlements(
-                adapter, facility.getId(), user.getId(), prefix, authority, forwardedEntitlementsAttrIdentifier,
+                adapter, facility.getId(), user.getPerunId(), prefix, authority, forwardedEntitlementsAttrIdentifier,
                 resourceCapabilitiesAttrIdentifier, facilityCapabilitiesAttrIdentifier);
         if (entitlements != null) {
             Collections.sort(entitlements);

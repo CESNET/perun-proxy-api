@@ -18,12 +18,12 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class User {
 
-    @NonNull private Long id;
+    @NonNull private Long perunId;
     @NonNull private String firstName;
     @NonNull private String lastName;
 
-    public User(Long id, String firstName, String lastName) {
-        this.setId(id);
+    public User(Long perunId, String firstName, String lastName) {
+        this.setPerunId(perunId);
         this.setFirstName(firstName);
         this.setLastName(lastName);
     }

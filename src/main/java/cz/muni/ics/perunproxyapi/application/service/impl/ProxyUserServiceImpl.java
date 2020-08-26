@@ -60,4 +60,12 @@ public class ProxyUserServiceImpl implements ProxyUserService {
         return entitlements;
     }
 
+    @Override
+    public List<User> getUsersByAttributeValue(DataAdapter preferredAdapter, String attributeName,
+                                               String attributeValue)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        return preferredAdapter.getUsersByAttributeValue(attributeName, attributeValue);
+    }
+
 }

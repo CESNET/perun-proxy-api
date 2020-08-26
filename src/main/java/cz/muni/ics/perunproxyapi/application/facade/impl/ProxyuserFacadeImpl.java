@@ -70,7 +70,8 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
         String idpIdentifier = FacadeUtils.getStringOption(IDP_IDENTIFIER, defaultIdpIdentifier, options);
 
-        User user = proxyUserService.findByExtLogin(adapter, idpIdentifier , login);
+        List<User> users = proxyUserService.getUsersByAttributeValue(adapter, idpIdentifier , login);
+        User user = users.size() == 1 ? users.get(0) : null;
         UserDTO userDTO = null;
 
         if (user != null) {
@@ -78,7 +79,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
             if (fields != null && !fields.isEmpty()){
                 Map<String, PerunAttributeValue> attributeValues =
-                        proxyUserService.getAttributesValues(adapter, Entity.USER , user.getId() , fields);
+                        proxyUserService.getAttributesValues(adapter, Entity.USER , user.getPerunId() , fields);
                 userDTO.setPerunAttributes(attributeValues);
             }
         }
@@ -113,7 +114,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
         String forwardedEntitlementsAttrIdentifier = FacadeUtils.getStringOption(FORWARDED_ENTITLEMENTS, options);
 
-        List<String> entitlements =  proxyUserService.getAllEntitlements(adapter, user.getId(), prefix, authority,
+        List<String> entitlements =  proxyUserService.getAllEntitlements(adapter, user.getPerunId(), prefix, authority,
                 forwardedEntitlementsAttrIdentifier);
         if (entitlements != null) {
             Collections.sort(entitlements);
