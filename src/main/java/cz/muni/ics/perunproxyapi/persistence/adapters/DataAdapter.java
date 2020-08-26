@@ -34,15 +34,10 @@ public interface DataAdapter {
      * Get user from Perun by id.
      * @param userId ID of a Perun user.
      * @return User or null.
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findPerunUserById(long userId);
-
-    /**
-     * Get user from Perun by id.
-     * @param userId ID of a Perun user.
-     * @return User or null.
-     */
-    User findPerunUserById(long userId);
+    User findPerunUserById(Long userId) throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Get groups the user is member of in particular VO.

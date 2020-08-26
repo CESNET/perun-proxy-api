@@ -106,37 +106,18 @@ public class LdapAdapterImpl implements DataAdapter {
         Filter filter = new AndFilter()
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_USER))
                 .and(uidsOrFilter);
-        LdapQuery query = query().base("ou=People")
-                .attributes(PERUN_USER_ID, GIVEN_NAME, SN)
-                .filter(filter);
 
-        ContextMapper<User> mapper = ctx -> {
-            DirContextAdapter context = (DirContextAdapter) ctx;
-
-            if (!checkHasAttributes(context, new String[]{PERUN_USER_ID, SN})) {
-                log.warn("Not all required attributes were found, returning null");
-                return null;
-            }
-
-            Long id = Long.parseLong(context.getStringAttribute(PERUN_USER_ID));
-            String firstName = context.attributeExists(GIVEN_NAME) ? context.getStringAttribute(GIVEN_NAME) : "";
-            String lastName = context.getStringAttribute(SN);
-            return new User(id, firstName, lastName);
-        };
-
-        return connectorLdap.searchForObject(query, mapper);
+        return this.getUser(filter);
     }
 
     @Override
-    public User findPerunUserById(long userId) {
+    public User findPerunUserById(Long userId) {
 
-        FilterBuilder userFilter = and(
-                equal(OBJECT_CLASS, PERUN_USER),
-                equal(PERUN_USER_ID, String.valueOf(userId))
-        );
-        String[] attributes = new String[] { PERUN_USER_ID, GIVEN_NAME, SN };
+        Filter filter = new AndFilter()
+                .and(new EqualsFilter(OBJECT_CLASS, PERUN_USER))
+                .and(new EqualsFilter(PERUN_USER_ID, String.valueOf(userId)));
 
-        return this.getUser(userFilter, attributes);
+        return this.getUser(filter);
     }
 
     @Override
@@ -198,7 +179,7 @@ public class LdapAdapterImpl implements DataAdapter {
     @Override
     public Map<String, PerunAttributeValue> getAttributesValues(@NonNull Entity entity, @NonNull Long entityId,
                                                                 @NonNull List<String> attrs) {
-        Map<String, PerunAttributeValue> resultMap = new HashMap<>();;
+        Map<String, PerunAttributeValue> resultMap = new HashMap<>();
 
         Set<AttributeObjectMapping> mappings = this.getMappingsForAttrNames(attrs);
         String[] attributes = this.getAttributesFromMappings(mappings);
@@ -542,21 +523,27 @@ public class LdapAdapterImpl implements DataAdapter {
         return flatSet;
     }
 
-    private User getUser(FilterBuilder filter, String[] attributes) {
-        String dnPrefix = "ou-People";
+    private User getUser(Filter filter) {
 
-        EntryMapper<User> mapper = e -> {
-            if (!checkHasAttributes(e, new String[] { PERUN_USER_ID, SN })) {
+        LdapQuery query = query().base("ou=People")
+                .attributes(PERUN_USER_ID, GIVEN_NAME, SN)
+                .filter(filter);
+
+        ContextMapper<User> mapper = ctx -> {
+            DirContextAdapter context = (DirContextAdapter) ctx;
+
+            if (!checkHasAttributes(context, new String[]{PERUN_USER_ID, SN})) {
+                log.warn("Not all required attributes were found, returning null");
                 return null;
             }
 
-            Long id = Long.parseLong(e.get(PERUN_USER_ID).getString());
-            String firstName = (e.get(GIVEN_NAME) != null) ? e.get(GIVEN_NAME).getString() : "";
-            String lastName = e.get(SN).getString();
+            Long id = Long.parseLong(context.getStringAttribute(PERUN_USER_ID));
+            String firstName = context.attributeExists(GIVEN_NAME) ? context.getStringAttribute(GIVEN_NAME) : "";
+            String lastName = context.getStringAttribute(SN);
             return new User(id, firstName, lastName);
         };
 
-        return connectorLdap.searchFirst(dnPrefix, filter, SearchScope.ONELEVEL, attributes, mapper);
+        return connectorLdap.searchForObject(query, mapper);
     }
 
 }

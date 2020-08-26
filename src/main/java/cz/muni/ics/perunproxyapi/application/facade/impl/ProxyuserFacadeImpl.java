@@ -37,6 +37,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
     public static final String FIND_BY_EXT_LOGINS = "find_by_ext_logins";
     public static final String GET_USER_BY_LOGIN = "get_user_by_login";
+    public static final String FIND_BY_PERUN_USER_ID = "find_by_perun_user_id";
 
     public static final String ADAPTER = "adapter";
     public static final String IDP_IDENTIFIER = "idpIdentifier";
@@ -96,10 +97,10 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public User findByPerunUserId(long userId) {
+    public User findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException {
         JsonNode options = methodConfigurations.getOrDefault(FIND_BY_PERUN_USER_ID, JsonNodeFactory.instance.nullNode());
         DataAdapter adapter = adaptersContainer.getPreferredAdapter(
-                options.has(ADAPTER) ? options.get(ADAPTER).asText() : RPC);
+                options.has(ADAPTER) ? options.get(ADAPTER).asText() : ADAPTER_RPC);
 
         log.debug("Calling userMiddleware.findByPerunUserId on adapter {}", adapter.getClass());
 

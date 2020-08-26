@@ -37,6 +37,7 @@ public class ProxyUserProtectedController {
     public static final String PARAM_IDENTIFIERS = "identifiers";
     public static final String PARAM_LOGIN = "login";
     public static final String PARAM_FIELDS = "fields";
+    public static final String PARAM_USER_ID = "userId";
 
     @Autowired
     public ProxyUserProtectedController(ProxyuserFacadeImpl facade) {
@@ -75,7 +76,8 @@ public class ProxyUserProtectedController {
      */
     @RequestMapping(value = "/findByPerunUserId", method = RequestMethod.GET,
         produces = MediaType.APPLICATION_JSON_VALUE )
-    public User findByPerunUserId(@RequestParam(value = PARAM_USER_ID) long userId) {
+    public User findByPerunUserId(@RequestParam(value = PARAM_USER_ID) long userId)
+            throws PerunUnknownException, PerunConnectionException {
         return facade.findByPerunUserId(userId);
     }
 

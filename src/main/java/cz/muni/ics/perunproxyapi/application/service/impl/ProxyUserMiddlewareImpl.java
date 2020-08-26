@@ -32,7 +32,7 @@ public class ProxyUserMiddlewareImpl implements ProxyUserMiddleware {
     }
 
     @Override
-    public User findByPerunUserId(DataAdapter preferredAdapter, long userId) {
+    public User findByPerunUserId(DataAdapter preferredAdapter, Long userId) throws PerunUnknownException, PerunConnectionException {
         return preferredAdapter.findPerunUserById(userId);
     }
 

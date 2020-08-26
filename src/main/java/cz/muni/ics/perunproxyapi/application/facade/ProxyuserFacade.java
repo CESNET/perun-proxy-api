@@ -42,14 +42,9 @@ public interface ProxyuserFacade {
      * Find user by id.
      * @param userId Id of a Perun user.
      * @return User or null
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findByPerunUserId(long userId);
-
-    /**
-     * Find user by id.
-     * @param userId Id of a Perun user.
-     * @return User or null
-     */
-    User findByPerunUserId(long userId);
+    User findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException;
 
 }

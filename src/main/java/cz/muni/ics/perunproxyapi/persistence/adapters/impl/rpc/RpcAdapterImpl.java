@@ -188,11 +188,9 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public User findPerunUserById(long userId) {
-        if (!this.connectorRpc.isEnabled()) {
-            return null;
-        }
-
+    public User findPerunUserById(Long userId)
+            throws PerunUnknownException, PerunConnectionException
+    {
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_ID, userId);
 
