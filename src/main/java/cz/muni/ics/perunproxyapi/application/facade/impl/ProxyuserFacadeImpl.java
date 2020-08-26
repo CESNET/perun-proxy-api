@@ -1,15 +1,15 @@
 package cz.muni.ics.perunproxyapi.application.facade.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
+import cz.muni.ics.perunproxyapi.application.facade.FacadeUtils;
 import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfiguration;
 import cz.muni.ics.perunproxyapi.application.service.ProxyUserMiddleware;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
+import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
-import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
@@ -22,8 +22,6 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfiguration.ADAPTER_RPC;
 
 @Component
 @Slf4j
@@ -39,7 +37,6 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     public static final String GET_USER_BY_LOGIN = "get_user_by_login";
     public static final String FIND_BY_PERUN_USER_ID = "find_by_perun_user_id";
 
-    public static final String ADAPTER = "adapter";
     public static final String IDP_IDENTIFIER = "idpIdentifier";
 
     @Autowired
@@ -56,9 +53,8 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
     @Override
     public User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException {
-        JsonNode options = methodConfigurations.getOrDefault(FIND_BY_EXT_LOGINS, JsonNodeFactory.instance.nullNode());
-        DataAdapter adapter = adaptersContainer.getPreferredAdapter(
-                options.has(ADAPTER) ? options.get(ADAPTER).asText() : ADAPTER_RPC);
+        JsonNode options = FacadeUtils.getOptions(FIND_BY_EXT_LOGINS, methodConfigurations);
+        DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
         log.debug("Calling userMiddleware.findByExtLogins on adapter {}", adapter.getClass());
 
@@ -67,11 +63,9 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
     @Override
     public UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, PerunConnectionException {
-        JsonNode options = methodConfigurations.getOrDefault(GET_USER_BY_LOGIN, JsonNodeFactory.instance.nullNode());
-        DataAdapter adapter = adaptersContainer.getPreferredAdapter(
-                options.has(ADAPTER) ? options.get(ADAPTER).asText() : ADAPTER_RPC);
-        String idpIdentifier =
-                options.has(IDP_IDENTIFIER) ? options.get(IDP_IDENTIFIER).asText() : defaultIdpIdentifier;
+        JsonNode options = FacadeUtils.getOptions(GET_USER_BY_LOGIN, methodConfigurations);
+        DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
+        String idpIdentifier = options.has(IDP_IDENTIFIER) ? options.get(IDP_IDENTIFIER).asText() : defaultIdpIdentifier;
 
         User user = userMiddleware.findByExtLogin(adapter, idpIdentifier , login);
         UserDTO userDTO = null;
@@ -98,9 +92,8 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
     @Override
     public User findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException {
-        JsonNode options = methodConfigurations.getOrDefault(FIND_BY_PERUN_USER_ID, JsonNodeFactory.instance.nullNode());
-        DataAdapter adapter = adaptersContainer.getPreferredAdapter(
-                options.has(ADAPTER) ? options.get(ADAPTER).asText() : ADAPTER_RPC);
+        JsonNode options = FacadeUtils.getOptions(FIND_BY_PERUN_USER_ID, methodConfigurations);
+        DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
         log.debug("Calling userMiddleware.findByPerunUserId on adapter {}", adapter.getClass());
 
