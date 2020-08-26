@@ -45,4 +45,11 @@ public interface ProxyuserFacade {
      */
     User findByPerunUserId(long userId);
 
+    /**
+     * Find user by id.
+     * @param userId Id of a Perun user.
+     * @return User or null
+     */
+    User findByPerunUserId(long userId);
+
 }

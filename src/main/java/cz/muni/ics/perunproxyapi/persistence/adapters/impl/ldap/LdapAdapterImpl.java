@@ -542,4 +542,21 @@ public class LdapAdapterImpl implements DataAdapter {
         return flatSet;
     }
 
+    private User getUser(FilterBuilder filter, String[] attributes) {
+        String dnPrefix = "ou-People";
+
+        EntryMapper<User> mapper = e -> {
+            if (!checkHasAttributes(e, new String[] { PERUN_USER_ID, SN })) {
+                return null;
+            }
+
+            Long id = Long.parseLong(e.get(PERUN_USER_ID).getString());
+            String firstName = (e.get(GIVEN_NAME) != null) ? e.get(GIVEN_NAME).getString() : "";
+            String lastName = e.get(SN).getString();
+            return new User(id, firstName, lastName);
+        };
+
+        return connectorLdap.searchFirst(dnPrefix, filter, SearchScope.ONELEVEL, attributes, mapper);
+    }
+
 }

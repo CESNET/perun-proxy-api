@@ -38,6 +38,13 @@ public interface DataAdapter {
     User findPerunUserById(long userId);
 
     /**
+     * Get user from Perun by id.
+     * @param userId ID of a Perun user.
+     * @return User or null.
+     */
+    User findPerunUserById(long userId);
+
+    /**
      * Get groups the user is member of in particular VO.
      *
      * @param userId ID of the USER.
