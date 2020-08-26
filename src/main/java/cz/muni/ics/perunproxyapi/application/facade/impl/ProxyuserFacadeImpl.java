@@ -74,14 +74,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         UserDTO userDTO = null;
 
         if (user != null) {
-            userDTO = new UserDTO(
-                    login,
-                    user.getFirstName(),
-                    user.getLastName(),
-                    String.format("%s %s", user.getFirstName(), user.getLastName()),
-                    user.getId(),
-                    new HashMap<>()
-            );
+            userDTO = new UserDTO(login, new HashMap<>());
 
             if (fields != null && !fields.isEmpty()){
                 Map<String, PerunAttributeValue> attributeValues =

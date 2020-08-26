@@ -464,6 +464,25 @@ public class RpcAdapterImpl implements FullAdapter {
         return new ArrayList<>(resultCapabilities);
     }
 
+    @Override
+    public List<User> getUsersByAttributeValue(@NonNull String attributeName, @NonNull String attributeValue)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        AttributeObjectMapping mapping = this.getMappingForAttrName(attributeName);
+        if (mapping == null || !StringUtils.hasText(mapping.getRpcName())) {
+            log.error("Cannot look for users, name of the RPC attribute is unknown for identifier {} (mapping:{})",
+                    attributeName, mapping);
+            throw new IllegalArgumentException("Cannot fetch unknown attribute");
+        }
+
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put(PARAM_ATTRIBUTE_NAME, attributeName);
+        map.put(PARAM_ATTRIBUTE_VALUE, attributeValue);
+
+        JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUsersByAttributeValue", map);
+        return RpcMapper.mapUsers(perunResponse);
+    }
+
     // private methods
 
     private Set<String> getFacilityCapabilities(Long facilityId, @NonNull String capabilitiesAttrName)

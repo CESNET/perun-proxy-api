@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 /**
@@ -45,6 +47,17 @@ public class RpcMapper {
         String lastName = json.get("lastName").asText();
 
         return new User(id, firstName, lastName);
+    }
+
+    public static List<User> mapUsers(@NonNull JsonNode jsonArray) {
+        if (jsonArray.isNull()) {
+            return new ArrayList<>();
+        }
+
+        return IntStream.range(0, jsonArray.size()).
+                mapToObj(jsonArray::get).
+                map(RpcMapper::mapUser).
+                collect(Collectors.toList());
     }
 
     /**

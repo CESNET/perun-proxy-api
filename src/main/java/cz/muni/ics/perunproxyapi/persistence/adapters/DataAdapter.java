@@ -168,4 +168,6 @@ public interface DataAdapter {
                                  String facilityCapabilitiesAttrIdentifier)
             throws PerunConnectionException, PerunUnknownException;
 
+    List<User> getUsersByAttributeValue(@NonNull String attributeName, @NonNull String attributeValue) throws PerunUnknownException, PerunConnectionException;
+
 }

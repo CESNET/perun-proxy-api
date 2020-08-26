@@ -327,6 +327,11 @@ public class LdapAdapterImpl implements DataAdapter {
         return connectorLdap.search(query, mapper);
     }
 
+    @Override
+    public List<User> getUsersByAttributeValue(@NonNull String attributeName, @NonNull String attributeValue) {
+        return null;
+    }
+
     private List<Long> getFacilityResourceIds(@NonNull Long facilityId) {
         Filter filter = new AndFilter()
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_RESOURCE))
