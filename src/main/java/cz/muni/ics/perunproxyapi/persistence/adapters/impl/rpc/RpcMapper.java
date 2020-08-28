@@ -18,7 +18,6 @@ import lombok.NonNull;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -374,7 +373,10 @@ public class RpcMapper {
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonNode attribute = jsonArray.get(i);
             PerunAttribute mappedAttribute = RpcMapper.mapAttribute(attribute);
-            mappedAttrsMap.put(mappedAttribute.getUrn(), mappedAttribute);
+
+            if (mappedAttribute != null) {
+                mappedAttrsMap.put(mappedAttribute.getUrn(), mappedAttribute);
+            }
         }
 
         for (AttributeObjectMapping mapping: attrMappings) {
