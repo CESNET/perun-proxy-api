@@ -7,6 +7,7 @@ import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,7 +55,23 @@ public class ProxyUserProtectedController {
         return facade.findByExtLogins(idpIdentifier, identifiers);
     }
 
-    @RequestMapping(value = "/{login}", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+    /**
+     * Get Perun user by login. <br>
+     * <br>
+     * <b>EXAMPLE CURL:</b>
+     * <br>
+     * curl --request GET \
+     *   --url http://localhost:8081/papi/auth/proxy-user/3e65bd2aa4c818bd3579023939b546b69e1b75ee@einfra.cesnet.cz \
+     *   --header 'authorization: Basic auth'
+     *
+     * @param login Login attribute to be used. Must be unique.
+     * @param fields OPTIONAL attributes for the user we want to obtain
+     * @return JSON representation of the User object.
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     */
+    @RequestMapping(value = "/{login}", method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDTO getUserByLogin(@PathVariable(value = PARAM_LOGIN) String login,
                                   @RequestParam(required = false, value = PARAM_FIELDS) List<String> fields)
             throws PerunUnknownException, PerunConnectionException
@@ -67,7 +84,7 @@ public class ProxyUserProtectedController {
      * <br>
      * <b>EXAMPLE CURL:</b>
      * <br>
-     * curl --request GET --url 'http://127.0.0.1:8081/proxyapi/auth/proxy-user/findByPerunUserId?userId=62692'
+     * curl --request GET --url 'http://127.0.0.1:8081/papi/auth/proxy-user/findByPerunUserId?userId=62692'
      * --header 'authorization: Basic auth'
      *
      * @param userId Id of a Perun user.

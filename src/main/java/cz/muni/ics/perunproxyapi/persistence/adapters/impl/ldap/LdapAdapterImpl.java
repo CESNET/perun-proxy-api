@@ -329,6 +329,7 @@ public class LdapAdapterImpl implements DataAdapter {
 
     @Override
     public List<User> getUsersByAttributeValue(@NonNull String attributeName, @NonNull String attributeValue) {
+        // TODO
         return null;
     }
 

@@ -46,7 +46,7 @@ public class RpcMapper {
         String firstName = json.get("firstName").asText();
         String lastName = json.get("lastName").asText();
 
-        return new User(id, firstName, lastName);
+        return new User(id, firstName, lastName, new HashMap<>());
     }
 
     public static List<User> mapUsers(@NonNull JsonNode jsonArray) {

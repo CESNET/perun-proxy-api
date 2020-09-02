@@ -1,8 +1,8 @@
 package cz.muni.ics.perunproxyapi.presentation.DTOModels;
 
-import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,11 +21,11 @@ import java.util.Map;
 public class UserDTO {
 
     @NonNull private String login;
-    @NonNull private Map<String, PerunAttributeValue> perunAttributes;
+    @NonNull private Map<String, JsonNode> attributes;
 
-    public UserDTO(String login, Map<String, PerunAttributeValue> perunAttributes) {
+    public UserDTO(String login, Map<String, JsonNode> attributes) {
         this.login = login;
-        this.perunAttributes = perunAttributes;
+        this.attributes = attributes;
     }
 
 }

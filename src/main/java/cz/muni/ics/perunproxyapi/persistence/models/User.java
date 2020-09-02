@@ -6,6 +6,8 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Map;
+
 /**
  * Represents user from Perun.
  *
@@ -22,10 +24,20 @@ public class User {
     @NonNull private String firstName;
     @NonNull private String lastName;
 
-    public User(Long perunId, String firstName, String lastName) {
+    private String login;
+    private Map<String, PerunAttributeValue> perunAttributes;
+
+    public User(@NonNull Long perunId, @NonNull String firstName, @NonNull String lastName) {
         this.setPerunId(perunId);
         this.setFirstName(firstName);
         this.setLastName(lastName);
+    }
+
+    public User(@NonNull Long perunId, @NonNull String firstName, @NonNull String lastName, Map<String, PerunAttributeValue> perunAttributes) {
+        this.setPerunId(perunId);
+        this.setFirstName(firstName);
+        this.setLastName(lastName);
+        this.perunAttributes.putAll(perunAttributes);
     }
 
     public void setLastName(String lastName) {
