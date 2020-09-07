@@ -29,6 +29,7 @@ import org.springframework.ldap.filter.Filter;
 import org.springframework.ldap.filter.OrFilter;
 import org.springframework.ldap.query.LdapQuery;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -207,6 +208,12 @@ public class LdapAdapterImpl implements DataAdapter {
 
     @Override
     public List<Facility> getFacilitiesByAttribute(@NonNull String attributeName, @NonNull String attrValue) {
+        AttributeObjectMapping mapping = this.getMappingForAttrNames(attributeName);
+        if (mapping == null || !StringUtils.hasText(mapping.getLdapName())) {
+            log.error("Cannot look for facilities, name of the LDAP attribute is unknown for identifier {} (mapping:{})",
+                    attributeName, mapping);
+            throw new IllegalArgumentException("Cannot fetch unknown attribute");
+        }
         Filter filter = new AndFilter()
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_FACILITY))
                 .and(new EqualsFilter(attributeName, attrValue));

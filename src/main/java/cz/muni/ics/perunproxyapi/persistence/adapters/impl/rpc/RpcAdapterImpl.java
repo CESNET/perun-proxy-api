@@ -25,8 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -284,8 +286,14 @@ public class RpcAdapterImpl implements FullAdapter {
     public List<Facility> getFacilitiesByAttribute(@NonNull String attributeName, @NonNull String attrValue)
             throws PerunUnknownException, PerunConnectionException
     {
+        AttributeObjectMapping mapping = this.getMappingForAttrNames(attributeName);
+        if (mapping == null || !StringUtils.hasText(mapping.getRpcName())) {
+            log.error("Cannot look for facilities, name of the RPC attribute is unknown for identifier {} (mapping:{})",
+                    attributeName, mapping);
+            throw new IllegalArgumentException("Cannot fetch unknown attribute");
+        }
         Map<String, Object> params = new LinkedHashMap<>();
-        params.put(PARAM_ATTRIBUTE_NAME, attributeName);
+        params.put(PARAM_ATTRIBUTE_NAME, mapping.getRpcName());
         params.put(PARAM_ATTRIBUTE_VALUE, attrValue);
 
         JsonNode perunResponse = connectorRpc.post(FACILITIES_MANAGER, "getFacilitiesByAttribute", params);
@@ -311,7 +319,7 @@ public class RpcAdapterImpl implements FullAdapter {
         Map<String, Object> params = new LinkedHashMap<>();
         Map<String, String> attributeValue = new LinkedHashMap<>();
 
-        attributeValue.put(attribute.getType(), attribute.getValue().toString());
+        attributeValue.put(attribute.getUrn(), attribute.getValue().toString());
         params.put(PARAM_ATTRIBUTES_WITH_SEARCHING_VALUES, attributeValue);
 
         JsonNode perunResponse = connectorRpc.post(SEARCHER, "getFacilities", params);
@@ -388,6 +396,14 @@ public class RpcAdapterImpl implements FullAdapter {
 
         JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUserByExtSourceNameAndExtLogin", map);
         return RpcMapper.mapUser(perunResponse);
+    }
+
+    private Set<AttributeObjectMapping> getMappingsForAttrNames(@NonNull Collection<String> attrsToFetch) {
+        return this.attributeMappingService.getMappingsByIdentifiers(attrsToFetch);
+    }
+
+    private AttributeObjectMapping getMappingForAttrNames(@NonNull String attrToFetch) {
+        return this.attributeMappingService.getMappingByIdentifier(attrToFetch);
     }
 
 }
