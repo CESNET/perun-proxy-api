@@ -1,14 +1,13 @@
 package cz.muni.ics.perunproxyapi.application.facade.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import cz.muni.ics.perunproxyapi.application.facade.FacadeUtils;
 import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfiguration;
 import cz.muni.ics.perunproxyapi.application.service.ProxyUserService;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
-import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
-import cz.muni.ics.perunproxyapi.persistence.exceptions.InvalidNumberOfValuesException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
@@ -21,12 +20,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -35,7 +33,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     private final Map<String, JsonNode> methodConfigurations;
     private final AdaptersContainer adaptersContainer;
     private final ProxyUserService proxyUserService;
-    private final String loginIdentifier;
+    private final String loginAttrIdentifier;
     private final String defaultIdpIdentifier;
 
     public static final String FIND_BY_EXT_LOGINS = "find_by_ext_logins";
@@ -43,7 +41,6 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     public static final String FIND_BY_PERUN_USER_ID = "find_by_perun_user_id";
     public static final String GET_ALL_ENTITLEMENTS = "get_all_entitlements";
 
-    public static final String IDP_IDENTIFIER = "idpIdentifier";
     public static final String PREFIX = "prefix";
     public static final String AUTHORITY = "authority";
     public static final String FORWARDED_ENTITLEMENTS = "forwarded_entitlements";
@@ -53,13 +50,13 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     public ProxyuserFacadeImpl(@NonNull ProxyUserService proxyUserService,
                                @NonNull AdaptersContainer adaptersContainer,
                                @NonNull FacadeConfiguration facadeConfiguration,
-                               @Value("${facade.proxy_user_login_identifier}") String loginIdentifier,
+                               @Value("${attributes.identifiers.login}") String loginAttrIdentifier,
                                @Value("${facade.default_idp}") String defaultIdpIdentifier)
     {
         this.proxyUserService = proxyUserService;
         this.adaptersContainer = adaptersContainer;
         this.methodConfigurations = facadeConfiguration.getProxyUserAdapterMethodConfigurations();
-        this.loginIdentifier = loginIdentifier;
+        this.loginAttrIdentifier = loginAttrIdentifier;
         this.defaultIdpIdentifier = defaultIdpIdentifier;
     }
 
@@ -74,25 +71,23 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, PerunConnectionException {
+    public UserDTO getUserByLogin(@NonNull String login, List<String> fields)
+            throws PerunUnknownException, PerunConnectionException
+    {
         JsonNode options = FacadeUtils.getOptions(GET_USER_BY_LOGIN, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
-        log.debug("Calling proxyUserService.getUserByLogin on adapter {}", adapter.getClass());
+        List<String> fieldsToFetch = (fields != null && !fields.isEmpty()) ? fields : this.getDefaultFields(options);
 
-        List<String> fieldsToUse = (fields != null) && !fields.isEmpty() ?
-                fields : this.getDefaultFields(options);
-
-        User user = proxyUserService.getUserByLogin(adapter, loginIdentifier, login, fieldsToUse);
+        User user = proxyUserService.getUserWithAttributesByLogin(adapter, loginAttrIdentifier, login, fieldsToFetch);
 
         if (user != null) {
             Map<String, PerunAttributeValue> attributesMap = user.getAttributes();
-
-            // Get only values from the PerunAttributeValue object
-            Map<String, JsonNode> attributes = attributesMap.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            entry -> entry.getValue().getValue()
-                    ));
+            Map<String, JsonNode> attributes = new HashMap<>();
+            if (attributesMap != null) {
+                attributesMap.forEach((key, value) -> attributes.put(key, (value != null) ?
+                        value.valueAsJson() : JsonNodeFactory.instance.nullNode())
+                );
+            }
 
             return new UserDTO(login, attributes);
         }

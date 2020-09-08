@@ -169,26 +169,17 @@ public interface DataAdapter {
             throws PerunConnectionException, PerunUnknownException;
 
     /**
-     * Get users by given attribute name and value.
-     * @param attributeName Name of the attribute.
-     * @param attributeValue Value of the attribute.
-     * @return List of users or empty list.
-     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
-     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
-     */
-    List<User> getUsersByAttributeValue(@NonNull String attributeName, @NonNull String attributeValue)
-            throws PerunUnknownException, PerunConnectionException;
-
-    /**
      * Get user with attributes by given attribute name, login value and required user's attributes.
-     * @param loginAttributeName Name of the login attribute.
-     * @param loginAttributeValue Login value.
-     * @param attributes User's attributes to be obtained.
-     * @return User or null
+     * @param loginAttributeIdentifier Identifier of the attribute containing the login.
+     * @param login Actual login of user.
+     * @param attrIdentifiers List of attribute identifiers that should be fetched as well.
+     * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User getUserByLogin(@NonNull String loginAttributeName, @NonNull String loginAttributeValue, @NonNull List<String> attributes)
+    User getUserWithAttributesByLogin(@NonNull String loginAttributeIdentifier,
+                                      @NonNull String login,
+                                      @NonNull List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException;
 
-    }
+}

@@ -29,15 +29,16 @@ public interface ProxyuserFacade {
     User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException;
 
     /**
-     * Get user by his/her login.
+     * Get user with fields by his/her login.
      *
      * @param login User's login.
-     * @param fields List of user's attributes.
-     * @return User with attributes values or null.
+     * @param fields List of user's attributes we want to retrieve.
+     * @return User with attributes or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, PerunConnectionException;
+    UserDTO getUserByLogin(@NonNull String login, List<String> fields)
+            throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Find user by id.

@@ -1,6 +1,6 @@
 package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
-import cz.muni.ics.perunproxyapi.application.facade.impl.ProxyuserFacadeImpl;
+import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
@@ -33,7 +33,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class ProxyUserProtectedController {
 
-    private final ProxyuserFacadeImpl facade;
+    private final ProxyuserFacade facade;
 
     public static final String PARAM_IDP_IDENTIFIER = "IdPIdentifier";
     public static final String PARAM_IDENTIFIERS = "identifiers";
@@ -42,7 +42,7 @@ public class ProxyUserProtectedController {
     public static final String PARAM_USER_ID = "userId";
 
     @Autowired
-    public ProxyUserProtectedController(ProxyuserFacadeImpl facade) {
+    public ProxyUserProtectedController(ProxyuserFacade facade) {
         this.facade = facade;
     }
 
@@ -70,8 +70,7 @@ public class ProxyUserProtectedController {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    @RequestMapping(value = "/{login}", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{login}", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDTO getUserByLogin(@PathVariable(value = PARAM_LOGIN) String login,
                                   @RequestParam(required = false, value = PARAM_FIELDS) List<String> fields)
             throws PerunUnknownException, PerunConnectionException

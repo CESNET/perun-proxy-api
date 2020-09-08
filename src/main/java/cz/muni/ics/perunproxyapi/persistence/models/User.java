@@ -24,7 +24,6 @@ public class User {
     @NonNull private Long perunId;
     @NonNull private String firstName;
     @NonNull private String lastName;
-
     private String login;
     private Map<String, PerunAttributeValue> attributes = new HashMap<>();
 

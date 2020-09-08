@@ -26,9 +26,10 @@ attributes:
   path: /etc/perun/attributes.yml
   identifiers:
     relying_party: "urn:perun:facility:attribute-def:def:entityID"
+    login: "urn:perun:user:attribute-def:def:login-namespace:example"
 
 facade:
-  proxy_user_login_identifier: "urn:perun:user:attribute-def:def:login-namespace:example"
+  default_idp: "https://login.cesnet.cz/idp/"
   config_path:
     proxyuser: "/etc/perun/proxyuser-facade.yml"
     relying_party: "/etc/perun/relying-party-facade.yml"

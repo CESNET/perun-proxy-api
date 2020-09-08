@@ -59,6 +59,8 @@ import static org.springframework.ldap.query.SearchScope.SUBTREE;
 @Slf4j
 public class LdapAdapterImpl implements DataAdapter {
 
+    public static final String OU_PEOPLE = "ou=People";
+
     // COMMON
     public static final String O = "o";
     public static final String CN = "cn";
@@ -100,6 +102,7 @@ public class LdapAdapterImpl implements DataAdapter {
     public static final String[] PERUN_FACILITY_REQUIRED_ATTRIBUTES = new String[] {PERUN_FACILITY_ID, CN};
     public static final String[] PERUN_GROUP_REQUIRED_ATTRIBUTES = new String[]{PERUN_GROUP_ID, CN,
             PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, DESCRIPTION};
+    public static final String[] PERUN_USER_REQUIRED_ATTRIBUTES = new String[]{PERUN_USER_ID, SN};
 
     private final JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
     private final AttributeMappingService attributeMappingService;
@@ -328,18 +331,87 @@ public class LdapAdapterImpl implements DataAdapter {
     }
 
     @Override
-    public List<User> getUsersByAttributeValue(@NonNull String attributeName, @NonNull String attributeValue) {
-        // TODO: should this method exist in LDAP?
-        return null;
+    public User getUserWithAttributesByLogin(@NonNull String loginAttributeIdentifier,
+                                             @NonNull String login,
+                                             @NonNull List<String> attrIdentifiers)
+    {
+        AttributeObjectMapping loginMapping = this.getMappingForAttrName(loginAttributeIdentifier);
+        if (loginMapping == null || !StringUtils.hasText(loginMapping.getRpcName())) {
+            log.error("Cannot look for users, name of the LDAP attribute is unknown for identifier {} (mapping:{})",
+                    loginAttributeIdentifier, loginMapping);
+            throw new IllegalArgumentException("Cannot fetch unknown attribute");
+        }
+        Set<AttributeObjectMapping> attrMappings = this.getMappingsForAttrNames(attrIdentifiers);
+        if (attrMappings == null) {
+            attrMappings = new HashSet<>();
+        }
+        final Set<AttributeObjectMapping> finalMappings = attrMappings.stream()
+                .filter(mapping -> {
+                    if (!StringUtils.hasText(mapping.getLdapName())) {
+                        log.warn("No LDAP name found in mapping {}", mapping);
+                        return false;
+                    }
+                    return true;
+                }).collect(Collectors.toSet());
+        Filter filter = new AndFilter()
+                .and(new EqualsFilter(OBJECT_CLASS, PERUN_USER))
+                .and(new EqualsFilter(loginMapping.getLdapName(), login));
+        LdapQuery query  = query()
+                .base(OU_PEOPLE)
+                .searchScope(ONELEVEL)
+                .attributes(this.constructUserAttributes(finalMappings))
+                .filter(filter);
+        ContextMapper<User> mapper = this.userMapper(finalMappings);
+
+        User user = connectorLdap.searchForObject(query, mapper);
+        if (user != null) {
+            user.setLogin(login);
+        }
+
+        return user;
     }
 
-    @Override
-    public User getUserByLogin(@NonNull String loginAttributeName,
-                               @NonNull String loginAttributeValue,
-                               @NonNull List<String> attributes)
-            throws PerunUnknownException, PerunConnectionException {
-        // TODO
-        return null;
+    private String[] constructUserAttributes(Set<AttributeObjectMapping> attrMappings) {
+        String[] attrs;
+        int i = 0;
+        int additionalAttrsCnt = 3;
+        if (attrMappings == null) {
+            attrs = new String[additionalAttrsCnt];
+        } else {
+            attrs = new String[attrMappings.size() + additionalAttrsCnt];
+            for (AttributeObjectMapping mapping: attrMappings) {
+                attrs[i++] = mapping.getLdapName();
+            }
+        }
+
+        attrs[i++] = PERUN_USER_ID;
+        attrs[i++] = GIVEN_NAME;
+        attrs[i] = SN;
+
+        return attrs;
+    }
+
+    private ContextMapper<User> userMapper(final Set<AttributeObjectMapping> attrMappings) {
+        return ctx -> {
+            DirContextAdapter context = (DirContextAdapter) ctx;
+            if (!checkHasAttributes(context, PERUN_USER_REQUIRED_ATTRIBUTES)) {
+                return null;
+            }
+
+            Map<String, PerunAttributeValue> attributes = new HashMap<>();
+            if (attrMappings != null) {
+                for (AttributeObjectMapping mapping : attrMappings) {
+                    PerunAttributeValue value = this.parseValue(context, mapping.getLdapName(), mapping);
+                    attributes.put(mapping.getIdentifier(), value);
+                }
+            }
+
+            Long userId = Long.parseLong(context.getStringAttribute(PERUN_USER_ID));
+            String firstName = context.attributeExists(GIVEN_NAME) ? context.getStringAttribute(GIVEN_NAME) : "";
+            String lastName = context.getStringAttribute(SN);
+
+            return new User(userId, firstName, lastName, attributes);
+        };
     }
 
     private List<Long> getFacilityResourceIds(@NonNull Long facilityId) {
@@ -643,7 +715,7 @@ public class LdapAdapterImpl implements DataAdapter {
         } else if (!isPresent && PerunAttrValueType.MAP_KEY_VALUE.equals(type)) {
             return new PerunAttributeValue(PerunAttributeValue.MAP_TYPE, jsonNodeFactory.objectNode());
         } else if (!isPresent) {
-            return new PerunAttributeValue(mapping.getAttrType(), jsonNodeFactory.nullNode());
+            return new PerunAttributeValue(type, jsonNodeFactory.nullNode());
         }
 
         switch (type) {
