@@ -77,29 +77,15 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     public UserDTO getUserByLogin(String login, List<String> fields) throws PerunUnknownException, PerunConnectionException {
         JsonNode options = FacadeUtils.getOptions(GET_USER_BY_LOGIN, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
-        log.debug("Calling userMiddleware.getUserByLogin on adapter {}", adapter.getClass());
+        log.debug("Calling proxyUserService.getUserByLogin on adapter {}", adapter.getClass());
 
-        List<User> users = proxyUserService.getUsersByAttributeValue(adapter, loginIdentifier , login);
+        List<String> fieldsToUse = (fields != null) && !fields.isEmpty() ?
+                fields : this.getDefaultFields(options);
 
-        User user;
-        if (users.size() < 1) {
-            log.debug("No user with login {} found.", login);
-            return null;
-        } else if (users.size() > 1) {
-            throw new InvalidNumberOfValuesException(String.format("More users with the same login %s found.", login));
-        } else {
-            user = users.get(0);
-        }
+        User user = proxyUserService.getUserByLogin(adapter, loginIdentifier, login, fieldsToUse);
 
-        UserDTO userDTO = null;
         if (user != null) {
-            userDTO = new UserDTO(login, new HashMap<>());
-
-            List<String> fieldsToUse = (fields != null) && !fields.isEmpty() ?
-                    fields : this.getDefaultFields(options);
-
-            Map<String, PerunAttributeValue> attributesMap =
-                    proxyUserService.getAttributesValues(adapter, Entity.USER , user.getPerunId() , fieldsToUse);
+            Map<String, PerunAttributeValue> attributesMap = user.getAttributes();
 
             // Get only values from the PerunAttributeValue object
             Map<String, JsonNode> attributes = attributesMap.entrySet().stream()
@@ -108,11 +94,10 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
                             entry -> entry.getValue().getValue()
                     ));
 
-            userDTO.setAttributes(attributes);
-
+            return new UserDTO(login, attributes);
         }
 
-        return userDTO;
+        return null;
     }
 
     @Override
@@ -152,15 +137,17 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
     private List<String> getDefaultFields(JsonNode options) {
         List<String> fields = new ArrayList<>();
-        if (! options.hasNonNull(DEFAULT_FIELDS)) {
+        if (!options.hasNonNull(DEFAULT_FIELDS)) {
             log.warn("Default fields are missing in the configuration file. Returning empty list.");
             return fields;
         }
 
         for (JsonNode subNode : options.get(DEFAULT_FIELDS)) {
-            String attr = subNode.asText();
-            if (StringUtils.hasText(attr)) {
-                fields.add(attr);
+            if (!subNode.isNull()){
+                String attr = subNode.asText();
+                if (StringUtils.hasText(attr)) {
+                    fields.add(attr);
+                }
             }
         }
         return fields;

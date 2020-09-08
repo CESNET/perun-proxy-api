@@ -329,6 +329,15 @@ public class LdapAdapterImpl implements DataAdapter {
 
     @Override
     public List<User> getUsersByAttributeValue(@NonNull String attributeName, @NonNull String attributeValue) {
+        // TODO: should this method exist in LDAP?
+        return null;
+    }
+
+    @Override
+    public User getUserByLogin(@NonNull String loginAttributeName,
+                               @NonNull String loginAttributeValue,
+                               @NonNull List<String> attributes)
+            throws PerunUnknownException, PerunConnectionException {
         // TODO
         return null;
     }

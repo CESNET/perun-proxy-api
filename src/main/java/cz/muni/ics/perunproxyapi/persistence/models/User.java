@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,19 +26,24 @@ public class User {
     @NonNull private String lastName;
 
     private String login;
-    private Map<String, PerunAttributeValue> perunAttributes;
+    private Map<String, PerunAttributeValue> attributes = new HashMap<>();
 
-    public User(@NonNull Long perunId, @NonNull String firstName, @NonNull String lastName) {
+    public User(Long perunId, String firstName, String lastName) {
         this.setPerunId(perunId);
         this.setFirstName(firstName);
         this.setLastName(lastName);
     }
 
-    public User(@NonNull Long perunId, @NonNull String firstName, @NonNull String lastName, Map<String, PerunAttributeValue> perunAttributes) {
+    public User(Long perunId, String firstName, String lastName, Map<String, PerunAttributeValue> attributes) {
         this.setPerunId(perunId);
         this.setFirstName(firstName);
         this.setLastName(lastName);
-        this.perunAttributes.putAll(perunAttributes);
+        this.attributes.putAll(attributes);
+    }
+
+    public void setAttributes(Map<String, PerunAttributeValue> attributes) {
+        this.attributes.clear();
+        this.attributes.putAll(attributes);
     }
 
     public void setLastName(String lastName) {

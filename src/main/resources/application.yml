@@ -28,7 +28,7 @@ attributes:
     relying_party: "urn:perun:facility:attribute-def:def:entityID"
 
 facade:
-  default_idp: "https://idp.example.com/idp/"
+  proxy_user_login_identifier: "urn:perun:user:attribute-def:def:login-namespace:example"
   config_path:
     proxyuser: "/etc/perun/proxyuser-facade.yml"
     relying_party: "/etc/perun/relying-party-facade.yml"

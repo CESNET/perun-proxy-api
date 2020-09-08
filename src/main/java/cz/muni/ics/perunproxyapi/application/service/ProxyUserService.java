@@ -89,15 +89,36 @@ public interface ProxyUserService {
             throws PerunUnknownException, PerunConnectionException;
 
     /**
+<<<<<<< master
      * Get users by attribute value.
      * @param preferredAdapter Adapter to be used
      * @param attributeName Attribute identifier.
      * @param attributeValue Value of the attribute.
      * @return List of found users.
+=======
+     * Get users by given attribute name and value.
+     * @param preferredAdapter Adapter for connection to be used.
+     * @param attributeName Name of the attribute.
+     * @param attributeValue Value of the attribute.
+     * @return List of users or empty list.
+>>>>>>> Moved functionality to rpc adapter + small fixes.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
     List<User> getUsersByAttributeValue(DataAdapter preferredAdapter, String attributeName, String attributeValue)
+            throws PerunUnknownException, PerunConnectionException;
+
+    /**
+     * Get user with attributes by given attribute name, login value and required user's attributes.
+     * @param preferredAdapter Adapter for connection to be used.
+     * @param loginAttributeName Name of the login attribute.
+     * @param loginAttributeValue Login value.
+     * @param attributes User's attributes to be obtained.
+     * @return User or null
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     */
+    User getUserByLogin(DataAdapter preferredAdapter, String loginAttributeName, String loginAttributeValue, List<String> attributes)
             throws PerunUnknownException, PerunConnectionException;
 
 }

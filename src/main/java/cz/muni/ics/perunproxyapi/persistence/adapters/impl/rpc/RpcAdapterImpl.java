@@ -9,8 +9,9 @@ import cz.muni.ics.perunproxyapi.persistence.connectors.PerunConnectorRpc;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.enums.MemberStatus;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.InternalErrorException;
-import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.InvalidNumberOfValuesException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.models.AttributeObjectMapping;
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
 import cz.muni.ics.perunproxyapi.persistence.models.Group;
@@ -462,6 +463,29 @@ public class RpcAdapterImpl implements FullAdapter {
         }
 
         return new ArrayList<>(resultCapabilities);
+    }
+
+    @Override
+    public User getUserByLogin(@NonNull String loginAttributeName, @NonNull String loginAttributeValue,
+                               @NonNull List<String> attributes)
+            throws PerunUnknownException, PerunConnectionException {
+        List<User> users = getUsersByAttributeValue(loginAttributeName, loginAttributeValue);
+
+        User user;
+        if (users.size() < 1) {
+            log.debug("No user with login {} found.", loginAttributeValue);
+            return null;
+        } else if (users.size() > 1) {
+            throw new InvalidNumberOfValuesException(String.format("More users with the same login %s found.",
+                    loginAttributeValue));
+        } else {
+            user = users.get(0);
+        }
+        
+        Map<String, PerunAttributeValue> attributesMap = 
+                getAttributesValues(Entity.USER, user.getPerunId(), attributes);
+        user.setAttributes(attributesMap);
+        return user;
     }
 
     @Override

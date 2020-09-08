@@ -61,7 +61,7 @@ public class ProxyUserProtectedController {
      * <b>EXAMPLE CURL:</b>
      * <br>
      * curl --request GET \
-     *   --url http://localhost:8081/papi/auth/proxy-user/3e65bd2aa4c818bd3579023939b546b69e1b75ee@einfra.cesnet.cz \
+     *   --url http://localhost:8081/proxyapi/auth/proxy-user/example_login_value@einfra.cesnet.cz \
      *   --header 'authorization: Basic auth'
      *
      * @param login Login attribute to be used. Must be unique.
@@ -84,7 +84,7 @@ public class ProxyUserProtectedController {
      * <br>
      * <b>EXAMPLE CURL:</b>
      * <br>
-     * curl --request GET --url 'http://127.0.0.1:8081/papi/auth/proxy-user/findByPerunUserId?userId=62692'
+     * curl --request GET --url 'http://127.0.0.1:8081/proxyapi/auth/proxy-user/findByPerunUserId?userId=12345'
      * --header 'authorization: Basic auth'
      *
      * @param userId Id of a Perun user.
