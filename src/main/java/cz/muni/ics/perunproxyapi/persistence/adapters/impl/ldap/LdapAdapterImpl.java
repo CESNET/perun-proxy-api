@@ -341,7 +341,7 @@ public class LdapAdapterImpl implements DataAdapter {
                                              @NonNull List<String> attrIdentifiers)
     {
         AttributeObjectMapping loginMapping = this.getMappingForAttrName(loginAttributeIdentifier);
-        if (loginMapping == null || !StringUtils.hasText(loginMapping.getRpcName())) {
+        if (loginMapping == null || !StringUtils.hasText(loginMapping.getLdapName())) {
             log.error("Cannot look for users, name of the LDAP attribute is unknown for identifier {} (mapping:{})",
                     loginAttributeIdentifier, loginMapping);
             throw new IllegalArgumentException("Cannot fetch unknown attribute");
