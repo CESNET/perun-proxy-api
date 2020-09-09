@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,10 +46,24 @@ public class ProxyUserProtectedController {
         this.facade = facade;
     }
 
+    /**
+     * Find user by logins provided by the external sources.
+     *
+     * EXAMPLE CURL:
+     * curl --request GET --url 'http://127.0.0.1:8081/proxyapi/auth/proxy-user/findByExtLogins?IdPIdentifier=
+     * identifier&identifiers=id1&identifiers=id2'
+     * --header 'authorization: Basic auth'
+     *
+     * @param idpIdentifier Identifier of the identity provider (external source identifier).
+     * @param identifiers List of user identifiers at the given identity provider.
+     * @return Found user or NULL.
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     */
     @ResponseBody
-    @RequestMapping(value = "/findByExtLogins", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
-    public User findByExtLogins(@RequestParam(value = PARAM_IDP_IDENTIFIER) String idpIdentifier,
-                                @RequestParam(value = PARAM_IDENTIFIERS) List<String> identifiers)
+    @GetMapping(value = "/findByExtLogins", produces = APPLICATION_JSON_VALUE)
+    public User findByExtLogins(@NonNull @RequestParam(value = PARAM_IDP_IDENTIFIER) String idpIdentifier,
+                                @NonNull @RequestParam(value = PARAM_IDENTIFIERS) List<String> identifiers)
             throws PerunUnknownException, PerunConnectionException
     {
         return facade.findByExtLogins(idpIdentifier, identifiers);
@@ -79,10 +92,9 @@ public class ProxyUserProtectedController {
     }
 
     /**
-     * Get Perun user by login. <br>
-     * <br>
-     * <b>EXAMPLE CURL:</b>
-     * <br>
+     * Get Perun user by login.
+     *
+     * EXAMPLE CURL:
      * curl --request GET \
      *   --url http://localhost:8081/proxyapi/auth/proxy-user/example_login_value@einfra.cesnet.cz \
      *   --header 'authorization: Basic auth'
@@ -93,8 +105,9 @@ public class ProxyUserProtectedController {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
+    @ResponseBody
     @GetMapping(value = "/{login}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public UserDTO getUserByLogin(@PathVariable(value = PARAM_LOGIN) String login,
+    public UserDTO getUserByLogin(@NonNull @PathVariable(value = PARAM_LOGIN) String login,
                                   @RequestParam(required = false, value = PARAM_FIELDS) List<String> fields)
             throws PerunUnknownException, PerunConnectionException
     {
@@ -102,25 +115,40 @@ public class ProxyUserProtectedController {
     }
 
     /**
-     * Find Perun user by its id.<br>
-     * <br>
-     * <b>EXAMPLE CURL:</b>
-     * <br>
+     * Find Perun user by its id.
+     *
+     * EXAMPLE CURL:
      * curl --request GET --url 'http://127.0.0.1:8081/proxyapi/auth/proxy-user/findByPerunUserId?userId=12345'
      * --header 'authorization: Basic auth'
      *
      * @param userId Id of a Perun user.
      * @return JSON representation of the User object.
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    @RequestMapping(value = "/findByPerunUserId", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
-    public User findByPerunUserId(@RequestParam(value = PARAM_USER_ID) long userId)
+    @ResponseBody
+    @GetMapping(value = "/findByPerunUserId", produces = APPLICATION_JSON_VALUE)
+    public User findByPerunUserId(@NonNull @RequestParam(value = PARAM_USER_ID) long userId)
             throws PerunUnknownException, PerunConnectionException
     {
         return facade.findByPerunUserId(userId);
     }
 
+    /**
+     * Get all entitlements for user with given login.
+     *
+     * EXAMPLE CURL:
+     * curl --request GET --url 'http://127.0.0.1:8081/proxyapi/auth/proxy-user/login@somewhere.org/entitlements
+     * --header 'authorization: Basic auth'
+     *
+     * @param login Login of the user.
+     * @return List of all entitlements (excluding resource and facility capabilities as we cannot construct them)
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     */
+    @ResponseBody
     @GetMapping(value = "/{login}/entitlements", produces = APPLICATION_JSON_VALUE)
-    public List<String> getUserEntitlements(@PathVariable(value = PARAM_LOGIN) String login)
+    public List<String> getUserEntitlements(@NonNull @PathVariable(value = PARAM_LOGIN) String login)
             throws PerunUnknownException, PerunConnectionException
     {
         return facade.getAllEntitlements(login);
