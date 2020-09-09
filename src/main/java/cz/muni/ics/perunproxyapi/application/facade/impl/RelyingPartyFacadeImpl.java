@@ -37,20 +37,20 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
     private final AdaptersContainer adaptersContainer;
     private final RelyingPartyService relyingPartyService;
     private final ProxyUserService proxyUserService;
-    private final String defaultIdpIdentifier;
+    private final String loginAttrIdentifier;
 
     @Autowired
     public RelyingPartyFacadeImpl(@NonNull AdaptersContainer adaptersContainer,
                                   @NonNull FacadeConfiguration facadeConfiguration,
                                   @NonNull RelyingPartyService relyingPartyService,
                                   @NonNull ProxyUserService proxyUserService,
-                                  @Value("${facade.default_idp}") String defaultIdp)
+                                  @Value("${attributes.identifiers.login}") String loginAttrIdentifier)
     {
         this.adaptersContainer = adaptersContainer;
         this.methodConfigurations = facadeConfiguration.getRelyingPartyAdapterMethodConfigurations();
         this.relyingPartyService = relyingPartyService;
         this.proxyUserService = proxyUserService;
-        this.defaultIdpIdentifier = defaultIdp;
+        this.loginAttrIdentifier = loginAttrIdentifier;
     }
 
     @Override
@@ -67,10 +67,9 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
         String resourceCapabilitiesAttrIdentifier = FacadeUtils.getStringOption(RESOURCE_CAPABILITIES, options);
         String facilityCapabilitiesAttrIdentifier = FacadeUtils.getStringOption(FACILITY_CAPABILITIES, options);
 
-        User user = proxyUserService.findByExtLogin(adapter, defaultIdpIdentifier, login);
-        if (user == null || user.getPerunId() == null) {
-            log.error("No user found for login {} with Idp {}. Cannot look for entitlements, return error.",
-                    login, defaultIdpIdentifier);
+        User user = proxyUserService.getUserByLogin(adapter, loginAttrIdentifier, login);
+        if (user == null) {
+            log.error("No user found for login {}. Cannot look for entitlements, return error.", login);
             throw new IllegalArgumentException("User for given login could not be found");
         }
 

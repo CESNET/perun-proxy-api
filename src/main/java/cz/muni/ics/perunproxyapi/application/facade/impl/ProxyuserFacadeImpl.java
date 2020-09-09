@@ -30,12 +30,6 @@ import java.util.Map;
 @Slf4j
 public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
-    private final Map<String, JsonNode> methodConfigurations;
-    private final AdaptersContainer adaptersContainer;
-    private final ProxyUserService proxyUserService;
-    private final String loginAttrIdentifier;
-    private final String defaultIdpIdentifier;
-
     public static final String FIND_BY_EXT_LOGINS = "find_by_ext_logins";
     public static final String GET_USER_BY_LOGIN = "get_user_by_login";
     public static final String FIND_BY_PERUN_USER_ID = "find_by_perun_user_id";
@@ -46,18 +40,21 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     public static final String FORWARDED_ENTITLEMENTS = "forwarded_entitlements";
     public static final String DEFAULT_FIELDS = "default_fields";
 
+    private final Map<String, JsonNode> methodConfigurations;
+    private final AdaptersContainer adaptersContainer;
+    private final ProxyUserService proxyUserService;
+    private final String loginAttrIdentifier;
+
     @Autowired
     public ProxyuserFacadeImpl(@NonNull ProxyUserService proxyUserService,
                                @NonNull AdaptersContainer adaptersContainer,
                                @NonNull FacadeConfiguration facadeConfiguration,
-                               @Value("${attributes.identifiers.login}") String loginAttrIdentifier,
-                               @Value("${facade.default_idp}") String defaultIdpIdentifier)
+                               @Value("${attributes.identifiers.login}") String loginAttrIdentifier)
     {
         this.proxyUserService = proxyUserService;
         this.adaptersContainer = adaptersContainer;
         this.methodConfigurations = facadeConfiguration.getProxyUserAdapterMethodConfigurations();
         this.loginAttrIdentifier = loginAttrIdentifier;
-        this.defaultIdpIdentifier = defaultIdpIdentifier;
     }
 
     @Override
@@ -113,10 +110,9 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         String prefix = FacadeUtils.getRequiredStringOption(PREFIX, options);
         String authority = FacadeUtils.getRequiredStringOption(AUTHORITY, options);
 
-        User user = proxyUserService.findByExtLogin(adapter, defaultIdpIdentifier, login);
+        User user = proxyUserService.getUserByLogin(adapter, loginAttrIdentifier, login);
         if (user == null) {
-            log.error("No user found for login {} with Idp {}. Cannot look for entitlements, return error.",
-                    login, defaultIdpIdentifier);
+            log.error("No user found for login {}. Cannot look for entitlements, return error.", login);
             throw new IllegalArgumentException("User for given login could not be found");
         }
 

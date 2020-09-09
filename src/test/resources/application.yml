@@ -29,7 +29,6 @@ attributes:
     login: "urn:perun:user:attribute-def:def:login-namespace:example"
 
 facade:
-  default_idp: "https://login.cesnet.cz/idp/"
   config_path:
     proxyuser: "${PWD}/src/test/resources/proxyuser-facade.yml"
     relying_party: "${PWD}/src/test/resources/relying-party-facade.yml"
