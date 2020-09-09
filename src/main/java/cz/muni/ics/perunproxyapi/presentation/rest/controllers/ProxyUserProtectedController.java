@@ -3,7 +3,6 @@ package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
-import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +61,7 @@ public class ProxyUserProtectedController {
      */
     @ResponseBody
     @GetMapping(value = "/findByExtLogins", produces = APPLICATION_JSON_VALUE)
-    public User findByExtLogins(@NonNull @RequestParam(value = PARAM_IDP_IDENTIFIER) String idpIdentifier,
+    public UserDTO findByExtLogins(@NonNull @RequestParam(value = PARAM_IDP_IDENTIFIER) String idpIdentifier,
                                 @NonNull @RequestParam(value = PARAM_IDENTIFIERS) List<String> identifiers)
             throws PerunUnknownException, PerunConnectionException
     {
@@ -128,7 +127,7 @@ public class ProxyUserProtectedController {
      */
     @ResponseBody
     @GetMapping(value = "/findByPerunUserId", produces = APPLICATION_JSON_VALUE)
-    public User findByPerunUserId(@NonNull @RequestParam(value = PARAM_USER_ID) long userId)
+    public UserDTO findByPerunUserId(@NonNull @RequestParam(value = PARAM_USER_ID) long userId)
             throws PerunUnknownException, PerunConnectionException
     {
         return facade.findByPerunUserId(userId);

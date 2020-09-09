@@ -56,13 +56,16 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException {
+    public UserDTO findByExtLogins(String idpIdentifier, List<String> userIdentifiers)
+            throws PerunUnknownException, PerunConnectionException
+    {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_EXT_LOGINS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
         log.debug("Calling proxyUserService.findByExtLogins on adapter {}", adapter.getClass());
 
-        return proxyUserService.findByExtLogins(adapter, idpIdentifier, userIdentifiers);
+        User user = proxyUserService.findByExtLogins(adapter, idpIdentifier, userIdentifiers);
+        return FacadeUtils.mapUserToUserDTO(user);
     }
 
     @Override
@@ -93,13 +96,14 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public User findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException {
+    public UserDTO findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_PERUN_USER_ID, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
         log.debug("Calling proxyUserService.findByPerunUserId on adapter {}", adapter.getClass());
 
-        return proxyUserService.findByPerunUserId(adapter, userId);
+        User user = proxyUserService.findByPerunUserId(adapter, userId);
+        return FacadeUtils.mapUserToUserDTO(user);
     }
 
     @Override

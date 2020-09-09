@@ -2,7 +2,6 @@ package cz.muni.ics.perunproxyapi.application.facade;
 
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
-import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 import lombok.NonNull;
 
@@ -26,7 +25,7 @@ public interface ProxyuserFacade {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException;
+    UserDTO findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Find user by given source IdP entityId and additional source identifiers.
@@ -52,11 +51,11 @@ public interface ProxyuserFacade {
     /**
      * Find user by id.
      * @param userId Id of a Perun user.
-     * @return User or null
+     * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException;
+    UserDTO findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Get entitlements for user.
