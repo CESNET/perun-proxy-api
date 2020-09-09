@@ -8,7 +8,6 @@ import cz.muni.ics.perunproxyapi.persistence.models.Facility;
 import cz.muni.ics.perunproxyapi.persistence.models.Group;
 import cz.muni.ics.perunproxyapi.persistence.models.Member;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttribute;
-import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.Resource;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.persistence.models.UserExtSource;
@@ -360,10 +359,8 @@ public class RpcMapper {
         String friendlyNameParameter = json.get("friendlyNameParameter").asText();
         JsonNode value = json.get("value");
 
-        PerunAttributeValue attrVal = new PerunAttributeValue(type, value);
-
         return new PerunAttribute(id, friendlyName, namespace, description, type, displayName,
-                writable, unique, entity, baseFriendlyName, friendlyNameParameter, attrVal);
+                writable, unique, entity, baseFriendlyName, friendlyNameParameter, value);
     }
 
     /**

@@ -10,7 +10,7 @@ import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.connectors.PerunConnectorLdap;
 import cz.muni.ics.perunproxyapi.persistence.connectors.properties.LdapProperties;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
-import cz.muni.ics.perunproxyapi.persistence.enums.PerunAttrValueType;
+import cz.muni.ics.perunproxyapi.persistence.enums.AttributeType;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.InconvertibleValueException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.LookupException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
@@ -51,6 +51,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.FACILITY;
+import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue.*;
+import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValueAwareModel.ARRAY_TYPE;
+import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValueAwareModel.BOOLEAN_TYPE;
+import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValueAwareModel.LARGE_ARRAY_LIST_TYPE;
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 import static org.springframework.ldap.query.SearchScope.ONELEVEL;
 import static org.springframework.ldap.query.SearchScope.SUBTREE;
@@ -639,55 +643,54 @@ public class LdapAdapterImpl implements DataAdapter {
                 .toArray(new String[]{});
     }
 
-    private PerunAttributeValue parseValue(DirContextAdapter context , String name,
+    private PerunAttributeValue parseValue(@NonNull DirContextAdapter context, @NonNull String name,
                                            @NonNull AttributeObjectMapping mapping)
     {
-        PerunAttrValueType type = mapping.getAttrType();
+        AttributeType type = mapping.getAttrType();
         boolean isPresent = context.attributeExists(name);
 
-        if (!isPresent && PerunAttrValueType.BOOLEAN.equals(type)) {
-            return new PerunAttributeValue(PerunAttributeValue.BOOLEAN_TYPE, jsonNodeFactory.booleanNode(false));
-        } else if (!isPresent && PerunAttrValueType.ARRAY.equals(type)) {
-            return new PerunAttributeValue(PerunAttributeValue.ARRAY_TYPE, jsonNodeFactory.arrayNode());
-        } else if (!isPresent && PerunAttrValueType.LARGE_ARRAY.equals(type)) {
-            return new PerunAttributeValue(PerunAttributeValue.LARGE_ARRAY_LIST_TYPE, jsonNodeFactory.arrayNode());
-        } else if (!isPresent && PerunAttrValueType.MAP_JSON.equals(type)) {
-            return new PerunAttributeValue(PerunAttributeValue.MAP_TYPE, jsonNodeFactory.objectNode());
-        } else if (!isPresent && PerunAttrValueType.MAP_KEY_VALUE.equals(type)) {
-            return new PerunAttributeValue(PerunAttributeValue.MAP_TYPE, jsonNodeFactory.objectNode());
+        if (!isPresent && AttributeType.BOOLEAN.equals(type)) {
+            return new PerunAttributeValue(mapping.getIdentifier(), BOOLEAN_TYPE, jsonNodeFactory.booleanNode(false));
+        } else if (!isPresent && AttributeType.ARRAY.equals(type)) {
+            return new PerunAttributeValue(mapping.getIdentifier(), ARRAY_TYPE, jsonNodeFactory.arrayNode());
+        } else if (!isPresent && AttributeType.LARGE_ARRAY.equals(type)) {
+            return new PerunAttributeValue(mapping.getIdentifier(), LARGE_ARRAY_LIST_TYPE, jsonNodeFactory.arrayNode());
+        } else if (!isPresent && AttributeType.MAP_JSON.equals(type)) {
+            return new PerunAttributeValue(mapping.getIdentifier(), MAP_TYPE, jsonNodeFactory.objectNode());
+        } else if (!isPresent && AttributeType.MAP_KEY_VALUE.equals(type)) {
+            return new PerunAttributeValue(mapping.getIdentifier(), MAP_TYPE, jsonNodeFactory.objectNode());
         } else if (!isPresent) {
-            return new PerunAttributeValue(type, jsonNodeFactory.nullNode());
+            return new PerunAttributeValue(mapping.getIdentifier(), type, jsonNodeFactory.nullNode());
         }
 
         switch (type) {
             case STRING:
-                return new PerunAttributeValue(PerunAttributeValue.STRING_TYPE,
+                return new PerunAttributeValue(mapping.getIdentifier(), STRING_TYPE,
                         jsonNodeFactory.textNode(context.getStringAttribute(name)));
             case LARGE_STRING:
-                return new PerunAttributeValue(PerunAttributeValue.LARGE_STRING_TYPE,
+                return new PerunAttributeValue(mapping.getIdentifier(), LARGE_STRING_TYPE,
                         jsonNodeFactory.textNode(context.getStringAttribute(name)));
             case INTEGER:
-                return new PerunAttributeValue(PerunAttributeValue.INTEGER_TYPE,
+                return new PerunAttributeValue(mapping.getIdentifier(), INTEGER_TYPE,
                         jsonNodeFactory.numberNode(Long.parseLong(context.getStringAttribute(name))));
             case BOOLEAN:
-                return new PerunAttributeValue(PerunAttributeValue.BOOLEAN_TYPE,
+                return new PerunAttributeValue(mapping.getIdentifier(), BOOLEAN_TYPE,
                         jsonNodeFactory.booleanNode(Boolean.parseBoolean(context.getStringAttribute(name))));
             case ARRAY:
-                return new PerunAttributeValue(PerunAttributeValue.ARRAY_TYPE,
+                return new PerunAttributeValue(mapping.getIdentifier(), ARRAY_TYPE,
                         this.getArrNode(context.getStringAttributes(name)));
             case LARGE_ARRAY:
-                return new PerunAttributeValue(PerunAttributeValue.LARGE_ARRAY_LIST_TYPE,
+                return new PerunAttributeValue(mapping.getIdentifier(), LARGE_ARRAY_LIST_TYPE,
                         this.getArrNode(context.getStringAttributes(name)));
             case MAP_JSON:
-                return new PerunAttributeValue(PerunAttributeValue.MAP_TYPE,
+                return new PerunAttributeValue(mapping.getIdentifier(), MAP_TYPE,
                         this.getMapNodeJson(context.getStringAttribute(name)));
             case MAP_KEY_VALUE:
-                return new PerunAttributeValue(PerunAttributeValue.MAP_TYPE,
+                return new PerunAttributeValue(mapping.getIdentifier(), MAP_TYPE,
                         getMapNodeSeparator(context.getStringAttributes(name), mapping.getSeparator()));
             default:
                 throw new IllegalArgumentException("unrecognized type");
         }
-
     }
 
     private ObjectNode getMapNodeSeparator(@NonNull String[] values, @NonNull String separator) {

@@ -3,7 +3,7 @@ package cz.muni.ics.perunproxyapi.persistence.enums;
 /**
  * Represents type of Value in Attribute from Perun.
  */
-public enum PerunAttrValueType {
+public enum AttributeType {
     STRING,
     LARGE_STRING,
     INTEGER,
@@ -13,7 +13,7 @@ public enum PerunAttrValueType {
     MAP_JSON,
     MAP_KEY_VALUE;
 
-    public static PerunAttrValueType parse(String str){
+    public static AttributeType parse(String str){
         if (str == null) {
             return STRING;
         }

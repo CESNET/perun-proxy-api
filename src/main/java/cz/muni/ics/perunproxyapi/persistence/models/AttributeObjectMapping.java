@@ -1,7 +1,7 @@
 package cz.muni.ics.perunproxyapi.persistence.models;
 
 import cz.muni.ics.perunproxyapi.persistence.AttributeMappingService;
-import cz.muni.ics.perunproxyapi.persistence.enums.PerunAttrValueType;
+import cz.muni.ics.perunproxyapi.persistence.enums.AttributeType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -27,7 +27,7 @@ public class AttributeObjectMapping {
     private String identifier;
     private String rpcName;
     private String ldapName;
-    @EqualsAndHashCode.Exclude private PerunAttrValueType attrType;
+    @EqualsAndHashCode.Exclude private AttributeType attrType;
     private String separator;
 
     public AttributeObjectMapping() {
@@ -35,7 +35,7 @@ public class AttributeObjectMapping {
     }
 
     public AttributeObjectMapping(String identifier, String rpcName, String ldapName,
-                                  PerunAttrValueType attrType, String separator) {
+                                  AttributeType attrType, String separator) {
         this.setIdentifier(identifier);
         this.setRpcName(rpcName);
         this.setLdapName(ldapName);
@@ -68,11 +68,11 @@ public class AttributeObjectMapping {
     }
 
     public void setAttrType(String typeStr) {
-        PerunAttrValueType type = PerunAttrValueType.parse(typeStr);
+        AttributeType type = AttributeType.parse(typeStr);
         this.setAttrType(type);
     }
 
-    public void setAttrType(@NonNull PerunAttrValueType attrType) {
+    public void setAttrType(@NonNull AttributeType attrType) {
         this.attrType = attrType;
     }
 

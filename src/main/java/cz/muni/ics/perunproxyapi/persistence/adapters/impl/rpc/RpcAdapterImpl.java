@@ -513,7 +513,9 @@ public class RpcAdapterImpl implements FullAdapter {
         }
 
         Map<String, PerunAttributeValue> resultMap = new LinkedHashMap<>();
-        attributeMap.forEach((identifier, attr) -> resultMap.put(identifier, attr == null ? null : attr.getValue()));
+        attributeMap.forEach((identifier, attr) -> resultMap.put(identifier, attr == null ?
+                null : attr.toPerunAttributeValue())
+        );
 
         return resultMap;
     }
@@ -522,7 +524,7 @@ public class RpcAdapterImpl implements FullAdapter {
         if (attribute == null ) {
             return null;
         }
-        return attribute.getValue();
+        return attribute.toPerunAttributeValue();
     }
 
     private List<Group> getAssignedGroups(@NonNull Long resourceId)
@@ -546,8 +548,8 @@ public class RpcAdapterImpl implements FullAdapter {
             JsonNode perunResponse = connectorRpc.post(ATTRIBUTES_MANAGER, "getAttribute", params);
             PerunAttribute attribute = RpcMapper.mapAttribute(perunResponse);
 
-            if (attribute != null && attribute.getValue() != null) {
-                String uniqueName = attribute.getValue().valueAsString() + ":" + group.getName();
+            if (attribute != null && attribute.valueAsString() != null) {
+                String uniqueName = attribute.valueAsString() + ":" + group.getName();
                 group.setUniqueGroupName(uniqueName);
             }
         }
