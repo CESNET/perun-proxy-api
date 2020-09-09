@@ -101,9 +101,9 @@ public class LdapAdapterImpl implements DataAdapter {
 
     // REQUIRED_ATTRS
     public static final String[] PERUN_FACILITY_REQUIRED_ATTRIBUTES = new String[] {PERUN_FACILITY_ID, CN};
-    public static final String[] PERUN_GROUP_REQUIRED_ATTRIBUTES = new String[]{PERUN_GROUP_ID, CN,
-            PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, DESCRIPTION};
-    public static final String[] PERUN_USER_REQUIRED_ATTRIBUTES = new String[]{PERUN_USER_ID, SN};
+    public static final String[] PERUN_GROUP_REQUIRED_ATTRIBUTES = new String[] {PERUN_GROUP_ID, CN,
+            PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID};
+    public static final String[] PERUN_USER_REQUIRED_ATTRIBUTES = new String[] {PERUN_USER_ID, SN};
 
     private final JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
     private final AttributeMappingService attributeMappingService;
@@ -154,17 +154,10 @@ public class LdapAdapterImpl implements DataAdapter {
 
     @Override
     public List<Group> getUserGroups(@NonNull Long userId) {
-
         Filter filter = new AndFilter()
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_GROUP))
                 .and(new EqualsFilter(UNIQUE_MEMBER, PERUN_USER_ID + '=' + userId + ",ou=People," + baseDn));
-        LdapQuery query = query()
-                .attributes(PERUN_GROUP_ID, CN, PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, DESCRIPTION, PERUN_PARENT_GROUP_ID)
-                .searchScope(SUBTREE)
-                .filter(filter);
-        ContextMapper<Group> mapper = this.groupMapper();
-
-        return connectorLdap.search(query, mapper);
+        return getGroups(filter);
     }
 
     @Override
@@ -180,7 +173,12 @@ public class LdapAdapterImpl implements DataAdapter {
         }
 
         Set<Long> groupIds = this.getGroupIdsAssignedToFacility(facility.getId());
-        return this.getGroupsByIds(groupIds);
+        List<Group> groups = this.getGroupsByIds(groupIds);
+        if (groups != null) {
+            return groups.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     @Override
@@ -280,10 +278,12 @@ public class LdapAdapterImpl implements DataAdapter {
 
         ContextMapper<Facility> mapper = this.facilityMapper();
 
-        return connectorLdap.search(query, mapper)
-                .stream()
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<Facility> facilities = connectorLdap.search(query, mapper);
+        if (facilities != null) {
+            return facilities.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     @Override
@@ -326,13 +326,7 @@ public class LdapAdapterImpl implements DataAdapter {
                 .and(new EqualsFilter(UNIQUE_MEMBER, PERUN_USER_ID + '=' + userId + ",ou=People," + baseDn))
                 .and(resourceIdsFilter);
 
-        LdapQuery query = query()
-                .attributes(PERUN_GROUP_ID, CN, PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, DESCRIPTION, PERUN_PARENT_GROUP_ID)
-                .searchScope(SUBTREE)
-                .filter(filter);
-
-        ContextMapper<Group> mapper = this.groupMapper();
-        return connectorLdap.search(query, mapper);
+        return getGroups(filter);
     }
 
     @Override
@@ -364,76 +358,6 @@ public class LdapAdapterImpl implements DataAdapter {
         }
 
         return user;
-    }
-
-    private String[] constructUserAttributes(Set<AttributeObjectMapping> attrMappings) {
-        String[] attrs;
-        int i = 0;
-        int additionalAttrsCnt = 3;
-        if (attrMappings == null) {
-            attrs = new String[additionalAttrsCnt];
-        } else {
-            attrs = new String[attrMappings.size() + additionalAttrsCnt];
-            for (AttributeObjectMapping mapping: attrMappings) {
-                attrs[i++] = mapping.getLdapName();
-            }
-        }
-
-        attrs[i++] = PERUN_USER_ID;
-        attrs[i++] = GIVEN_NAME;
-        attrs[i] = SN;
-
-        return attrs;
-    }
-
-    private ContextMapper<User> userMapper(final Set<AttributeObjectMapping> attrMappings) {
-        return ctx -> {
-            DirContextAdapter context = (DirContextAdapter) ctx;
-            if (!checkHasAttributes(context, PERUN_USER_REQUIRED_ATTRIBUTES)) {
-                return null;
-            }
-
-            Map<String, PerunAttributeValue> attributes = new HashMap<>();
-            if (attrMappings != null) {
-                for (AttributeObjectMapping mapping : attrMappings) {
-                    PerunAttributeValue value = this.parseValue(context, mapping.getLdapName(), mapping);
-                    attributes.put(mapping.getIdentifier(), value);
-                }
-            }
-
-            Long userId = Long.parseLong(context.getStringAttribute(PERUN_USER_ID));
-            String firstName = context.attributeExists(GIVEN_NAME) ? context.getStringAttribute(GIVEN_NAME) : "";
-            String lastName = context.getStringAttribute(SN);
-
-            return new User(userId, firstName, lastName, attributes);
-        };
-    }
-
-    private List<Long> getFacilityResourceIds(@NonNull Long facilityId) {
-        Filter filter = new AndFilter()
-                .and(new EqualsFilter(OBJECT_CLASS, PERUN_RESOURCE))
-                .and(new EqualsFilter(PERUN_FACILITY_DN, PERUN_FACILITY_ID + '=' + facilityId + ',' + baseDn));
-
-        LdapQuery query = query()
-                .attributes(PERUN_RESOURCE_ID)
-                .searchScope(SUBTREE)
-                .filter(filter);
-
-        ContextMapper<Long> mapper = ctx -> {
-            DirContextAdapter context = (DirContextAdapter) ctx;
-            if (!this.checkHasAttributes(context, query.attributes())) {
-                return null;
-            }
-
-            return Long.parseLong(context.getStringAttribute(PERUN_RESOURCE_ID));
-        };
-
-        List<Long> ids = connectorLdap.search(query, mapper);
-        if (ids == null) {
-            return new ArrayList<>();
-        } else {
-            return ids.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
-        }
     }
 
     @Override
@@ -505,14 +429,17 @@ public class LdapAdapterImpl implements DataAdapter {
     }
 
     // private methods
+
     private List<Group> getGroupsByUniqueGroupNames(Set<String> groupNames) {
         List<Group> groups = this.getGroups(groupNames, PERUN_UNIQUE_GROUP_NAME);
-        groups = groups.stream().filter(Objects::nonNull).collect(Collectors.toList());
-
-        return groups;
+        if (groups != null) {
+            return groups.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
     }
 
-    private List<Group> getGroups(Collection<?> objects, String objectAttribute) {
+    private List<Group> getGroups(Collection<?> objects, @NonNull String objectAttribute) {
         List<Group> result = new ArrayList<>();
         if (objects == null || objects.size() <= 0) {
             return result;
@@ -530,42 +457,14 @@ public class LdapAdapterImpl implements DataAdapter {
                 filter.and(new EqualsFilter(OBJECT_CLASS, PERUN_GROUP)).and(partial);
             }
 
-            LdapQuery query = query()
-                    .attributes(PERUN_GROUP_ID, CN, DESCRIPTION, PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID,
-                            PERUN_PARENT_GROUP_ID)
-                    .searchScope(SUBTREE)
-                    .filter(filter);
-
-            ContextMapper<Group> mapper = ctx -> {
-                DirContextAdapter context = (DirContextAdapter) ctx;
-                if (!checkHasAttributes(context, Arrays.copyOf(query.attributes(), query.attributes().length - 1))) {
-                    return null;
-                }
-
-                Long id = Long.parseLong(context.getStringAttribute(PERUN_GROUP_ID));
-                String name = context.getStringAttribute(CN);
-                String description = context.getStringAttribute(DESCRIPTION);
-                String uniqueName = context.getStringAttribute(PERUN_UNIQUE_GROUP_NAME);
-                Long voId = Long.parseLong(context.getStringAttribute(PERUN_VO_ID));
-                Long parentGroupId = null;
-                if (context.attributeExists(PERUN_PARENT_GROUP_ID)) {
-                    parentGroupId = Long.parseLong(context.getStringAttribute(PERUN_PARENT_GROUP_ID));
-                }
-
-                return new Group(id, parentGroupId, name, description, uniqueName, voId);
-            };
-
-            result = connectorLdap.search(query, mapper);
-            result = result.stream().filter(Objects::nonNull).collect(Collectors.toList());
+            return this.getGroups(filter);
         }
-
-        return result;
     }
 
-    private Set<String> getCapabilities(Long facilityId,
+    private Set<String> getCapabilities(@NonNull Long facilityId,
                                         String resourceCapabilitiesAttrName,
                                         String facilityCapabilitiesAttrIdentifier,
-                                        OrFilter partialFilter)
+                                        @NonNull OrFilter partialFilter)
     {
         boolean includeFacilityCapabilities = false;
         Filter filter = new AndFilter()
@@ -599,7 +498,8 @@ public class LdapAdapterImpl implements DataAdapter {
         }
 
         if (StringUtils.hasText(facilityCapabilitiesAttrIdentifier) && includeFacilityCapabilities) {
-            Set<String> facilityCapabilities = this.getFacilityCapabilities(facilityId, facilityCapabilitiesAttrIdentifier);
+            Set<String> facilityCapabilities = this.getFacilityCapabilities(facilityId,
+                    facilityCapabilitiesAttrIdentifier);
             capabilities.addAll(facilityCapabilities);
         }
 
@@ -654,18 +554,7 @@ public class LdapAdapterImpl implements DataAdapter {
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_GROUP))
                 .and(groupIdsFilter);
 
-        LdapQuery query = query()
-                .attributes(PERUN_GROUP_ID, CN, DESCRIPTION, PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, PERUN_PARENT_GROUP_ID)
-                .searchScope(SUBTREE)
-                .filter(filter);
-
-
-        ContextMapper<Group> groupMapper = this.groupMapper();
-
-        return connectorLdap.search(query, groupMapper)
-                .stream()
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return this.getGroups(filter);
     }
 
     private Set<Long> getGroupIdsAssignedToFacility(@NonNull Long facilityId) {
@@ -695,7 +584,25 @@ public class LdapAdapterImpl implements DataAdapter {
         };
 
         List<Set<Long>> result = connectorLdap.search(query, mapper);
-        return flatten(result);
+        if (result != null) {
+            return this.flatten(result);
+        } else {
+            return new HashSet<>();
+        }
+    }
+
+    private List<Group> getGroups(@NonNull Filter filter) {
+        LdapQuery query = query()
+                .attributes(PERUN_GROUP_ID, CN, PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, DESCRIPTION, PERUN_PARENT_GROUP_ID)
+                .searchScope(SUBTREE)
+                .filter(filter);
+        ContextMapper<Group> mapper = this.groupMapper();
+        List<Group> groups = connectorLdap.search(query, mapper);
+        if (groups != null) {
+            return groups.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     private boolean checkHasAttributes(DirContextAdapter ctx, String[] attributes) {
@@ -732,7 +639,9 @@ public class LdapAdapterImpl implements DataAdapter {
                 .toArray(new String[]{});
     }
 
-    private PerunAttributeValue parseValue(DirContextAdapter context , String name, @NonNull AttributeObjectMapping mapping) {
+    private PerunAttributeValue parseValue(DirContextAdapter context , String name,
+                                           @NonNull AttributeObjectMapping mapping)
+    {
         PerunAttrValueType type = mapping.getAttrType();
         boolean isPresent = context.attributeExists(name);
 
@@ -820,9 +729,86 @@ public class LdapAdapterImpl implements DataAdapter {
         return connectorLdap.searchForObject(query, mapper);
     }
 
+    private <T> Set<T> flatten(@NonNull List<Set<T>> sets) {
+        Set<T> flatSet = new HashSet<>();
+        sets.forEach(flatSet::addAll);
+        return flatSet;
+    }
+
+    private User getUser(Filter filter) {
+        LdapQuery query = query().base(OU_PEOPLE)
+                .attributes(PERUN_USER_REQUIRED_ATTRIBUTES)
+                .filter(filter);
+
+        ContextMapper<User> mapper = ctx -> {
+            DirContextAdapter context = (DirContextAdapter) ctx;
+
+            if (!checkHasAttributes(context, new String[]{PERUN_USER_ID, SN})) {
+                log.warn("Not all required attributes were found, returning null");
+                return null;
+            }
+
+            Long id = Long.parseLong(context.getStringAttribute(PERUN_USER_ID));
+            String firstName = context.attributeExists(GIVEN_NAME) ? context.getStringAttribute(GIVEN_NAME) : "";
+            String lastName = context.getStringAttribute(SN);
+            return new User(id, firstName, lastName);
+        };
+
+        return connectorLdap.searchForObject(query, mapper);
+    }
+
+    private String[] constructUserAttributes(Set<AttributeObjectMapping> attrMappings) {
+        String[] attrs;
+        int i = 0;
+        int additionalAttrsCnt = 3;
+        if (attrMappings == null || attrMappings.isEmpty()) {
+            attrs = new String[additionalAttrsCnt];
+        } else {
+            attrs = new String[attrMappings.size() + additionalAttrsCnt];
+            for (AttributeObjectMapping mapping: attrMappings) {
+                attrs[i++] = mapping.getLdapName();
+            }
+        }
+
+        attrs[i++] = PERUN_USER_ID;
+        attrs[i++] = GIVEN_NAME;
+        attrs[i] = SN;
+
+        return attrs;
+    }
+
+    private List<Long> getFacilityResourceIds(@NonNull Long facilityId) {
+        Filter filter = new AndFilter()
+                .and(new EqualsFilter(OBJECT_CLASS, PERUN_RESOURCE))
+                .and(new EqualsFilter(PERUN_FACILITY_DN, PERUN_FACILITY_ID + '=' + facilityId + ',' + baseDn));
+
+        LdapQuery query = query()
+                .attributes(PERUN_RESOURCE_ID)
+                .searchScope(SUBTREE)
+                .filter(filter);
+
+        ContextMapper<Long> mapper = ctx -> {
+            DirContextAdapter context = (DirContextAdapter) ctx;
+            if (!this.checkHasAttributes(context, query.attributes())) {
+                return null;
+            }
+
+            return Long.parseLong(context.getStringAttribute(PERUN_RESOURCE_ID));
+        };
+
+        List<Long> ids = connectorLdap.search(query, mapper);
+        if (ids == null) {
+            return new ArrayList<>();
+        } else {
+            return ids.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        }
+    }
+
     // mappers
 
-    private ContextMapper<Map<String, PerunAttributeValue>> attrsValuesMapper(@NonNull Set<AttributeObjectMapping> attrMappings) {
+    private ContextMapper<Map<String, PerunAttributeValue>> attrsValuesMapper(
+            @NonNull Set<AttributeObjectMapping> attrMappings)
+    {
         return ctx -> {
             DirContextAdapter context = (DirContextAdapter) ctx;
             Map<String, PerunAttributeValue> resultMap = new LinkedHashMap<>();
@@ -875,12 +861,18 @@ public class LdapAdapterImpl implements DataAdapter {
 
             Long id = Long.parseLong(context.getStringAttribute(PERUN_GROUP_ID));
             String name = context.getStringAttribute(CN);
-            String description = context.getStringAttribute(DESCRIPTION);
             String uniqueName = context.getStringAttribute(PERUN_UNIQUE_GROUP_NAME);
             Long groupVoId = Long.valueOf(context.getStringAttribute(PERUN_VO_ID));
             Long parentGroupId = null;
-            if (context.getStringAttribute(PERUN_PARENT_GROUP_ID) != null) {
-                parentGroupId = Long.valueOf(context.getStringAttribute(PERUN_PARENT_GROUP_ID));
+            String description = "";
+            if (context.attributeExists(DESCRIPTION)) {
+                description = context.getStringAttribute(DESCRIPTION);
+            }
+            if (context.attributeExists(PERUN_PARENT_GROUP_ID)) {
+                String parentGroupIdStr = context.getStringAttribute(PERUN_PARENT_GROUP_ID);
+                if (StringUtils.hasText(parentGroupIdStr)) {
+                    parentGroupId = Long.valueOf(parentGroupIdStr);
+                }
             }
 
             return new Group(id, parentGroupId, name, description, uniqueName, groupVoId);
@@ -904,33 +896,27 @@ public class LdapAdapterImpl implements DataAdapter {
         };
     }
 
-    private <T> Set<T> flatten(@NonNull List<Set<T>> sets) {
-        Set<T> flatSet = new HashSet<>();
-        sets.forEach(flatSet::addAll);
-        return flatSet;
-    }
-
-    private User getUser(Filter filter) {
-
-        LdapQuery query = query().base("ou=People")
-                .attributes(PERUN_USER_ID, GIVEN_NAME, SN)
-                .filter(filter);
-
-        ContextMapper<User> mapper = ctx -> {
+    private ContextMapper<User> userMapper(@NonNull final Set<AttributeObjectMapping> attrMappings) {
+        return ctx -> {
             DirContextAdapter context = (DirContextAdapter) ctx;
-
-            if (!checkHasAttributes(context, new String[]{PERUN_USER_ID, SN})) {
-                log.warn("Not all required attributes were found, returning null");
+            if (!checkHasAttributes(context, PERUN_USER_REQUIRED_ATTRIBUTES)) {
                 return null;
             }
 
-            Long id = Long.parseLong(context.getStringAttribute(PERUN_USER_ID));
+            Map<String, PerunAttributeValue> attributes = new HashMap<>();
+            if (attrMappings != null) {
+                for (AttributeObjectMapping mapping : attrMappings) {
+                    PerunAttributeValue value = this.parseValue(context, mapping.getLdapName(), mapping);
+                    attributes.put(mapping.getIdentifier(), value);
+                }
+            }
+
+            Long userId = Long.parseLong(context.getStringAttribute(PERUN_USER_ID));
             String firstName = context.attributeExists(GIVEN_NAME) ? context.getStringAttribute(GIVEN_NAME) : "";
             String lastName = context.getStringAttribute(SN);
-            return new User(id, firstName, lastName);
-        };
 
-        return connectorLdap.searchForObject(query, mapper);
+            return new User(userId, firstName, lastName, attributes);
+        };
     }
 
     private Set<AttributeObjectMapping> getAttributeMappings(List<String> attrIdentifiers) {
