@@ -90,7 +90,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
         List<String> fieldsToFetch = (fields != null && !fields.isEmpty()) ? fields : this.getDefaultFields(options);
 
-        User user = proxyUserService.getUserWithAttributesByLogin(adapter, loginAttrIdentifier, login, fieldsToFetch);
+        User user = proxyUserService.getUserWithAttributesByLogin(adapter, login, fieldsToFetch);
 
         return FacadeUtils.mapUserToUserDTO(user);
     }
@@ -114,7 +114,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         String prefix = FacadeUtils.getRequiredStringOption(PREFIX, options);
         String authority = FacadeUtils.getRequiredStringOption(AUTHORITY, options);
 
-        User user = proxyUserService.getUserByLogin(adapter, loginAttrIdentifier, login);
+        User user = proxyUserService.getUserByLogin(adapter, login);
         if (user == null) {
             log.error("No user found for login {}. Cannot look for entitlements, return error.", login);
             throw new IllegalArgumentException("User for given login could not be found");

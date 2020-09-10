@@ -22,7 +22,6 @@ import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.persistence.models.UserExtSource;
 import cz.muni.ics.perunproxyapi.persistence.models.Vo;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,8 +42,17 @@ import java.util.stream.Collectors;
 
 import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.FACILITY;
 import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.RESOURCE;
+import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.USER;
 
-
+/**
+ * Implementation of the adapter via Perun RPC.
+ * RPC supports all the methods, thus we implement the FullAdapter interface.
+ *
+ * NOTICE: When returning the User object, do not forget to set the login. The best way is to use private methods
+ * "returnUser(...)" present in this class.
+ *
+ * @author Dominik Frantisek Bucik <bucik@ics.muni.cz>
+ */
 @Component(value = "rpcAdapter")
 @Slf4j
 public class RpcAdapterImpl implements FullAdapter {
@@ -86,15 +94,26 @@ public class RpcAdapterImpl implements FullAdapter {
     private final PerunConnectorRpc connectorRpc;
     private final AttributeMappingService attributeMappingService;
 
-    @Setter
-    @Value("${attributes.identifiers.relying_party}")
-    private String rpIdentifierAttrIdentifier;
+    @NonNull private final String rpIdentifierAttr;
+    @NonNull private final String additionalIdentifiersAttr;
+    @NonNull private final String loginAttr;
 
     @Autowired
     public RpcAdapterImpl(@NonNull PerunConnectorRpc perunConnectorRpc,
-                          @NonNull AttributeMappingService attributeMappingService) {
+                          @NonNull AttributeMappingService attributeMappingService,
+                          @Value("${attributes.identifiers.relying_party}") String rpIdentifierAttrIdentifier,
+                          @Value("${attributes.identifiers.additional_identifiers}") String additionalIdentifiersAttrIdentifier,
+                          @Value("${attributes.identifiers.login}") String loginAttrIdentifier)
+    {
         this.connectorRpc = perunConnectorRpc;
         this.attributeMappingService = attributeMappingService;
+
+        this.rpIdentifierAttr = AdapterUtils.getRequiredRpcNameFromMapping(
+                this.attributeMappingService.getMappingByIdentifier(rpIdentifierAttrIdentifier));
+        this.additionalIdentifiersAttr = AdapterUtils.getRequiredRpcNameFromMapping(
+                this.attributeMappingService.getMappingByIdentifier(additionalIdentifiersAttrIdentifier));
+        this.loginAttr = AdapterUtils.getRequiredRpcNameFromMapping(
+                this.attributeMappingService.getMappingByIdentifier(loginAttrIdentifier));
     }
 
     @Override
@@ -211,7 +230,7 @@ public class RpcAdapterImpl implements FullAdapter {
             }
         }
 
-        return user;
+        return this.returnUser(user);
     }
 
     @Override
@@ -222,7 +241,7 @@ public class RpcAdapterImpl implements FullAdapter {
         params.put(PARAM_ID, userId);
 
         JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUserById", params);
-        return RpcMapper.mapUser(perunResponse);
+        return this.returnUser(perunResponse);
     }
 
     @Override
@@ -252,29 +271,11 @@ public class RpcAdapterImpl implements FullAdapter {
         return groups;
     }
 
-    private List<Member> getMembersByUser(@NonNull Long userId) throws PerunUnknownException, PerunConnectionException {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put(PARAM_USER, userId);
-
-        JsonNode perunResponse = connectorRpc.post(MEMBERS_MANAGER, "getMembersByUser", params);
-        return RpcMapper.mapMembers(perunResponse);
-    }
-
-    private List<Group> getGroupsWhereMemberIsActive(@NonNull Long memberId)
-            throws PerunUnknownException, PerunConnectionException {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put(PARAM_MEMBER, memberId);
-
-        JsonNode perunResponse = connectorRpc.post(GROUPS_MANAGER, "getGroupsWhereMemberIsActive", params);
-        return RpcMapper.mapGroups(perunResponse);
-    }
-
-
     @Override
     public List<Group> getSpGroups(@NonNull String spIdentifier)
             throws PerunUnknownException, PerunConnectionException
     {
-        List<Facility> facilities = getFacilitiesByAttribute(rpIdentifierAttrIdentifier, spIdentifier);
+        List<Facility> facilities = this.getFacilitiesByAttribute(rpIdentifierAttr, spIdentifier);
         if (facilities == null || facilities.size() == 0) {
             return new ArrayList<>();
         }
@@ -363,15 +364,9 @@ public class RpcAdapterImpl implements FullAdapter {
     public Facility getFacilityByRpIdentifier(@NonNull String rpIdentifier)
             throws PerunUnknownException, PerunConnectionException
     {
-        AttributeObjectMapping mapping = this.getMappingForAttrName(rpIdentifierAttrIdentifier);
-        if (mapping == null || !StringUtils.hasText(mapping.getRpcName())) {
-            log.error("Cannot look for facility, name of the RPC attribute is unknown for identifier {} (mapping:{})",
-                    rpIdentifier, mapping);
-            throw new IllegalArgumentException("Cannot fetch unknown attribute");
-        }
         Map<String, Object> params = new LinkedHashMap<>();
 
-        params.put(PARAM_ATTRIBUTE_NAME, mapping.getRpcName());
+        params.put(PARAM_ATTRIBUTE_NAME, rpIdentifierAttr);
         params.put(PARAM_ATTRIBUTE_VALUE, rpIdentifier);
 
         JsonNode perunResponse = connectorRpc.post(FACILITIES_MANAGER, "getFacilitiesByAttribute", params);
@@ -465,12 +460,11 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public User getUserWithAttributesByLogin(@NonNull String loginAttributeIdentifier,
-                                             @NonNull String login,
-                                             @NonNull List<String> attrsToReturnIdentifiers)
+    public User getUserWithAttributesByLogin(@NonNull String login, @NonNull List<String> attrsToReturnIdentifiers)
             throws PerunUnknownException, PerunConnectionException
     {
-        User user = this.getUserByLogin(loginAttributeIdentifier, login);
+        // this already sets the login, no need to set it again. We can return it straight away.
+        User user = this.getUserByLogin(login);
         if (user != null) {
             Map<String, PerunAttributeValue> userAttributes = this.getAttributesValues(Entity.USER,
                     user.getPerunId(), attrsToReturnIdentifiers);
@@ -583,34 +577,76 @@ public class RpcAdapterImpl implements FullAdapter {
         map.put(PARAM_EXT_LOGIN, extLogin);
 
         JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUserByExtSourceNameAndExtLogin", map);
-        return RpcMapper.mapUser(perunResponse);
+        return this.returnUser(perunResponse);
     }
 
-    private User getUserByLogin(@NonNull String loginAttrIdentifier, @NonNull String login)
-            throws PerunUnknownException, PerunConnectionException
-    {
-        AttributeObjectMapping mapping = this.getMappingForAttrName(loginAttrIdentifier);
-        if (mapping == null || !StringUtils.hasText(mapping.getRpcName())) {
-            log.error("Cannot look for users, name of the RPC attribute is unknown for identifier {} (mapping:{})",
-                    loginAttrIdentifier, mapping);
-            throw new IllegalArgumentException("Cannot fetch unknown attribute");
-        }
-
+    private User getUserByLogin(@NonNull String login) throws PerunUnknownException, PerunConnectionException {
         Map<String, Object> params = new LinkedHashMap<>();
-        params.put(PARAM_ATTRIBUTE_NAME, mapping.getRpcName());
+        params.put(PARAM_ATTRIBUTE_NAME, loginAttr);
         params.put(PARAM_ATTRIBUTE_VALUE, login);
 
         JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUsersByAttributeValue", params);
         List<User> users = RpcMapper.mapUsers(perunResponse);
         if (users.size() < 1) {
-            log.debug("No users with login {} stored in the attr mapping {} found.", login, mapping);
+            log.debug("No users with login {} stored in the attr {} found.", login, loginAttr);
             return null;
         } else if (users.size() > 1) {
-            log.error("More than one user with login {} stored in the attr mapping {} found.", login, mapping);
+            log.error("More than one user with login {} stored in the attr {} found.", login, loginAttr);
             throw new InternalErrorException("Error when looking for user with login " + login);
         }
+        return this.returnUser(users.get(0), login);
+    }
 
-        return users.get(0);
+    private String getLogin(@NonNull User user) throws PerunUnknownException, PerunConnectionException {
+        PerunAttributeValue loginAttrValue = this.getAttributeValue(USER, user.getPerunId(), loginAttr);
+        if (loginAttrValue == null || loginAttrValue.valueAsString() == null) {
+            log.error("Could not fetch login for user {}, login configured to be in attribute {}. Found login value {}",
+                    user, loginAttr, loginAttrValue);
+            throw new IllegalArgumentException("Could not fetch login for user " + user.getPerunId());
+        }
+
+        return loginAttrValue.valueAsString();
+    }
+
+    private User returnUser(User user, String login) {
+        if (user != null) {
+            user.setLogin(login);
+        }
+        return user;
+    }
+
+    private User returnUser(JsonNode json) throws PerunUnknownException, PerunConnectionException {
+        User user = RpcMapper.mapUser(json);
+        if (user != null) {
+            user.setLogin(this.getLogin(user));
+        }
+
+        return user;
+    }
+
+    private User returnUser(User user) throws PerunUnknownException, PerunConnectionException {
+        if (user != null) {
+            user.setLogin(this.getLogin(user));
+        }
+
+        return user;
+    }
+
+    private List<Member> getMembersByUser(@NonNull Long userId) throws PerunUnknownException, PerunConnectionException {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put(PARAM_USER, userId);
+
+        JsonNode perunResponse = connectorRpc.post(MEMBERS_MANAGER, "getMembersByUser", params);
+        return RpcMapper.mapMembers(perunResponse);
+    }
+
+    private List<Group> getGroupsWhereMemberIsActive(@NonNull Long memberId)
+            throws PerunUnknownException, PerunConnectionException {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put(PARAM_MEMBER, memberId);
+
+        JsonNode perunResponse = connectorRpc.post(GROUPS_MANAGER, "getGroupsWhereMemberIsActive", params);
+        return RpcMapper.mapGroups(perunResponse);
     }
 
     private Set<AttributeObjectMapping> getMappingsForAttrNames(@NonNull Collection<String> attrsToFetch) {

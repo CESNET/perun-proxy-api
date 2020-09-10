@@ -48,6 +48,11 @@ public class RpcMapper {
         return new User(id, firstName, lastName, new HashMap<>());
     }
 
+    /**
+     * Maps JsonNode to List of USERS.
+     * @param jsonArray JSON array of users in JSON format from Perun to be mapped.
+     * @return List of users.
+     */
     public static List<User> mapUsers(@NonNull JsonNode jsonArray) {
         if (jsonArray.isNull()) {
             return new ArrayList<>();

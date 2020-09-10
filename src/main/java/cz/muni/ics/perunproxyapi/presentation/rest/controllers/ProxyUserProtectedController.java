@@ -127,7 +127,7 @@ public class ProxyUserProtectedController {
      */
     @ResponseBody
     @GetMapping(value = "/findByPerunUserId", produces = APPLICATION_JSON_VALUE)
-    public UserDTO findByPerunUserId(@NonNull @RequestParam(value = PARAM_USER_ID) long userId)
+    public UserDTO findByPerunUserId(@NonNull @RequestParam(value = PARAM_USER_ID) Long userId)
             throws PerunUnknownException, PerunConnectionException
     {
         return facade.findByPerunUserId(userId);

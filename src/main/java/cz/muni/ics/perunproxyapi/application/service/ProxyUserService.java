@@ -91,7 +91,6 @@ public interface ProxyUserService {
     /**
      * Get user with attributes by login.
      * @param preferredAdapter Adapter for connection to be used.
-     * @param loginAttrIdentifier Identifier of the attribute containing user login entitlements.
      * @param login Actual login of the user.
      * @param attrIdentifiers Identifiers of the attributes to be fetched for user.
      * @return User with requested attributes or null.
@@ -99,7 +98,6 @@ public interface ProxyUserService {
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
     User getUserWithAttributesByLogin(@NonNull DataAdapter preferredAdapter,
-                                      @NonNull String loginAttrIdentifier,
                                       @NonNull String login,
                                       List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException;
@@ -107,14 +105,13 @@ public interface ProxyUserService {
     /**
      * Get user by login.
      * @param preferredAdapter Adapter for connection to be used.
-     * @param loginAttrIdentifier Identifier of the attribute containing user login entitlements.
      * @param login Actual login of the user.
      * @return User with requested attributes or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User getUserByLogin(@NonNull DataAdapter preferredAdapter, @NonNull String loginAttrIdentifier,
-                        @NonNull String login) throws PerunUnknownException, PerunConnectionException;
+    User getUserByLogin(@NonNull DataAdapter preferredAdapter, @NonNull String login)
+            throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Find user by given source IdP entityId and additional source identifiers.

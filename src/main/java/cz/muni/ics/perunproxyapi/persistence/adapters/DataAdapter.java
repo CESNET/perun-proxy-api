@@ -170,15 +170,13 @@ public interface DataAdapter {
 
     /**
      * Get user with attributes by given attribute name, login value and required user's attributes.
-     * @param loginAttributeIdentifier Identifier of the attribute containing the login.
      * @param login Actual login of user.
      * @param attrIdentifiers List of attribute identifiers that should be fetched as well.
      * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User getUserWithAttributesByLogin(@NonNull String loginAttributeIdentifier,
-                                      @NonNull String login,
+    User getUserWithAttributesByLogin(@NonNull String login,
                                       @NonNull List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException;
 

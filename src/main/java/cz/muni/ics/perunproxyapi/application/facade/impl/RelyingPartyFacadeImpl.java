@@ -67,7 +67,7 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
         String resourceCapabilitiesAttrIdentifier = FacadeUtils.getStringOption(RESOURCE_CAPABILITIES, options);
         String facilityCapabilitiesAttrIdentifier = FacadeUtils.getStringOption(FACILITY_CAPABILITIES, options);
 
-        User user = proxyUserService.getUserByLogin(adapter, loginAttrIdentifier, login);
+        User user = proxyUserService.getUserByLogin(adapter, login);
         if (user == null) {
             log.error("No user found for login {}. Cannot look for entitlements, return error.", login);
             throw new IllegalArgumentException("User for given login could not be found");

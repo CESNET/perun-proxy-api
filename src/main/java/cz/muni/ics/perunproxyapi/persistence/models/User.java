@@ -24,19 +24,23 @@ public class User {
     @NonNull private Long perunId;
     @NonNull private String firstName;
     @NonNull private String lastName;
-    private String login;
+    @NonNull private String login;
     private Map<String, PerunAttributeValue> attributes = new HashMap<>();
-
-    public User(Long perunId, String firstName, String lastName) {
-        this.setPerunId(perunId);
-        this.setFirstName(firstName);
-        this.setLastName(lastName);
-    }
 
     public User(Long perunId, String firstName, String lastName, Map<String, PerunAttributeValue> attributes) {
         this.setPerunId(perunId);
         this.setFirstName(firstName);
         this.setLastName(lastName);
+        this.attributes.putAll(attributes);
+    }
+
+    public User(Long perunId, String firstName, String lastName, String login,
+                Map<String, PerunAttributeValue> attributes)
+    {
+        this.setPerunId(perunId);
+        this.setFirstName(firstName);
+        this.setLastName(lastName);
+        this.setLogin(login);
         this.attributes.putAll(attributes);
     }
 
@@ -51,6 +55,14 @@ public class User {
         }
 
         this.lastName = lastName;
+    }
+
+    public void setLogin(String login) {
+        if (login.trim().isEmpty()) {
+            throw new IllegalArgumentException("Login can't be null nor empty");
+        }
+
+        this.login = login;
     }
 
 }
