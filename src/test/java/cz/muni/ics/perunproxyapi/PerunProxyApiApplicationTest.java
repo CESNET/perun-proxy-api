@@ -21,6 +21,7 @@ public class PerunProxyApiApplicationTest {
     @Test
     public void testMappingConfig() {
         int loadedAttrs = ams.getAttributeMap().size();
-        assertEquals(2, loadedAttrs, "Should load 2 AttributeObjectMapping objects");
+        assertEquals(3, loadedAttrs, "Should load 3 AttributeObjectMapping objects");
     }
+
 }

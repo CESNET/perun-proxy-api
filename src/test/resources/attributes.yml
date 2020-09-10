@@ -1,10 +1,14 @@
 ---
 
-- identifier: rpcName1
-  rpcName: rpcName1
-  ldapName: ldapName1
-  attrType: type1
-- identifier: rpcName2
-  rpcName: rpcName2
-  ldapName: ldapName2
-  attrType: type2
+- identifier: "urn:perun:facility:attribute-def:def:rp_identifier"
+  rpcName: "urn:perun:facility:attribute-def:def:rp_identifier"
+  ldapName: "rp_identifier"
+  attrType: STRING
+- identifier: "urn:perun:user:attribute-def:def:login-namespace:example"
+  rpcName: "urn:perun:user:attribute-def:def:login-namespace:example"
+  ldapName: "login;x-ns-example"
+  attrType: STRING
+- identifier: "urn:perun:user:attribute-def:def:additional-identifiers:example"
+  rpcName: "urn:perun:user:attribute-def:def:additional-identifiers:example"
+  ldapName: "additional_identifiers"
+  attrType: ARRAY
