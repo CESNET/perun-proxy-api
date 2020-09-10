@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class User {
         this.setPerunId(perunId);
         this.setFirstName(firstName);
         this.setLastName(lastName);
-        this.attributes.putAll(attributes);
+        this.setAttributes(attributes);
     }
 
     public User(Long perunId, String firstName, String lastName, String login,
@@ -42,21 +43,21 @@ public class User {
         this.setLogin(login);
     }
 
-    public void setAttributes(Map<String, PerunAttributeValue> attributes) {
+    public void setAttributes(@NonNull Map<String, PerunAttributeValue> attributes) {
         this.attributes.clear();
         this.attributes.putAll(attributes);
     }
 
-    public void setLastName(String lastName) {
-        if (lastName.trim().isEmpty()) {
+    public void setLastName(@NonNull String lastName) {
+        if (!StringUtils.hasText(lastName)) {
             throw new IllegalArgumentException("name can't be null or empty");
         }
 
         this.lastName = lastName;
     }
 
-    public void setLogin(String login) {
-        if (login.trim().isEmpty()) {
+    public void setLogin(@NonNull String login) {
+        if (!StringUtils.hasText(login)) {
             throw new IllegalArgumentException("Login can't be null nor empty");
         }
 

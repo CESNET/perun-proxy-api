@@ -29,7 +29,7 @@ public class ExtSource {
         this.setType(type);
     }
 
-    public void setName(String name) {
+    public void setName(@NonNull String name) {
         if (name.trim().isEmpty()) {
             throw new IllegalArgumentException("name cannot be empty");
         }
@@ -37,7 +37,7 @@ public class ExtSource {
         this.name = name;
     }
 
-    public void setType(String type) {
+    public void setType(@NonNull String type) {
         if (type.trim().isEmpty()) {
             throw new IllegalArgumentException("type cannot be empty");
         }

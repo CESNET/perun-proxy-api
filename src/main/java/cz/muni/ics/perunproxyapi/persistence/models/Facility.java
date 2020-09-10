@@ -24,13 +24,13 @@ public class Facility {
     @NonNull private String description = "";
     @NonNull private String rpIdentifier;
 
-    public Facility(@NonNull Long id, @NonNull String name, @NonNull String description) {
+    public Facility(Long id, String name, String description) {
         this.setId(id);
         this.setName(name);
         this.setDescription(description);
     }
 
-    public Facility(@NonNull Long id, @NonNull String name, @NonNull String description, @NonNull String rpIdentifier) {
+    public Facility(Long id, String name, String description, String rpIdentifier) {
         this(id, name, description);
         this.setRpIdentifier(rpIdentifier);
     }

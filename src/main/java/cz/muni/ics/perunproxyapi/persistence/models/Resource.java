@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
 /**
  * Resource object model.
@@ -38,8 +39,8 @@ public class Resource {
         this.setVo(vo);
     }
 
-    public void setName(String name) {
-        if (name.trim().isEmpty()) {
+    public void setName(@NonNull String name) {
+        if (!StringUtils.hasText(name)) {
             throw new IllegalArgumentException("name cannot be empty");
         }
 

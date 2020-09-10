@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
 /**
  * Perun Attribute model
@@ -54,48 +55,48 @@ public class PerunAttribute extends PerunAttributeValueAwareModel {
         this.setValue(type, value);
     }
 
-    public void setFriendlyName(String friendlyName) {
-        if (friendlyName.trim().isEmpty()) {
+    public void setFriendlyName(@NonNull String friendlyName) {
+        if (!StringUtils.hasText(friendlyName)) {
             throw new IllegalArgumentException("friendlyName cannot be empty");
         }
 
         this.friendlyName = friendlyName;
     }
 
-    public void setNamespace(String namespace) {
-        if (namespace.trim().isEmpty()) {
+    public void setNamespace(@NonNull String namespace) {
+        if (!StringUtils.hasText(namespace)) {
             throw new IllegalArgumentException("namespace cannot be empty");
         }
 
         this.namespace = namespace;
     }
 
-    public void setType(String type) {
-        if (type.trim().isEmpty()) {
+    public void setType(@NonNull String type) {
+        if (!StringUtils.hasText(type)) {
             throw new IllegalArgumentException("type cannot be empty");
         }
 
         this.type = type;
     }
 
-    public void setDisplayName(String displayName) {
-        if (displayName.trim().isEmpty()) {
+    public void setDisplayName(@NonNull String displayName) {
+        if (!StringUtils.hasText(displayName)) {
             throw new IllegalArgumentException("displayName cannot be empty");
         }
 
         this.displayName = displayName;
     }
 
-    public void setEntity(String entity) {
-        if (entity.trim().isEmpty()) {
+    public void setEntity(@NonNull String entity) {
+        if (!StringUtils.hasText(entity)) {
             throw new IllegalArgumentException("entity cannot be empty");
         }
 
         this.entity = entity;
     }
 
-    public void setBaseFriendlyName(String baseFriendlyName) {
-        if (baseFriendlyName.trim().isEmpty()) {
+    public void setBaseFriendlyName(@NonNull String baseFriendlyName) {
+        if (!StringUtils.hasText(baseFriendlyName)) {
             throw new IllegalArgumentException("baseFriendlyName can't be null or empty");
         }
 

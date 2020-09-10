@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 
@@ -36,8 +37,8 @@ public class UserExtSource {
         this.setLastAccess(lastAccess);
     }
 
-    public void setLogin(String login) {
-        if (login.trim().isEmpty()) {
+    public void setLogin(@NonNull String login) {
+        if (!StringUtils.hasText(login)) {
             throw new IllegalArgumentException("login cannot be empty");
         }
 

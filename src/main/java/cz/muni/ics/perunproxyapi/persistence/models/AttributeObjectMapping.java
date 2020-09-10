@@ -24,8 +24,8 @@ public class AttributeObjectMapping {
 
     public static final String DEFAULT_SEPARATOR = ",";
 
-    private String identifier;
-    private String rpcName;
+    @NonNull private String identifier;
+    @NonNull private String rpcName;
     private String ldapName;
     @EqualsAndHashCode.Exclude private AttributeType attrType;
     private String separator;

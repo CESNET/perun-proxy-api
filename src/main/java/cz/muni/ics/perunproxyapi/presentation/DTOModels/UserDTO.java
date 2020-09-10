@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -21,11 +23,24 @@ import java.util.Map;
 public class UserDTO {
 
     @NonNull private String login;
-    @NonNull private Map<String, JsonNode> attributes;
+    private Map<String, JsonNode> attributes = new HashMap<>();
 
     public UserDTO(String login, Map<String, JsonNode> attributes) {
+        this.setLogin(login);
+        this.setAttributes(attributes);
+    }
+
+    public void setLogin(@NonNull String login) {
+        if (!StringUtils.hasText(login)) {
+            throw new IllegalArgumentException("Login cannot be empty nor NULL");
+        }
+
         this.login = login;
-        this.attributes = attributes;
+    }
+
+    public void setAttributes(@NonNull Map<String, JsonNode> attributes) {
+        this.attributes.clear();
+        this.attributes.putAll(attributes);
     }
 
 }

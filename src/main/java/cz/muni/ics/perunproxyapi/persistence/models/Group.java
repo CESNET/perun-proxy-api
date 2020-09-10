@@ -1,11 +1,11 @@
 package cz.muni.ics.perunproxyapi.persistence.models;
 
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
 /**
  * Group object model.
@@ -35,8 +35,8 @@ public class Group {
         this.setVoId(voId);
     }
 
-    public void setName(String name) {
-        if (name.trim().isEmpty()) {
+    public void setName(@NonNull String name) {
+        if (!StringUtils.hasText(name)) {
             throw new IllegalArgumentException("name cannot be empty");
         }
         this.name = name;
