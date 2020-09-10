@@ -48,8 +48,11 @@ import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.USER;
  * Implementation of the adapter via Perun RPC.
  * RPC supports all the methods, thus we implement the FullAdapter interface.
  *
- * NOTICE: When returning the User object, do not forget to set the login. The best way is to use private methods
+ * NOTE: When returning the User object, do not forget to set the login. The best way is to use private methods
  * "returnUser(...)" present in this class.
+ *
+ * NOTE: When returning the Facility object, do not forget to set the rpIdentifier. The best way is to use private
+ * methods "returnFacility(...)" or "returnFacilityList(...)" present in this class.
  *
  * @author Dominik Frantisek Bucik <bucik@ics.muni.cz>
  */
@@ -357,7 +360,8 @@ public class RpcAdapterImpl implements FullAdapter {
         params.put(PARAM_ATTRIBUTE_VALUE, attrValue);
 
         JsonNode perunResponse = connectorRpc.post(FACILITIES_MANAGER, "getFacilitiesByAttribute", params);
-        return RpcMapper.mapFacilities(perunResponse);
+        List<Facility> foundFacilities = RpcMapper.mapFacilities(perunResponse);
+        return this.returnFacilityList(foundFacilities);
     }
 
     @Override
@@ -378,7 +382,7 @@ public class RpcAdapterImpl implements FullAdapter {
             return  null;
         }
 
-        return foundFacilities.get(0);
+        return this.returnFacility(foundFacilities.get(0), rpIdentifier);
     }
 
     @Override
@@ -647,6 +651,32 @@ public class RpcAdapterImpl implements FullAdapter {
 
         JsonNode perunResponse = connectorRpc.post(GROUPS_MANAGER, "getGroupsWhereMemberIsActive", params);
         return RpcMapper.mapGroups(perunResponse);
+    }
+
+    private Facility returnFacility(Facility facility, String rpIdentifier) {
+        if (facility != null) {
+            facility.setRpIdentifier(rpIdentifier);
+        }
+
+        return facility;
+    }
+
+    private List<Facility> returnFacilityList(List<Facility> facilities)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        if (facilities != null) {
+            for (Facility facility: facilities) {
+                if (facility != null) {
+                    PerunAttributeValue rpIdentifierAttrVal = this.getAttributeValue(FACILITY,
+                            facility.getId(), rpIdentifierAttr);
+                    if (rpIdentifierAttrVal != null && rpIdentifierAttrVal.valueAsString() != null) {
+                        facility.setRpIdentifier(rpIdentifierAttrVal.valueAsString());
+                    }
+                }
+            }
+        }
+
+        return facilities;
     }
 
     private Set<AttributeObjectMapping> getMappingsForAttrNames(@NonNull Collection<String> attrsToFetch) {

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
 /**
  * Facility object model.
@@ -20,20 +21,34 @@ public class Facility {
 
     @NonNull private Long id;
     @NonNull private String name;
-    @NonNull private String description;
+    @NonNull private String description = "";
+    @NonNull private String rpIdentifier;
 
-    public Facility(Long id, String name, String description) {
+    public Facility(@NonNull Long id, @NonNull String name, @NonNull String description) {
         this.setId(id);
         this.setName(name);
         this.setDescription(description);
     }
 
-    public void setName(String name) {
-        if (name.trim().isEmpty()) {
+    public Facility(@NonNull Long id, @NonNull String name, @NonNull String description, @NonNull String rpIdentifier) {
+        this(id, name, description);
+        this.setRpIdentifier(rpIdentifier);
+    }
+
+    public void setName(@NonNull String name) {
+        if (!StringUtils.hasText(name)) {
             throw new IllegalArgumentException("name cannot be empty");
         }
 
         this.name = name;
+    }
+
+    public void setRpIdentifier(@NonNull String rpIdentifier) {
+        if (!StringUtils.hasText(rpIdentifier)) {
+            throw new IllegalArgumentException("rpIdentifier cannot be empty");
+        }
+
+        this.name = rpIdentifier;
     }
 
 }

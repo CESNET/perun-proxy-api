@@ -37,11 +37,9 @@ public class User {
     public User(Long perunId, String firstName, String lastName, String login,
                 Map<String, PerunAttributeValue> attributes)
     {
+        this(perunId, firstName, lastName, attributes);
         this.setPerunId(perunId);
-        this.setFirstName(firstName);
-        this.setLastName(lastName);
         this.setLogin(login);
-        this.attributes.putAll(attributes);
     }
 
     public void setAttributes(Map<String, PerunAttributeValue> attributes) {

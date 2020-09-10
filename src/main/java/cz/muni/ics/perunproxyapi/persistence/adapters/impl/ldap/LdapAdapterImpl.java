@@ -103,17 +103,17 @@ public class LdapAdapterImpl implements DataAdapter {
     public static final String ENTITY_ID = "entityID";
 
     // REQUIRED_ATTRS
-    public static final String[] PERUN_FACILITY_REQUIRED_ATTRIBUTES = new String[] { PERUN_FACILITY_ID, CN };
-    public static final String[] PERUN_GROUP_REQUIRED_ATTRIBUTES = new String[]{ PERUN_GROUP_ID, CN,
-            PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, DESCRIPTION };
-    private static final String[] PERUN_VO_REQUIRED_ATTRIBUTES = new String[] { PERUN_VO_ID, O, DESCRIPTION };
+    private final String[] PERUN_GROUP_REQUIRED_ATTRIBUTES = new String[]{ PERUN_GROUP_ID, CN, PERUN_UNIQUE_GROUP_NAME,
+            PERUN_VO_ID, DESCRIPTION };
+    private final String[] PERUN_VO_REQUIRED_ATTRIBUTES = new String[] { PERUN_VO_ID, O, DESCRIPTION };
+    private final String[] PERUN_FACILITY_REQUIRED_ATTRIBUTES;
     private final String[] PERUN_USER_REQUIRED_ATTRIBUTES;
 
     // BEAN_ATTRS
-    public static final String[] PERUN_FACILITY_BEAN_ATTRIBUTES = new String[] { PERUN_FACILITY_ID, CN, DESCRIPTION };
-    public static final String[] PERUN_GROUP_BEAN_ATTRIBUTES = new String[]{ PERUN_GROUP_ID, CN,
-            PERUN_UNIQUE_GROUP_NAME, PERUN_VO_ID, DESCRIPTION, PERUN_PARENT_GROUP_ID};
-    private static final String[] PERUN_VO_BEAN_ATTRIBUTES = new String[] { PERUN_VO_ID, O, DESCRIPTION };
+    private final String[] PERUN_GROUP_BEAN_ATTRIBUTES = new String[]{ PERUN_GROUP_ID, CN, PERUN_UNIQUE_GROUP_NAME,
+            PERUN_VO_ID, DESCRIPTION, PERUN_PARENT_GROUP_ID};
+    private final String[] PERUN_VO_BEAN_ATTRIBUTES = new String[] { PERUN_VO_ID, O, DESCRIPTION };
+    private final String[] PERUN_FACILITY_BEAN_ATTRIBUTES;
     private final String[] PERUN_USER_BEAN_ATTRIBUTES;
 
     @NonNull private final JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
@@ -144,8 +144,10 @@ public class LdapAdapterImpl implements DataAdapter {
         this.loginAttr = AdapterUtils.getRequiredLdapNameFromMapping(
                 this.attributeMappingService.getMappingByIdentifier(loginAttrIdentifier));
 
-        this.PERUN_USER_REQUIRED_ATTRIBUTES = new String[] { PERUN_USER_ID, SN, loginAttr};
-        this.PERUN_USER_BEAN_ATTRIBUTES = new String[] { PERUN_USER_ID, GIVEN_NAME, SN, loginAttr};
+        this.PERUN_USER_REQUIRED_ATTRIBUTES = new String[] { PERUN_USER_ID, SN, loginAttr };
+        this.PERUN_USER_BEAN_ATTRIBUTES = new String[] { PERUN_USER_ID, GIVEN_NAME, SN, loginAttr };
+        this.PERUN_FACILITY_BEAN_ATTRIBUTES = new String[] { PERUN_FACILITY_ID, CN, DESCRIPTION, rpIdentifierAttr };
+        this.PERUN_FACILITY_REQUIRED_ATTRIBUTES = new String[] { PERUN_FACILITY_ID, CN, rpIdentifierAttr };
     }
 
     @Override
@@ -874,7 +876,8 @@ public class LdapAdapterImpl implements DataAdapter {
             if (context.attributeExists(DESCRIPTION)) {
                 description = context.getStringAttribute(DESCRIPTION);
             }
-            return new Facility(id, facilityName, description);
+            String rpIdentifier = context.getStringAttribute(rpIdentifierAttr);
+            return new Facility(id, facilityName, description, rpIdentifier);
         };
     }
 
