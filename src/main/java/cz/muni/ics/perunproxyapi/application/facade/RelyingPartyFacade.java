@@ -1,5 +1,6 @@
 package cz.muni.ics.perunproxyapi.application.facade;
 
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import lombok.NonNull;
@@ -23,8 +24,9 @@ public interface RelyingPartyFacade {
      * @return List of AARC formatted entitlements (filled or empty).
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
      */
     List<String> getEntitlements(@NonNull String rpIdentifier, @NonNull String login)
-            throws PerunUnknownException, PerunConnectionException;
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
 }

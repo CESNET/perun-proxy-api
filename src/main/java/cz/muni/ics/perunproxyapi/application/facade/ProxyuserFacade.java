@@ -1,5 +1,6 @@
 package cz.muni.ics.perunproxyapi.application.facade;
 
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
@@ -24,8 +25,10 @@ public interface ProxyuserFacade {
      * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    UserDTO findByExtLogins(String idpIdentifier, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException;
+    UserDTO findByExtLogins(String idpIdentifier, List<String> userIdentifiers)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
     /**
      * Find user by given source IdP entityId and additional source identifiers.
@@ -33,8 +36,10 @@ public interface ProxyuserFacade {
      * @param idpIdentifier Identifier of source Identity Provider.
      * @param identifiers List of strings containing identifiers of a user.
      * @return User or null.
+     * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    UserDTO findByIdentifiers(@NonNull String idpIdentifier, @NonNull List<String> identifiers);
+    UserDTO findByIdentifiers(@NonNull String idpIdentifier, @NonNull List<String> identifiers)
+            throws EntityNotFoundException;
 
     /**
      * Get user with fields by his/her login.
@@ -44,9 +49,10 @@ public interface ProxyuserFacade {
      * @return User with attributes or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
      */
     UserDTO getUserByLogin(@NonNull String login, List<String> fields)
-            throws PerunUnknownException, PerunConnectionException;
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
     /**
      * Find user by id.
@@ -54,8 +60,10 @@ public interface ProxyuserFacade {
      * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    UserDTO findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException;
+    UserDTO findByPerunUserId(Long userId)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
     /**
      * Get entitlements for user.
@@ -64,6 +72,9 @@ public interface ProxyuserFacade {
      * @return List of AARC formatted entitlements (filled or empty).
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    List<String> getAllEntitlements(@NonNull String login) throws PerunUnknownException, PerunConnectionException;
+    List<String> getAllEntitlements(@NonNull String login)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
+
 }

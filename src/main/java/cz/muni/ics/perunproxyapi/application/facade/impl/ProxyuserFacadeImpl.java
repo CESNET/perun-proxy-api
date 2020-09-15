@@ -7,6 +7,7 @@ import cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfigur
 import cz.muni.ics.perunproxyapi.application.service.ProxyUserService;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
@@ -14,7 +15,6 @@ import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -41,86 +41,95 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     private final Map<String, JsonNode> methodConfigurations;
     private final AdaptersContainer adaptersContainer;
     private final ProxyUserService proxyUserService;
-    private final String loginAttrIdentifier;
 
     @Autowired
     public ProxyuserFacadeImpl(@NonNull ProxyUserService proxyUserService,
                                @NonNull AdaptersContainer adaptersContainer,
-                               @NonNull FacadeConfiguration facadeConfiguration,
-                               @Value("${attributes.identifiers.login}") String loginAttrIdentifier)
+                               @NonNull FacadeConfiguration facadeConfiguration)
     {
         this.proxyUserService = proxyUserService;
         this.adaptersContainer = adaptersContainer;
         this.methodConfigurations = facadeConfiguration.getProxyUserAdapterMethodConfigurations();
-        this.loginAttrIdentifier = loginAttrIdentifier;
     }
 
     @Override
     public UserDTO findByExtLogins(String idpIdentifier, List<String> userIdentifiers)
-            throws PerunUnknownException, PerunConnectionException
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
     {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_EXT_LOGINS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
-        log.debug("Calling proxyUserService.findByExtLogins on adapter {}", adapter.getClass());
-
         User user = proxyUserService.findByExtLogins(adapter, idpIdentifier, userIdentifiers);
+        if (user == null) {
+            throw new EntityNotFoundException("No user has been found for given identifiers");
+        }
+
         return FacadeUtils.mapUserToUserDTO(user);
     }
 
     @Override
-    public UserDTO findByIdentifiers(@NonNull String idpIdentifier, @NonNull List<String> identifiers) {
+    public UserDTO findByIdentifiers(@NonNull String idpIdentifier, @NonNull List<String> identifiers)
+            throws EntityNotFoundException
+    {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_IDENTIFIERS, methodConfigurations);
-
         //TODO: currently works only with LDAP
         //DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
         DataAdapter adapter = adaptersContainer.getLdapAdapter();
-        log.debug("Calling proxyUserService.findByIdentifiers on adapter {}", adapter.getClass());
 
         List<String> fieldsToFetch = this.getDefaultFields(options);
         User user = proxyUserService.findByIdentifiers(adapter, idpIdentifier, identifiers, fieldsToFetch);
+        if (user == null) {
+            throw new EntityNotFoundException("No user has been found for given identifiers");
+        }
         return FacadeUtils.mapUserToUserDTO(user);
     }
 
     @Override
     public UserDTO getUserByLogin(@NonNull String login, List<String> fields)
-            throws PerunUnknownException, PerunConnectionException
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
     {
         JsonNode options = FacadeUtils.getOptions(GET_USER_BY_LOGIN, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
         List<String> fieldsToFetch = (fields != null && !fields.isEmpty()) ? fields : this.getDefaultFields(options);
 
         User user = proxyUserService.getUserWithAttributesByLogin(adapter, login, fieldsToFetch);
+        if (user == null) {
+            throw new EntityNotFoundException("No user has been found for given login");
+        }
 
         return FacadeUtils.mapUserToUserDTO(user);
     }
 
     @Override
-    public UserDTO findByPerunUserId(Long userId) throws PerunUnknownException, PerunConnectionException {
+    public UserDTO findByPerunUserId(Long userId)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_PERUN_USER_ID, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
-        log.debug("Calling proxyUserService.findByPerunUserId on adapter {}", adapter.getClass());
-
         User user = proxyUserService.findByPerunUserId(adapter, userId);
+        if (user == null) {
+            throw new EntityNotFoundException("No user has been found for given user ID");
+        }
+
         return FacadeUtils.mapUserToUserDTO(user);
     }
 
     @Override
-    public List<String> getAllEntitlements(String login) throws PerunUnknownException, PerunConnectionException {
+    public List<String> getAllEntitlements(String login)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    {
         JsonNode options = FacadeUtils.getOptions(GET_ALL_ENTITLEMENTS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
         String prefix = FacadeUtils.getRequiredStringOption(PREFIX, options);
         String authority = FacadeUtils.getRequiredStringOption(AUTHORITY, options);
+        String forwardedEntitlementsAttrIdentifier = FacadeUtils.getStringOption(FORWARDED_ENTITLEMENTS, options);
 
         User user = proxyUserService.getUserByLogin(adapter, login);
         if (user == null) {
-            log.error("No user found for login {}. Cannot look for entitlements, return error.", login);
-            throw new IllegalArgumentException("User for given login could not be found");
+            throw new EntityNotFoundException("User for given login could not be found");
         }
-
-        String forwardedEntitlementsAttrIdentifier = FacadeUtils.getStringOption(FORWARDED_ENTITLEMENTS, options);
 
         List<String> entitlements = proxyUserService.getAllEntitlements(adapter, user.getPerunId(), prefix, authority,
                 forwardedEntitlementsAttrIdentifier);

@@ -128,7 +128,7 @@ public class PerunConnectorRpc {
         } catch (HttpClientErrorException ex) {
             return handleHttpClientErrorException(ex, actionUrl);
         } catch (Exception e) {
-            throw new PerunConnectionException(e);
+            throw new PerunConnectionException("Error when contacting Perun RPC", e);
         }
     }
 
@@ -159,12 +159,12 @@ public class PerunConnectorRpc {
                 }
             } catch (IOException e) {
                 log.error("cannot parse error message from JSON", e);
-                throw new PerunUnknownException(ex);
+                throw new PerunUnknownException("Error when contacting Perun RPC", ex);
             }
         }
 
         log.error("HTTP ERROR {} URL {} Content-Type: {}", ex.getRawStatusCode(), actionUrl, contentType, ex);
-        throw new PerunUnknownException(ex);
+        throw new PerunUnknownException("Error when contacting Perun RPC", ex);
     }
 
 }

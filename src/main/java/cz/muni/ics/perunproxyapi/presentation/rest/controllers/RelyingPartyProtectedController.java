@@ -1,6 +1,7 @@
 package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
 import cz.muni.ics.perunproxyapi.application.facade.RelyingPartyFacade;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import lombok.NonNull;
@@ -30,6 +31,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class RelyingPartyProtectedController {
 
+    public static final String RP_IDENTIFIER = "rp-identifier";
+    public static final String LOGIN = "login";
+
     private final RelyingPartyFacade facade;
 
     @Autowired
@@ -52,12 +56,14 @@ public class RelyingPartyProtectedController {
      * @return List of entitlements (filled or empty).
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
      */
     @ResponseBody
     @GetMapping(value = "/{rp-identifier}/proxy-user/{login}/entitlements", produces = APPLICATION_JSON_VALUE)
-    public List<String> getEntitlements(@NonNull @PathVariable("rp-identifier") String rpIdentifier,
-                                        @NonNull @PathVariable("login") String login)
-            throws PerunUnknownException, PerunConnectionException {
+    public List<String> getEntitlements(@NonNull @PathVariable(RP_IDENTIFIER) String rpIdentifier,
+                                        @NonNull @PathVariable(LOGIN) String login)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    {
         return facade.getEntitlements(rpIdentifier, login);
     }
 

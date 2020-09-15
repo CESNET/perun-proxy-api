@@ -8,6 +8,7 @@ import cz.muni.ics.perunproxyapi.application.service.ProxyUserService;
 import cz.muni.ics.perunproxyapi.application.service.RelyingPartyService;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
@@ -55,7 +56,7 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
 
     @Override
     public List<String> getEntitlements(@NonNull String rpIdentifier, @NonNull String login)
-            throws PerunUnknownException, PerunConnectionException
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
     {
         JsonNode options = FacadeUtils.getOptions(GET_ENTITLEMENTS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
@@ -69,15 +70,12 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
 
         User user = proxyUserService.getUserByLogin(adapter, login);
         if (user == null) {
-            log.error("No user found for login {}. Cannot look for entitlements, return error.", login);
-            throw new IllegalArgumentException("User for given login could not be found");
+            throw new EntityNotFoundException("No user has been found for given login");
         }
 
         Facility facility = relyingPartyService.getFacilityByIdentifier(adapter, rpIdentifier);
         if (facility == null || facility.getId() == null) {
-            log.error("No facility found for rpIdentifier {}. Cannot look for  entitlements, return error.",
-                    rpIdentifier);
-            throw new IllegalArgumentException("User for given login could not be found");
+            throw new EntityNotFoundException("No service has been found for given identifier");
         }
 
         List<String> entitlements = relyingPartyService.getEntitlements(
