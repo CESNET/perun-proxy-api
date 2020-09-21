@@ -39,7 +39,6 @@ public class User {
                 Map<String, PerunAttributeValue> attributes)
     {
         this(perunId, firstName, lastName, attributes);
-        this.setPerunId(perunId);
         this.setLogin(login);
     }
 
