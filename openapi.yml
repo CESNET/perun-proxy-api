@@ -1,0 +1,308 @@
+openapi: 3.0.0
+info:
+  title: Perun Proxy API
+  description: Perun Proxy API
+  version: 0.0.1
+servers:
+  - url: 'https://perun.cesnet.cz/rest/v1'
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    Attribute:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Attribute name
+          example: 'urn:aaa'
+        value:
+          description: Attribute value
+          example: ['aaa', 'bbb']
+    Attributes:
+      type: array
+      items:
+        $ref: '#/components/schemas/Attribute'
+    ProxyUser:
+      type: object
+      properties:
+        login:
+          type: string
+          description: User's login
+          example: '1a2b3c@example.com'
+        firstName:
+          type: string
+          description: User's first name
+          example: 'John'
+        lastName:
+          type: string
+          description: User's last name
+          example: 'Doe'
+        displayName:
+          type: string
+          description: User's full name
+          example: 'John Doe'
+        perunUserId:
+          type: integer
+          description: User's perun ID
+          minimum: 1
+          example: 1
+        attributes:
+          $ref: '#/components/schemas/Attributes'
+  responses:
+    400BadRequest:
+      description: Bad Request
+    401NotAuthorized:
+      description: Not authorized
+    404NotFound:
+      description: Not found
+    405NotAllowed:
+      description: Method not allowed
+    500InternalError:
+      description: Internal error
+    503TemporaryUnavailable:
+      description: Temporary unavailable
+  examples:
+    rp-identifier1:
+      value: 'https://idp.example.com/idp/'
+      summary: 'entityId'
+    rp-identifier2:
+      value: '123-456-879'
+      summary: 'clientId'
+    proxyuser-login:
+      value: '1a2b3c@example.com'
+      summary: User's login
+
+paths:
+  /auth/proxy-user/{login}:
+    get:
+      summary: Returns a user by login.
+      parameters:
+        - name: login
+          in: path
+          required: true
+          description: User's login
+          example: '1a2b3c@example.com'
+          schema:
+            type: string
+        - name: fields
+          in: query
+          required: false
+          description: List of attributes
+          example: ['urn:attrname:attribute1', 'urn:attrname:attribute2']
+          schema:
+            type: array
+            items:
+              type: string
+      security:
+        - BasicAuth: []
+      responses:
+        '200' :
+          description: Returns JSON object user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/proxy-user/{login}/entitlements:
+    get:
+      summary: Returns an entitlements for the given user.
+      parameters:
+        - name: login
+          in: path
+          required: true
+          description: User's login
+          example: '1a2b3c@example.com'
+          schema:
+            type: string
+      security:
+        - BasicAuth: []
+      responses:
+        '200' :
+          description: Returns JSON list of user's entitlements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/proxy-user/findByIdentifiers:
+    get:
+      summary:  Find proxy user by given sourceIdP EntityId and addition source identifiers
+      parameters:
+        - name: IdPIdentifier
+          in: query
+          required: true
+          example: 'https://idp.example.com/idp/'
+          schema:
+            type: string
+        - name: identifiers
+          in: query
+          required: true
+          example: ['https://idp.example.com/idp/!https://sp.example.com/idp/!1111', '1111@example.com', 'login1111@example.com']
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Returns JSON object user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/proxy-user/findByExtLogins:
+    get:
+      summary: Find proxy user by given sourceIdP EntityId and extLogins
+      parameters:
+        - name: IdPIdentifier
+          in: query
+          required: true
+          example: 'https://idp.example.com/idp/'
+          schema:
+            type: string
+        - name: identifiers
+          in: query
+          required: true
+          example: ['https://idp.example.com/idp/!https://sp.example.com/idp/!1111', '1111@example.com', 'login1111@example.com']
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Returns JSON object user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/proxy-user/findByPerunUserId:
+    get:
+      summary: Search user by given sourceIdP EntityId and source identifiers
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: User's perun ID
+          example: 11
+          schema:
+            type: integer
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Returns JSON object user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/relying-party/{rp-identifier}/proxy-user/{login}/entitlements:
+    get:
+      summary: Get user entitlements
+      parameters:
+        - name: rp-identifier
+          in: path
+          required: true
+          description: Relying party identifier
+          examples:
+            entityId:
+              $ref: '#/components/examples/rp-identifier1'
+            clientId:
+              $ref: '#/components/examples/rp-identifier2'
+          schema:
+            type: string
+        - name: login
+          in: path
+          required: true
+          description: User's login
+          examples:
+            login:
+              $ref: '#/components/examples/proxyuser-login'
+          schema:
+            type: string
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Returns list of user's entitlements.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
