@@ -1,10 +1,10 @@
 ---
 
-- method_name: "find_by_identifiers"
+- methodName: "find_by_identifiers"
   configuration:
     adapter: "RPC"
 
-- method_name: "get_user_by_login"
+- methodName: "get_user_by_login"
   configuration:
     adapter: "RPC"
     default_fields:

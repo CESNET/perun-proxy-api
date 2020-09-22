@@ -1,5 +1,16 @@
 ---
 
+spring:
+  ldap:
+    embedded:
+      base-dn: dc=perun-dev,dc=cesnet,dc=cz
+      credential:
+        username: perunUserDn=admin,ou=People,dc=perun-dev,dc=cesnet,dc=cz
+        password: secret
+      ldif: classpath:datasets/ldap-test-data.ldif
+      port: 8389
+      validation.enabled: false
+
 connector:
   rpc:
     perun_url: "https://perun-dev.cesnet.cz/ba/rpc"
@@ -13,17 +24,16 @@ connector:
     max_connections_per_route: 18
   ldap:
     ldap_hosts:
-      - "ldaps://perun-dev.cesnet.cz:636"
-      - "ldaps://perun-dev2.cesnet.cz:582"
-    ldap_user: "example user"
-    ldap_password: "example password"
+      - "ldap://localhost:8389"
+    ldap_user: "perunUserDn=admin,ou=People,dc=perun-dev,dc=cesnet,dc=cz"
+    ldap_password: "secret"
     timeout: 60000
     connection_pool_size: 20
-    base_dn: "dc=perun,dc=cesnet,dc=cz"
-    use_tls: true
+    base_dn: "dc=perun-dev,dc=cesnet,dc=cz"
+    use_tls: false
 
 attributes:
-  path: "${PWD}/src/test/resources/attributes.yml"
+  path: "${PWD}/src/test/resources/configs/attributes.yml"
   identifiers:
     relying_party: "urn:perun:facility:attribute-def:def:rp_identifier"
     login: "urn:perun:user:attribute-def:def:login-namespace:example"
@@ -31,9 +41,9 @@ attributes:
 
 facade:
   config_path:
-    proxyuser: "${PWD}/src/test/resources/proxyuser-facade.yml"
-    relying_party: "${PWD}/src/test/resources/relying-party-facade.yml"
+    proxyuser: "${PWD}/src/test/resources/configs/proxyuser-facade.yml"
+    relying_party: "${PWD}/src/test/resources/configs/relying-party-facade.yml"
 
 security:
   basicauth:
-    path: "${PWD}/src/test/resources/basicauth.yml"
+    path: "${PWD}/src/test/resources/configs/api-auth.yml"

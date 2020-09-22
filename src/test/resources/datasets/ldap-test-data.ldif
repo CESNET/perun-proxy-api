@@ -1,0 +1,27 @@
+dn: dc=perun-dev,dc=cesnet,dc=cz
+objectclass: top
+objectclass: domain
+objectclass: extensibleObject
+dc: perun-dev
+
+dn: ou=People,dc=perun-dev,dc=cesnet,dc=cz
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: perunUserDn=admin,ou=People,dc=perun-dev,dc=cesnet,dc=cz
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+cn: AdminCN
+sn: AdminSN
+perunUserId: 1
+perunUserDn: admin
+password: secret
+
+dn: testObjectId=1, dc=perun-dev, dc=cesnet, dc=cz
+objectClass: top
+objectClass: testObj
+attr1: attr1
+attr2: attr2_1
+attr2: attr2_2
