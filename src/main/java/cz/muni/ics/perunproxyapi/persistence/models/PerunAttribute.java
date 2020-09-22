@@ -27,7 +27,6 @@ public class PerunAttribute extends PerunAttributeValueAwareModel {
     @NonNull private String friendlyName;
     @NonNull private String namespace;
     @NonNull private String description;
-    @NonNull private String type;
     @NonNull private String displayName;
     private boolean writable;
     private boolean unique;
@@ -71,14 +70,6 @@ public class PerunAttribute extends PerunAttributeValueAwareModel {
         this.namespace = namespace;
     }
 
-    public void setType(@NonNull String type) {
-        if (!StringUtils.hasText(type)) {
-            throw new IllegalArgumentException("type cannot be empty");
-        }
-
-        this.type = type;
-    }
-
     public void setDisplayName(@NonNull String displayName) {
         if (!StringUtils.hasText(displayName)) {
             throw new IllegalArgumentException("displayName cannot be empty");
@@ -114,7 +105,7 @@ public class PerunAttribute extends PerunAttributeValueAwareModel {
         node.put("id", id);
         node.put("friendlyName", friendlyName);
         node.put("namespace", namespace);
-        node.put("type", type);
+        node.put("type", super.getType());
         node.put("displayName", displayName);
         node.put("writable", writable);
         node.put("unique", unique);
@@ -129,7 +120,7 @@ public class PerunAttribute extends PerunAttributeValueAwareModel {
     }
 
     public PerunAttributeValue toPerunAttributeValue() {
-        return new PerunAttributeValue(this.getUrn(), this.type, this.valueAsJson());
+        return new PerunAttributeValue(this.getUrn(), super.getType(), this.valueAsJson());
     }
 
 }
