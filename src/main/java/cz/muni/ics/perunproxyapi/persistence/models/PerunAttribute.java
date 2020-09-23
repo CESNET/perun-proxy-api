@@ -99,12 +99,13 @@ public class PerunAttribute extends PerunAttributeValueAwareModel {
         return this.namespace + ':' + this.friendlyName;
     }
 
-    protected ObjectNode toJson() {
+    public ObjectNode toJson() {
         ObjectNode node = JsonNodeFactory.instance.objectNode();
 
         node.put("id", id);
         node.put("friendlyName", friendlyName);
         node.put("namespace", namespace);
+        node.put("description", description);
         node.put("type", super.getType());
         node.put("displayName", displayName);
         node.put("writable", writable);

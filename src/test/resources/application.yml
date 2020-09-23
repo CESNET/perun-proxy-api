@@ -36,8 +36,8 @@ attributes:
   path: "${PWD}/src/test/resources/configs/attributes.yml"
   identifiers:
     relying_party: "urn:perun:facility:attribute-def:def:rp_identifier"
-    login: "urn:perun:user:attribute-def:def:login-namespace:example"
-    additional_identifiers: "urn:perun:user:attribute-def:def:additional-identifiers:example"
+    login: "urn:perun:user:attribute-def:def:login-namespace-example"
+    additional_identifiers: "urn:perun:user:attribute-def:def:additional-identifiers-example"
 
 facade:
   config_path:

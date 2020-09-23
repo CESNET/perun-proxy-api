@@ -1,7 +1,7 @@
 package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
-import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import cz.muni.ics.perunproxyapi.application.facade.impl.ProxyuserFacadeImpl;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import org.junit.jupiter.api.Test;
@@ -36,14 +36,14 @@ public class ProxyUserProtectedControllerTest {
 
 
     @Test
-    public void FindByExtLoginsCallsFacadesMethodFindByExtLogins() throws PerunUnknownException, PerunConnectionException {
+    public void FindByExtLoginsCallsFacadesMethodFindByExtLogins() throws PerunUnknownException, PerunConnectionException, EntityNotFoundException {
         controller.findByExtLogins(IDP_ENTITY_ID, uids);
 
         verify(facade, times(1)).findByExtLogins(IDP_ENTITY_ID, uids);
     }
 
     @Test
-    public void getUserByLoginCallsFacadesMethodGetUserByLogin() throws PerunUnknownException, PerunConnectionException {
+    public void getUserByLoginCallsFacadesMethodGetUserByLogin() throws PerunUnknownException, PerunConnectionException, EntityNotFoundException {
         List<String> list = new ArrayList<>();
         controller.getUserByLogin(USERS_LOGIN, list);
 
@@ -51,7 +51,7 @@ public class ProxyUserProtectedControllerTest {
     }
 
     @Test
-    public void findByPerunUserIdCallsFacadesMethodFindByPerunUserId() throws PerunUnknownException, PerunConnectionException {
+    public void findByPerunUserIdCallsFacadesMethodFindByPerunUserId() throws PerunUnknownException, PerunConnectionException, EntityNotFoundException {
         List<String> list = new ArrayList<>();
         controller.findByPerunUserId(1L);
 

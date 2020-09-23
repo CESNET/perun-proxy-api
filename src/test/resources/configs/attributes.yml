@@ -1,14 +1,29 @@
 ---
 
+# required in connectors
 - identifier: "urn:perun:facility:attribute-def:def:rp_identifier"
   rpcName: "urn:perun:facility:attribute-def:def:rp_identifier"
   ldapName: "rp_identifier"
   attrType: STRING
-- identifier: "urn:perun:user:attribute-def:def:login-namespace:example"
-  rpcName: "urn:perun:user:attribute-def:def:login-namespace:example"
+- identifier: "urn:perun:user:attribute-def:def:login-namespace-example"
+  rpcName: "urn:perun:user:attribute-def:def:login-namespace-example"
   ldapName: "login;x-ns-example"
   attrType: STRING
-- identifier: "urn:perun:user:attribute-def:def:additional-identifiers:example"
-  rpcName: "urn:perun:user:attribute-def:def:additional-identifiers:example"
+- identifier: "urn:perun:user:attribute-def:def:additional-identifiers-example"
+  rpcName: "urn:perun:user:attribute-def:def:additional-identifiers-example"
   ldapName: "additional_identifiers"
   attrType: ARRAY
+
+# USER
+- identifier: "user:Attr1"
+  rpcName: "user:Attr1Rpc"
+  ldapName : "userAttr1Ldap"
+  attrType: STRING
+- identifier: "user:Attr2"
+  rpcName: "user:Attr2Rpc"
+  ldapName : "userAttr2Ldap"
+  attrType: ARRAY
+- identifier: "user:Attr3"
+  rpcName: "user:Attr3Rpc"
+  ldapName : "userAttr3Ldap"
+  attrType: BOOLEAN

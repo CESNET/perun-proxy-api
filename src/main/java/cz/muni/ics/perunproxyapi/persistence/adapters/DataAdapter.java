@@ -27,7 +27,8 @@ public interface DataAdapter {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids) throws PerunUnknownException, PerunConnectionException;
+    User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids)
+            throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Get user from Perun by id.
@@ -96,7 +97,8 @@ public interface DataAdapter {
      */
     Map<String, PerunAttributeValue> getAttributesValues(@NonNull Entity entity,
                                                          @NonNull Long entityId,
-                                                         @NonNull List<String> attributes) throws PerunUnknownException, PerunConnectionException;
+                                                         @NonNull List<String> attributes)
+            throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Get value for a single attribute for given entity.

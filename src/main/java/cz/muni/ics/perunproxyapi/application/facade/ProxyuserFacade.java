@@ -27,7 +27,7 @@ public interface ProxyuserFacade {
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    UserDTO findByExtLogins(String idpIdentifier, List<String> userIdentifiers)
+    UserDTO findByExtLogins(@NonNull String idpIdentifier, @NonNull List<String> userIdentifiers)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
     /**

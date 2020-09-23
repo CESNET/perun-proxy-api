@@ -11,6 +11,7 @@ import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,22 +22,43 @@ import java.util.Map;
 public class ProxyUserServiceImpl implements ProxyUserService {
 
     @Override
-    public User findByExtLogins(DataAdapter preferredAdapter, String idpEntityId, List<String> userIdentifiers) throws PerunUnknownException, PerunConnectionException {
-        return preferredAdapter.getPerunUser(idpEntityId, userIdentifiers);
+    public User findByExtLogins(@NonNull DataAdapter preferredAdapter, @NonNull String idpIdentifier,
+                                @NonNull List<String> userIdentifiers)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        if (!StringUtils.hasText(idpIdentifier)) {
+            throw new IllegalArgumentException("IdP identifier cannot be empty");
+        } else if (userIdentifiers.isEmpty()) {
+            throw new IllegalArgumentException("User identifiers cannot be empty");
+        }
+        return preferredAdapter.getPerunUser(idpIdentifier, userIdentifiers);
     }
 
     @Override
-    public User findByExtLogin(DataAdapter preferredAdapter, String idpIdentifier, String login) throws PerunUnknownException, PerunConnectionException {
+    public User findByExtLogin(@NonNull DataAdapter preferredAdapter, @NonNull String idpIdentifier,
+                               @NonNull String login)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        if (!StringUtils.hasText(idpIdentifier)) {
+            throw new IllegalArgumentException("IdP Identifier cannot be empty");
+        } else if (!StringUtils.hasText(login)) {
+            throw new IllegalArgumentException("Login cannot be empty");
+        }
         return findByExtLogins(preferredAdapter, idpIdentifier, Collections.singletonList(login));
     }
 
     @Override
-    public Map<String, PerunAttributeValue> getAttributesValues(DataAdapter preferredAdapter, Entity entity, long id, List<String> attributes) throws PerunUnknownException, PerunConnectionException {
+    public Map<String, PerunAttributeValue> getAttributesValues(@NonNull DataAdapter preferredAdapter,
+                                                                @NonNull Entity entity, long id,
+                                                                List<String> attributes)
+            throws PerunUnknownException, PerunConnectionException
+    {
         return preferredAdapter.getAttributesValues(entity, id, attributes);
     }
 
     @Override
-    public User findByPerunUserId(DataAdapter preferredAdapter, Long userId) throws PerunUnknownException, PerunConnectionException {
+    public User findByPerunUserId(@NonNull DataAdapter preferredAdapter, @NonNull Long userId)
+            throws PerunUnknownException, PerunConnectionException {
         return preferredAdapter.findPerunUserById(userId);
     }
 
@@ -65,6 +87,9 @@ public class ProxyUserServiceImpl implements ProxyUserService {
                                              List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException
     {
+        if (!StringUtils.hasText(login)) {
+            throw new IllegalArgumentException("User login cannot be empty");
+        }
         return preferredAdapter.getUserWithAttributesByLogin(login, attrIdentifiers);
     }
 
@@ -72,6 +97,9 @@ public class ProxyUserServiceImpl implements ProxyUserService {
     public User getUserByLogin(@NonNull DataAdapter preferredAdapter, @NonNull String login)
             throws PerunUnknownException, PerunConnectionException
     {
+        if (!StringUtils.hasText(login)) {
+            throw new IllegalArgumentException("User login cannot be empty");
+        }
         return this.getUserWithAttributesByLogin(preferredAdapter, login, new ArrayList<>());
     }
 
@@ -81,6 +109,11 @@ public class ProxyUserServiceImpl implements ProxyUserService {
                                   @NonNull List<String> identifiers,
                                   @NonNull List<String> attrIdentifiers)
     {
+        if (!StringUtils.hasText(idpIdentifier)) {
+            throw new IllegalArgumentException("IdP Identifier cannot be empty");
+        } else if (identifiers.isEmpty()) {
+            throw new IllegalArgumentException("Identifiers cannot be empty");
+        }
         return adapter.findByIdentifiers(idpIdentifier, identifiers, attrIdentifiers);
     }
 

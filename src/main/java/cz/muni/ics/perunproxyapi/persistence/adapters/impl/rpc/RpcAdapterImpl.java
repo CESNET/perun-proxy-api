@@ -122,7 +122,7 @@ public class RpcAdapterImpl implements FullAdapter {
     @Override
     public Map<String, PerunAttribute> getAttributes(@NonNull Entity entity,
                                                      @NonNull Long entityId,
-                                                     @NonNull List<String> attrsToFetch)
+                                                     List<String> attrsToFetch)
             throws PerunUnknownException, PerunConnectionException
     {
         if (attrsToFetch == null || attrsToFetch.isEmpty()) {
@@ -329,7 +329,7 @@ public class RpcAdapterImpl implements FullAdapter {
     @Override
     public Map<String, PerunAttributeValue> getAttributesValues(@NonNull Entity entity,
                                                                 @NonNull Long entityId,
-                                                                @NonNull List<String> attributes)
+                                                                List<String> attributes)
             throws PerunUnknownException, PerunConnectionException
     {
         Map<String, PerunAttribute> attrs = this.getAttributes(entity, entityId, attributes);

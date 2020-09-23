@@ -1,35 +1,32 @@
 package cz.muni.ics.perunproxyapi.application.facade;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
+import cz.muni.ics.perunproxyapi.TestUtils;
 import cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfiguration;
 import cz.muni.ics.perunproxyapi.application.facade.impl.ProxyuserFacadeImpl;
-import cz.muni.ics.perunproxyapi.application.service.ProxyUserMiddleware;
-import cz.muni.ics.perunproxyapi.application.service.impl.ProxyUserMiddlewareImpl;
-import cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl;
-import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
-import cz.muni.ics.perunproxyapi.persistence.enums.PerunAttrValueType;
+import cz.muni.ics.perunproxyapi.application.service.ProxyUserService;
+import cz.muni.ics.perunproxyapi.application.service.impl.ProxyUserServiceImpl;
+import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
-import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -37,100 +34,64 @@ import static org.mockito.Mockito.when;
 public class ProxyUserFacadeTest {
 
     private static final String IDP_ENTITY_ID = "testIdpEntityId";
-    private static final String DEFAULT_IDP = "defaultIdp";
-    private static final String USERS_LOGIN = "usersLogin";
+    private static final String NON_EXISTING_IDP_ENTITY_ID = "nonExistingIdpEntityId";
+    private static final String USER_LOGIN = "login";
 
-    private final List<String> uids = new ArrayList<>(Arrays.asList("firstUid", "secondUid", "thirdUid"));
-    private final List<String> fields = new ArrayList<>(Arrays.asList("firstField", "secondField"));
+    private final List<String> uids = Arrays.asList("firstUid", "secondUid", "thirdUid");
 
-    private final ProxyUserMiddleware userMiddleware;
-    private final AdaptersContainer adaptersContainer;
+    private final ProxyUserService service = mock(ProxyUserServiceImpl.class);
+    private final AdaptersContainer adaptersContainer = mock(AdaptersContainer.class);
+    private ProxyuserFacade facade;
+    private User sampleUser;
+    private UserDTO sampleUserDTO;
 
-    private final ProxyuserFacade facade;
-
-    @Autowired
-    public ProxyUserFacadeTest() {
-        userMiddleware = mock(ProxyUserMiddlewareImpl.class);
-        adaptersContainer = mock(AdaptersContainer.class);
+    @BeforeEach
+    public void setUp() {
         FacadeConfiguration facadeConfiguration = mock(FacadeConfiguration.class);
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        Map<String, JsonNode> methodConfigurations = new HashMap<>();
-        methodConfigurations.put("idpIdentifier", mapper.convertValue(IDP_ENTITY_ID, JsonNode.class));
-
-        when(facadeConfiguration.getProxyUserAdapterMethodConfigurations()).thenReturn(methodConfigurations);
-
-        facade = new ProxyuserFacadeImpl(userMiddleware, adaptersContainer, facadeConfiguration, DEFAULT_IDP);
+        facade = new ProxyuserFacadeImpl(service, adaptersContainer, facadeConfiguration);
+        sampleUser = TestUtils.createSampleUser(USER_LOGIN);
+        sampleUserDTO = TestUtils.getDTOForUser(sampleUser);
     }
 
     @Test
-    public void findByExtLoginsCallsMiddlewareMethodFindByExtLogins() throws PerunUnknownException, PerunConnectionException {
-        RpcAdapterImpl rpcAdapter = mock(RpcAdapterImpl.class);
-        when(adaptersContainer.getPreferredAdapter("RPC")).thenReturn(rpcAdapter);
+    public void testFindByExtLogin()
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    {
+        when(service.findByExtLogins(any(), eq(IDP_ENTITY_ID), eq(uids))).thenReturn(sampleUser);
 
-        facade.findByExtLogins(IDP_ENTITY_ID, uids);
-
-        verify(userMiddleware, times(1)).findByExtLogins(rpcAdapter, IDP_ENTITY_ID, uids);
+        UserDTO actual = facade.findByExtLogins(IDP_ENTITY_ID, uids);
+        assertNotNull(actual);
+        assertEquals(sampleUserDTO, actual);
     }
 
     @Test
-    public void getUserByLoginCallsMiddlewareMethodFindByIdentifiers() throws PerunUnknownException, PerunConnectionException {
-        RpcAdapterImpl rpcAdapter = mock(RpcAdapterImpl.class);
-        when(adaptersContainer.getPreferredAdapter("RPC")).thenReturn(rpcAdapter);
-
-        facade.getUserByLogin(USERS_LOGIN, fields);
-
-        verify(userMiddleware, times(1)).findByExtLogin(rpcAdapter, DEFAULT_IDP, USERS_LOGIN);
+    public void testFindByExtLoginNullIdpEntityId() {
+        assertThrows(NullPointerException.class, () -> facade.findByExtLogins(null, uids));
     }
 
     @Test
-    public void getUserByLoginReturnsUserDTOAndDoesNotSetAttributesWhenUserWasFoundAndFieldsIsNull() throws PerunUnknownException, PerunConnectionException {
-        RpcAdapterImpl rpcAdapter = mock(RpcAdapterImpl.class);
-        when(adaptersContainer.getPreferredAdapter("RPC")).thenReturn(rpcAdapter);
-
-        when(userMiddleware.findByExtLogin(rpcAdapter, DEFAULT_IDP, USERS_LOGIN)).thenReturn(new User(1L, "Test", "User"));
-        UserDTO user = facade.getUserByLogin(USERS_LOGIN, null);
-
-        assert(user != null && user.getPerunAttributes() != null && user.getPerunAttributes().isEmpty());
+    public void testFindByExtLoginNullUids() {
+        assertThrows(NullPointerException.class, () -> facade.findByExtLogins(IDP_ENTITY_ID, null));
     }
 
     @Test
-    public void getUserByLoginReturnsUserDTOAndDoesNotSetAttributesWhenUserWasFoundAndFieldsIsEmpty() throws PerunUnknownException, PerunConnectionException {
-        RpcAdapterImpl rpcAdapter = mock(RpcAdapterImpl.class);
-        when(adaptersContainer.getPreferredAdapter("RPC")).thenReturn(rpcAdapter);
-
-        when(userMiddleware.findByExtLogin(rpcAdapter, DEFAULT_IDP, USERS_LOGIN)).thenReturn(new User(1L, "Test", "User"));
-        UserDTO user = facade.getUserByLogin(USERS_LOGIN, new ArrayList<>());
-
-        assert(user != null && user.getPerunAttributes() != null && user.getPerunAttributes().isEmpty());
+    public void testFindByExtLoginEmptyUids() {
+        assertThrows(IllegalArgumentException.class, () -> facade.findByExtLogins(IDP_ENTITY_ID, new ArrayList<>()));
     }
 
     @Test
-    public void getUserByLoginReturnsUserDTOAndSetAttributesWhenUserWasFoundAndFieldsIsNotEmpty() throws PerunUnknownException, PerunConnectionException {
-        RpcAdapterImpl rpcAdapter = mock(RpcAdapterImpl.class);
-        when(adaptersContainer.getPreferredAdapter("RPC")).thenReturn(rpcAdapter);
-        when(userMiddleware.findByExtLogin(rpcAdapter, DEFAULT_IDP, USERS_LOGIN)).thenReturn(new User(1L, "Test", "User"));
-
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, PerunAttributeValue> map = new HashMap<>();
-        map.put("firstField", new PerunAttributeValue(PerunAttrValueType.STRING, mapper.convertValue("firstFieldValue", JsonNode.class)));
-        map.put("secondField", new PerunAttributeValue(PerunAttrValueType.STRING, mapper.convertValue("secondFieldValue", JsonNode.class)));
-
-        when(userMiddleware.getAttributesValues(rpcAdapter, Entity.USER, 1L, fields)).thenReturn(map);
-
-        UserDTO user = facade.getUserByLogin(USERS_LOGIN, fields);
-        assert(user.getPerunAttributes() != null && user.getPerunAttributes().size() == 2);
+    public void testFindByExtLoginNonExistingIdpEntityId() throws PerunUnknownException, PerunConnectionException {
+        when(service.findByExtLogins(any(), eq(NON_EXISTING_IDP_ENTITY_ID), anyList())).thenReturn(null);
+        assertThrows(EntityNotFoundException.class, () -> facade.findByExtLogins(NON_EXISTING_IDP_ENTITY_ID, uids));
     }
 
     @Test
-    public void findByPerunUserIdCallsMiddlewareMethodFindByPerunUserId() throws PerunUnknownException, PerunConnectionException {
-        RpcAdapterImpl rpcAdapter = mock(RpcAdapterImpl.class);
-        when(adaptersContainer.getPreferredAdapter("RPC")).thenReturn(rpcAdapter);
-
-        facade.findByPerunUserId(1L);
-
-        verify(userMiddleware, times(1)).findByPerunUserId(rpcAdapter, 1L);
+    public void testFindByExtLoginNonExistingIdpEntityIdUidCombination()
+            throws PerunUnknownException, PerunConnectionException
+    {
+        List<String> uids = Collections.singletonList("nonExistingUID1");
+        when(service.findByExtLogins(any(), eq(IDP_ENTITY_ID), eq(uids))).thenReturn(null);
+        assertThrows(EntityNotFoundException.class, () -> facade.findByExtLogins(IDP_ENTITY_ID, uids));
     }
 
 }

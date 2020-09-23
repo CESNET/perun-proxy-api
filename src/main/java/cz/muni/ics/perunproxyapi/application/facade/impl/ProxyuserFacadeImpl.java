@@ -53,9 +53,13 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public UserDTO findByExtLogins(String idpIdentifier, List<String> userIdentifiers)
+    public UserDTO findByExtLogins(@NonNull String idpIdentifier, @NonNull List<String> userIdentifiers)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
     {
+        if (userIdentifiers.isEmpty()) {
+            throw new IllegalArgumentException("List of identifiers cannot be empty");
+        }
+
         JsonNode options = FacadeUtils.getOptions(FIND_BY_EXT_LOGINS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 

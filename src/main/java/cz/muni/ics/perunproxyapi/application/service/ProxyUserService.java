@@ -23,13 +23,14 @@ public interface ProxyUserService {
      * Find user by identifiers via given adapter.
      *
      * @param preferredAdapter Adapter to be used.
-     * @param idpEntityId Identifier of source Identity Provider.
+     * @param idpIdentifier Identifier of source Identity Provider.
      * @param userIdentifiers List of user's identifiers.
      * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findByExtLogins(DataAdapter preferredAdapter, String idpEntityId, List<String> userIdentifiers)
+    User findByExtLogins(@NonNull DataAdapter preferredAdapter, @NonNull String idpIdentifier,
+                         @NonNull List<String> userIdentifiers)
             throws PerunUnknownException, PerunConnectionException;
 
     /**
@@ -42,7 +43,7 @@ public interface ProxyUserService {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findByExtLogin(DataAdapter preferredAdapter, String idpIdentifier, String login)
+    User findByExtLogin(@NonNull DataAdapter preferredAdapter, @NonNull String idpIdentifier, @NonNull String login)
             throws PerunUnknownException, PerunConnectionException;
 
     /**
@@ -56,7 +57,7 @@ public interface ProxyUserService {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    Map<String, PerunAttributeValue> getAttributesValues(DataAdapter preferredAdapter, Entity entity,
+    Map<String, PerunAttributeValue> getAttributesValues(@NonNull DataAdapter preferredAdapter, @NonNull Entity entity,
                                                          long id, List<String> attributes)
             throws PerunUnknownException, PerunConnectionException;
 
@@ -69,7 +70,7 @@ public interface ProxyUserService {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findByPerunUserId(DataAdapter preferredAdapter, Long userId)
+    User findByPerunUserId(@NonNull DataAdapter preferredAdapter, @NonNull Long userId)
             throws PerunUnknownException, PerunConnectionException;
 
     /**
