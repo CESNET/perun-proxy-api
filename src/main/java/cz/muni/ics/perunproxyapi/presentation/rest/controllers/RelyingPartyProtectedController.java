@@ -2,11 +2,12 @@ package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
 import cz.muni.ics.perunproxyapi.application.facade.RelyingPartyFacade;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.InvalidRequestParameterException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,13 +58,20 @@ public class RelyingPartyProtectedController {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
+     * @throws InvalidRequestParameterException Thrown when passed parameters or body does not meet criteria.
      */
     @ResponseBody
     @GetMapping(value = "/{rp-identifier}/proxy-user/{login}/entitlements", produces = APPLICATION_JSON_VALUE)
-    public List<String> getEntitlements(@NonNull @PathVariable(RP_IDENTIFIER) String rpIdentifier,
-                                        @NonNull @PathVariable(LOGIN) String login)
-            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    public List<String> getEntitlements(@PathVariable(RP_IDENTIFIER) String rpIdentifier,
+                                        @PathVariable(LOGIN) String login)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
     {
+        if (!StringUtils.hasText(rpIdentifier)) {
+            throw new InvalidRequestParameterException("RP identifier cannot be empty");
+        } else if (!StringUtils.hasText(login)) {
+            throw new InvalidRequestParameterException("User login cannot be empty");
+        }
         return facade.getEntitlements(rpIdentifier, login);
     }
 

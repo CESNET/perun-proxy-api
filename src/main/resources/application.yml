@@ -1,5 +1,7 @@
 ---
 
+
+
 connector:
   rpc:
     perun_url: "https://perun-dev.cesnet.cz/ba/rpc"
@@ -39,6 +41,8 @@ security:
     path: /etc/perun/api-auth.yml
 
 server:
+  error:
+    include-stacktrace: NEVER
   port: 8080
   servlet:
     context-path: /proxyapi

@@ -2,13 +2,14 @@ package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
 import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.InvalidRequestParameterException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -60,13 +61,21 @@ public class ProxyUserProtectedController {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
+     * @throws InvalidRequestParameterException Thrown when passed parameters or body does not meet criteria.
      */
     @ResponseBody
     @GetMapping(value = "/findByExtLogins", produces = APPLICATION_JSON_VALUE)
-    public UserDTO findByExtLogins(@NonNull @RequestParam(value = IDP_IDENTIFIER) String idpIdentifier,
-                                   @NonNull @RequestParam(value = IDENTIFIERS) List<String> identifiers)
-            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    public UserDTO findByExtLogins(@RequestParam(value = IDP_IDENTIFIER) String idpIdentifier,
+                                   @RequestParam(value = IDENTIFIERS) List<String> identifiers)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
     {
+        if (!StringUtils.hasText(idpIdentifier)) {
+            throw new InvalidRequestParameterException("IdP identifier cannot be empty");
+        } else if (identifiers == null || identifiers.isEmpty()) {
+            throw new InvalidRequestParameterException("User identifiers cannot be empty");
+        }
+
         return facade.findByExtLogins(idpIdentifier, identifiers);
     }
 
@@ -84,13 +93,19 @@ public class ProxyUserProtectedController {
      * @param identifiers List of string containing identifiers of the user.
      * @return User or null.
      * @throws EntityNotFoundException Thrown when no user has been found.
+     * @throws InvalidRequestParameterException Thrown when passed parameters or body does not meet criteria.
      */
     @ResponseBody
     @GetMapping(value = "/findByIdentifiers", produces = APPLICATION_JSON_VALUE)
-    public UserDTO findByIdentifiers(@NonNull @RequestParam(value = IDP_IDENTIFIER) String idpIdentifier,
-                                     @NonNull @RequestParam(value = IDENTIFIERS) List<String> identifiers)
-            throws EntityNotFoundException
+    public UserDTO findByIdentifiers(@RequestParam(value = IDP_IDENTIFIER) String idpIdentifier,
+                                     @RequestParam(value = IDENTIFIERS) List<String> identifiers)
+            throws EntityNotFoundException, InvalidRequestParameterException
     {
+        if (!StringUtils.hasText(idpIdentifier)) {
+            throw new InvalidRequestParameterException("IdP identifier cannot be empty");
+        } else if (identifiers == null || identifiers.isEmpty()) {
+            throw new InvalidRequestParameterException("User identifiers cannot be empty");
+        }
         return facade.findByIdentifiers(idpIdentifier, identifiers);
     }
 
@@ -106,15 +121,20 @@ public class ProxyUserProtectedController {
      * @param fields OPTIONAL attributes for the user we want to obtain
      * @return JSON representation of the User object.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
-     * throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
+     * @throws InvalidRequestParameterException Thrown when passed parameters or body does not meet criteria.
      */
     @ResponseBody
     @GetMapping(value = "/{login}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public UserDTO getUserByLogin(@NonNull @PathVariable(value = LOGIN) String login,
+    public UserDTO getUserByLogin(@PathVariable(value = LOGIN) String login,
                                   @RequestParam(required = false, value = FIELDS) List<String> fields)
-            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
     {
+        if (!StringUtils.hasText(login)) {
+            throw new InvalidRequestParameterException("IdP identifier cannot be empty");
+        }
         return facade.getUserByLogin(login, fields);
     }
 
@@ -130,12 +150,17 @@ public class ProxyUserProtectedController {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
+     * @throws InvalidRequestParameterException Thrown when passed parameters or body does not meet criteria.
      */
     @ResponseBody
     @GetMapping(value = "/findByPerunUserId", produces = APPLICATION_JSON_VALUE)
-    public UserDTO findByPerunUserId(@NonNull @RequestParam(value = USER_ID) Long userId)
-            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    public UserDTO findByPerunUserId(@RequestParam(value = USER_ID) Long userId)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
     {
+        if (userId == null) {
+            throw new InvalidRequestParameterException("User ID cannot be null");
+        }
         return facade.findByPerunUserId(userId);
     }
 
@@ -151,12 +176,17 @@ public class ProxyUserProtectedController {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
+     * @throws InvalidRequestParameterException Thrown when passed parameters or body does not meet criteria.
      */
     @ResponseBody
     @GetMapping(value = "/{login}/entitlements", produces = APPLICATION_JSON_VALUE)
-    public List<String> getUserEntitlements(@NonNull @PathVariable(value = LOGIN) String login)
-            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    public List<String> getUserEntitlements(@PathVariable(value = LOGIN) String login)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
     {
+        if (!StringUtils.hasText(login)) {
+            throw new InvalidRequestParameterException("Users login cannot be empty");
+        }
         return facade.getAllEntitlements(login);
     }
 
