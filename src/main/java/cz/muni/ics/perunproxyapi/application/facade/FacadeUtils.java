@@ -3,6 +3,7 @@ package cz.muni.ics.perunproxyapi.application.facade;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
+import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
@@ -35,6 +36,15 @@ public class FacadeUtils {
     public static DataAdapter getAdapter(@NotNull AdaptersContainer adaptersContainer, @NotNull JsonNode options) {
         return adaptersContainer.getPreferredAdapter(
                 options.has(ADAPTER) ? options.get(ADAPTER).asText() : ADAPTER_RPC);
+    }
+
+    /**
+     * Get full adapter from options of the method.
+     * @param adaptersContainer Container of adapters.
+     * @return full adapter.
+     */
+    public static FullAdapter getFullAdapter(@NotNull AdaptersContainer adaptersContainer) {
+        return adaptersContainer.getRpcAdapter();
     }
 
     /**

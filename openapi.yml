@@ -525,3 +525,67 @@ paths:
           $ref: '#/components/responses/500InternalError'
         '503':
           $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/proxy-user/ga4gh:
+    get:
+      summary: Get GA4GH passport for the given user.
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: User's perun ID
+          example: 11
+          schema:
+            type: integer
+      security:
+        - BasicAuth: [ ]
+      responses:
+        '200':
+          description: Returns JSON GA4GH passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/proxy-user/{login}/ga4gh:
+    get:
+      summary: Get GA4GH passport for the given user.
+      parameters:
+        - name: login
+          in: query
+          required: true
+          description: User's login
+          example: '1a2b3c@example.com'
+          schema:
+            type: String
+      security:
+        - BasicAuth: [ ]
+      responses:
+        '200':
+          description: Returns JSON GA4GH passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'

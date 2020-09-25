@@ -4,6 +4,7 @@ package cz.muni.ics.perunproxyapi.persistence.adapters;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.models.Affiliation;
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
 import cz.muni.ics.perunproxyapi.persistence.models.Group;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;

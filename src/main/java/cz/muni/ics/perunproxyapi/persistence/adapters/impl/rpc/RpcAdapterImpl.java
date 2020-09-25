@@ -2,6 +2,7 @@ package cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
+import cz.muni.ics.perunproxyapi.persistence.models.Affiliation;
 import cz.muni.ics.perunproxyapi.persistence.AttributeMappingService;
 import cz.muni.ics.perunproxyapi.persistence.adapters.AdapterUtils;
 import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,6 +46,7 @@ import java.util.stream.Collectors;
 import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.FACILITY;
 import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.RESOURCE;
 import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.USER;
+import static cz.muni.ics.perunproxyapi.persistence.enums.MemberStatus.VALID;
 
 /**
  * Implementation of the adapter via Perun RPC.
@@ -91,6 +94,7 @@ public class RpcAdapterImpl implements FullAdapter {
     public static final String PARAM_GROUP = "group";
     public static final String PARAM_MEMBER = "member";
     public static final String PARAM_EXT_LOGIN = "extLogin";
+    public static final String EXT_SOURCE_TYPE = "cz.metacentrum.perun.core.impl.ExtSourceIdp";
 
     // special
     public static final String NAME_MEMBERS = "members";
@@ -164,8 +168,8 @@ public class RpcAdapterImpl implements FullAdapter {
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(entity.toString(), entityId);
         params.put(PARAM_ATTRIBUTE_NAME, mapping.getRpcName());
-
         JsonNode perunResponse = connectorRpc.post(ATTRIBUTES_MANAGER, "getAttribute", params);
+
         return RpcMapper.mapAttribute(perunResponse);
     }
 
@@ -286,7 +290,7 @@ public class RpcAdapterImpl implements FullAdapter {
         List<Group> groups = new LinkedList<>();
         if (!userMembers.isEmpty()) {
             for (Member member : userMembers) {
-                if (!MemberStatus.VALID.equals(member.getStatus())) {
+                if (!VALID.equals(member.getStatus())) {
                     continue;
                 } else if (member.getId() == null) {
                     log.warn("No ID found for member {}", member);
@@ -520,6 +524,94 @@ public class RpcAdapterImpl implements FullAdapter {
         throw new UnsupportedOperationException("This operation is not supported.");
     }
 
+    @Override
+    public List<Affiliation> getUserExtSourcesAffiliations(Long userId, String affiliationAttr, String orgUrlAttr) throws PerunUnknownException, PerunConnectionException {
+
+        List<UserExtSource> userExtSources = getUserExtSources(userId);
+        List<Affiliation> affiliations = new ArrayList<>();
+
+        AttributeObjectMapping affiliationMapping = attributeMappingService.getMappingByIdentifier(affiliationAttr);
+        AttributeObjectMapping orgUrlMapping = attributeMappingService.getMappingByIdentifier(orgUrlAttr);
+
+        Set<AttributeObjectMapping> attributeMappings = new HashSet<>(Arrays.asList(affiliationMapping, orgUrlMapping));
+
+        for (UserExtSource ues : userExtSources) {
+            if (EXT_SOURCE_TYPE.equals(ues.getExtSource().getType())) {
+                Map<String, PerunAttributeValue> uesAttrValues = getUserExtSourceAttributeValues(ues.getId(), attributeMappings);
+
+                long asserted = ues.getLastAccess().getTime() / 1000L;
+
+                if (uesAttrValues.get(affiliationMapping.getIdentifier()) != null && uesAttrValues.get(orgUrlMapping.getIdentifier()) != null) {
+                    String orgUrl = uesAttrValues.get(orgUrlMapping.getIdentifier()).valueAsString();
+                    String affs = uesAttrValues.get(affiliationMapping.getIdentifier()).valueAsString();
+                    if (affs != null) {
+                        for (String aff : affs.split(";")) {
+                            String source = ( (orgUrl != null) ? orgUrl : ues.getExtSource().getName() );
+                            Affiliation affiliation = new Affiliation(source, aff, asserted);
+                            log.debug("found {} from IdP {} with orgURL {} asserted at {}", aff, ues.getExtSource().getName(),
+                                    orgUrl, asserted);
+                            affiliations.add(affiliation);
+                        }
+                    }
+                }
+            }
+        }
+
+        return affiliations;
+    }
+
+    @Override
+    public boolean isUserInGroup(Long userId, Long groupId) throws PerunUnknownException, PerunConnectionException {
+        Map<String, Object> groupParams = new LinkedHashMap<>();
+        groupParams.put("id", groupId);
+        JsonNode groupResponse = connectorRpc.post(GROUPS_MANAGER, "getGroupById", groupParams);
+        Group group = RpcMapper.mapGroup(groupResponse);
+
+        Map<String, Object> memberParams = new LinkedHashMap<>();
+
+        if (group != null) {
+            memberParams.put("vo", group.getVoId());
+            memberParams.put("user", userId);
+            JsonNode memberResponse = connectorRpc.post(MEMBERS_MANAGER, "getMemberByUser", memberParams);
+            Member member = RpcMapper.mapMember(memberResponse);
+
+            if (member != null) {
+                Map<String, Object> isGroupMemberParams = new LinkedHashMap<>();
+                isGroupMemberParams.put("group", group.getId());
+                isGroupMemberParams.put("member", member.getId());
+                JsonNode res = connectorRpc.post(GROUPS_MANAGER, "isGroupMember", isGroupMemberParams);
+                return res.asBoolean();
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public List<Affiliation> getGroupAffiliations(Long userId, String groupAffiliationsAttr) throws PerunUnknownException, PerunConnectionException {
+        List<Affiliation> affiliations = new ArrayList<>();
+
+        List<Member> userMembers = getMembersByUser(userId);
+        for (Member member : userMembers) {
+            if (VALID.equals(member.getStatus())) {
+                List<Group> memberGroups = getMemberGroups(member.getId());
+                for (Group group : memberGroups) {
+                    PerunAttributeValue attrValue = this.getAttributeValue(Entity.GROUP, group.getId(), groupAffiliationsAttr);
+                    if (attrValue != null && attrValue.valueAsString() != null) {
+                        long linuxTime = System.currentTimeMillis() / 1000L;
+                        for (String value : attrValue.valueAsList()) {
+                            Affiliation affiliation = new Affiliation(null, value, linuxTime);
+                            log.debug("found {} on group {}", value, group.getName());
+                            affiliations.add(affiliation);
+                        }
+                    }
+                }
+            }
+        }
+
+        return affiliations;
+    }
+
     // private methods
 
     private Set<String> getFacilityCapabilities(Long facilityId, @NonNull String capabilitiesAttrName)
@@ -717,6 +809,48 @@ public class RpcAdapterImpl implements FullAdapter {
 
     private AttributeObjectMapping getMappingForAttrName(@NonNull String attrToFetch) {
         return this.attributeMappingService.getMappingByIdentifier(attrToFetch);
+    }
+
+    private List<UserExtSource> getUserExtSources(Long userId) throws PerunUnknownException, PerunConnectionException {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("user", userId);
+
+        JsonNode response = connectorRpc.post(USERS_MANAGER, "getUserExtSources", map);
+        return RpcMapper.mapUserExtSources(response);
+    }
+
+    private Map<String, PerunAttributeValue> getUserExtSourceAttributeValues(Long uesId, Set<AttributeObjectMapping> attrMappings) throws PerunUnknownException, PerunConnectionException {
+        List<String> attrNames = attrMappings.stream().map(AttributeObjectMapping::getRpcName).collect(Collectors.toList());
+        attrNames.removeAll(Collections.singletonList(null));
+
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("userExtSource", uesId);
+        map.put("attrNames", attrNames);
+
+        JsonNode response = connectorRpc.post(ATTRIBUTES_MANAGER, "getAttributes", map);
+        Map<String, PerunAttribute> attributeMap = RpcMapper.mapAttributes(response, attrMappings);
+        return extractValues(attributeMap);
+    }
+
+    private Map<String, PerunAttributeValue> extractValues(Map<String, PerunAttribute> attributeMap) {
+        Map<String, PerunAttributeValue> resultMap = new LinkedHashMap<>();
+        for (Map.Entry<String, PerunAttribute> attrPair: attributeMap.entrySet()) {
+            String attrName = attrPair.getKey();
+            PerunAttribute attr = attrPair.getValue();
+            if (attr != null) {
+                resultMap.put(attrName, attr.toPerunAttributeValue());
+            }
+        }
+
+        return resultMap;
+    }
+
+    private List<Group> getMemberGroups(Long memberId) throws PerunUnknownException, PerunConnectionException {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("member", memberId);
+
+        JsonNode response = connectorRpc.post(GROUPS_MANAGER, "getMemberGroups", map);
+        return RpcMapper.mapGroups(response);
     }
 
 }

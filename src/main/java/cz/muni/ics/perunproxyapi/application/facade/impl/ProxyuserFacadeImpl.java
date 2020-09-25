@@ -3,9 +3,16 @@ package cz.muni.ics.perunproxyapi.application.facade.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import com.nimbusds.jose.proc.SecurityContext;
 import cz.muni.ics.perunproxyapi.application.facade.FacadeUtils;
 import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfiguration;
+import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.MissingOrInvalidFileException;
+import cz.muni.ics.perunproxyapi.persistence.models.Ga4ghAttributes;
+import cz.muni.ics.perunproxyapi.persistence.models.ClaimRepository;
 import cz.muni.ics.perunproxyapi.application.service.ProxyUserService;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
@@ -19,15 +26,26 @@ import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static cz.muni.ics.perunproxyapi.application.service.Ga4ghUtils.fillClaimRepositoriesAndRemoteJWKSetsAndSigners;
 
 @Component
 @Slf4j
@@ -39,6 +57,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     public static final String FIND_BY_PERUN_USER_ID = "find_by_perun_user_id";
     public static final String GET_ALL_ENTITLEMENTS = "get_all_entitlements";
     public static final String UPDATE_USER_IDENTITY_ATTRIBUTES = "update_user_identity_attributes";
+
 
     public static final String PREFIX = "prefix";
     public static final String AUTHORITY = "authority";
@@ -194,6 +213,105 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     private List<String> getDefaultFields(String method, JsonNode options) {
+    @Override
+    public JsonNode ga4ghById(Long userId) throws PerunUnknownException, PerunConnectionException, NoSuchAlgorithmException, FileNotFoundException, MalformedURLException, InvalidKeySpecException, URISyntaxException, MissingOrInvalidFileException {
+        JsonNode options = FacadeUtils.getOptions(GA4GH, methodConfigurations);
+        FullAdapter adapter = FacadeUtils.getFullAdapter(adaptersContainer);
+
+        String path = FacadeUtils.getRequiredStringOption(PATH, options);
+
+        YAMLMapper mapper = new YAMLMapper();
+        List<ClaimRepository> claimRepositories = new ArrayList<>();
+        Map<URI, RemoteJWKSet<SecurityContext>> remoteJwkSets = new HashMap<>();
+        Map<URI, String> signers = new HashMap<>();
+
+        Ga4ghAttributes attrs;
+
+        try {
+            JsonNode root = mapper.readValue(new File(path), JsonNode.class);
+
+            fillClaimRepositoriesAndRemoteJWKSetsAndSigners(path, claimRepositories, remoteJwkSets, signers);
+
+            String issuer = root.path(ISSUER).textValue();
+            String bonaFideStatus = root.path(BONA_FIDE_STATUS).textValue();
+            String elixirBonaFideStatusREMS = root.path(ELIXIR_BONA_FIDE_STATUS_REMS).textValue();
+            String groupAffiliations = root.path(GROUP_AFFILIATIONS).textValue();
+            String affiliation = root.path(AFFILIATION).textValue();
+            String orgUrl = root.path(ORG_URL).textValue();
+            String sub = root.path(SUB).textValue();
+            String keystorePath = root.path(KEYSTORE_PATH).textValue();
+            String defaultSignerKeyId = root.path(DEFAULT_SIGNER_KEY_ID).textValue();
+            String defaultSigningAlgorithmName = root.path(DEFAULT_SIGNING_ALGORITHM_NAME).textValue();
+            String elixirOrgUrl = root.path(ELIXIR_ORG_URL).textValue();
+            String elixirId = root.path(ELIXIR_ID).textValue();
+
+            attrs = new Ga4ghAttributes(issuer, bonaFideStatus, elixirBonaFideStatusREMS, groupAffiliations, affiliation, orgUrl, sub, keystorePath, defaultSignerKeyId, defaultSigningAlgorithmName, elixirOrgUrl, elixirId);
+
+        } catch (IOException ex) {
+            log.error("cannot read GA4GH config file", ex);
+            throw new MissingOrInvalidFileException("Cannot read GA4GH config file.");
+        }
+
+        return proxyUserService.ga4gh(
+                (FullAdapter) adapter,
+                userId,
+                attrs,
+                claimRepositories,
+                remoteJwkSets,
+                signers
+        );
+    }
+
+    @Override
+    public JsonNode ga4ghByLogin(String login) throws PerunUnknownException, PerunConnectionException, NoSuchAlgorithmException, FileNotFoundException, MalformedURLException, InvalidKeySpecException, URISyntaxException, EntityNotFoundException, MissingOrInvalidFileException {
+        JsonNode options = FacadeUtils.getOptions(GA4GH, methodConfigurations);
+        FullAdapter adapter = FacadeUtils.getFullAdapter(adaptersContainer);
+        String path = FacadeUtils.getRequiredStringOption(PATH, options);
+
+        YAMLMapper mapper = new YAMLMapper();
+
+        List<ClaimRepository> claimRepositories = new ArrayList<>();
+        Map<URI, RemoteJWKSet<SecurityContext>> remoteJwkSets = new HashMap<>();
+        Map<URI, String> signers = new HashMap<>();
+
+
+        try {
+            JsonNode root = mapper.readValue(new File(path), JsonNode.class);
+
+            fillClaimRepositoriesAndRemoteJWKSetsAndSigners(path, claimRepositories, remoteJwkSets, signers);
+
+            String issuer = root.path(ISSUER).textValue();
+            String bonaFideStatus = root.path(BONA_FIDE_STATUS).textValue();
+            String elixirBonaFideStatusREMS = root.path(ELIXIR_BONA_FIDE_STATUS_REMS).textValue();
+            String groupAffiliations = root.path(GROUP_AFFILIATIONS).textValue();
+            String affiliation = root.path(AFFILIATION).textValue();
+            String orgUrl = root.path(ORG_URL).textValue();
+            String sub = root.path(SUB).textValue();
+            String identifier = root.path(IDENTIFIER).textValue();
+            String keystorePath = root.path(KEYSTORE_PATH).textValue();
+            String defaultSignerKeyId = root.path(DEFAULT_SIGNER_KEY_ID).textValue();
+            String defaultSigningAlgorithmName = root.path(DEFAULT_SIGNING_ALGORITHM_NAME).textValue();
+            String elixirOrgUrl = root.path(ELIXIR_ORG_URL).textValue();
+            String elixirId = root.path(ELIXIR_ID).textValue();
+
+            UserDTO user = getUserByLogin(login, Collections.singletonList(identifier));
+            Ga4ghAttributes attrs = new Ga4ghAttributes(issuer, bonaFideStatus, elixirBonaFideStatusREMS, groupAffiliations, affiliation, orgUrl, sub, keystorePath, defaultSignerKeyId, defaultSigningAlgorithmName, elixirOrgUrl, elixirId);
+
+            return proxyUserService.ga4gh(
+                    adapter,
+                    user.getAttributes().get(identifier).asLong(),
+                    attrs,
+                    claimRepositories,
+                    remoteJwkSets,
+                    signers
+            );
+        } catch (IOException ex) {
+            log.error("cannot read GA4GH config file", ex);
+            throw new MissingOrInvalidFileException("Cannot read GA4GH config file.");
+        }
+    }
+
+    private List<String> getDefaultFields(JsonNode options) {
         List<String> fields = new ArrayList<>();
         if (!options.hasNonNull(DEFAULT_FIELDS)) {
                 log.error("Required option {} has not been found by method {}. Check your configuration.",
@@ -209,6 +327,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
                 }
             }
         }
+
         return fields;
     }
 

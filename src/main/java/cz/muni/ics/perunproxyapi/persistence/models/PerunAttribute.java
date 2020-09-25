@@ -34,6 +34,7 @@ public class PerunAttribute extends PerunAttributeValueAwareModel {
     @NonNull private String baseFriendlyName;
     private String friendlyNameParameter;
     private final String beanName = "Attribute";
+    private String valueCreatedAt;
 
     public PerunAttribute(Long id, String friendlyName, String namespace, String description, String type,
                           String displayName, boolean writable, boolean unique, String entity, String baseFriendlyName,

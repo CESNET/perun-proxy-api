@@ -1,16 +1,28 @@
 package cz.muni.ics.perunproxyapi.application.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import com.nimbusds.jose.proc.SecurityContext;
+import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
+import cz.muni.ics.perunproxyapi.persistence.models.ClaimRepository;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
+import cz.muni.ics.perunproxyapi.persistence.models.Ga4ghAttributes;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.UpdateAttributeMappingEntry;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import lombok.NonNull;
 
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Map;
 
@@ -158,4 +170,29 @@ public interface ProxyUserService {
                                          @NonNull List<String> attrsToSearchBy)
             throws PerunUnknownException, PerunConnectionException;
 
+    /**
+     * Get GA4GH passport for the given user.
+     * !!!! Works only with RPC adapter !!!!
+     *
+     * @param adapter Adapter to be used. Only RPC is supported.
+     * @param userId Id of a user.
+     * @param attrs GA4GHAttributes containing identifiers of attributes needed for successful getting of GA4GH.
+     * @param claimRepositories List of ClaimRepository objects.
+     * @param remoteJwkSets Map<URI, RemoteJWKSet<SecurityContext>>
+     * @param signers Map<URI, String>
+     * @return GA4GH passport as a JsonNode
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws URISyntaxException Thrown when string could not be parsed as a URI reference.
+     * @throws InvalidKeySpecException Thrown when invalid key specifications have occurred.
+     * @throws FileNotFoundException Thrown when attempt to open the file denoted by a specified pathname has failed.
+     * @throws MalformedURLException Thrown when malformed URL has occurred.
+     * @throws NoSuchAlgorithmException Thrown when there is no appropriate algorithm to tie the keys to.
+     */
+    JsonNode ga4gh(@NonNull FullAdapter adapter,
+                   @NonNull Long userId,
+                   @NonNull Ga4ghAttributes attrs,
+                   List<ClaimRepository> claimRepositories,
+                   Map<URI, RemoteJWKSet<SecurityContext>> remoteJwkSets,
+                   Map<URI, String> signers) throws PerunUnknownException, PerunConnectionException, URISyntaxException, InvalidKeySpecException, FileNotFoundException, MalformedURLException, NoSuchAlgorithmException;
 }

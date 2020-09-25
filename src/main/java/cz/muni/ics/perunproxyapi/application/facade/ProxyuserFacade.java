@@ -1,12 +1,19 @@
 package cz.muni.ics.perunproxyapi.application.facade;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.MissingOrInvalidFileException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 import lombok.NonNull;
 
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Map;
 
@@ -94,4 +101,34 @@ public interface ProxyuserFacade {
                                          @NonNull Map<String, JsonNode> requestAttributes)
             throws PerunUnknownException, PerunConnectionException;
 
+    /**
+     * Get GA4GH passport based on the user's ID
+     *
+     * @param userId id of a user
+     * @return GA4GH passport as a JsonNode
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws NoSuchAlgorithmException Thrown when there is no appropriate algorithm to tie the keys to.
+     * @throws FileNotFoundException Thrown when attempt to open the file denoted by a specified pathname has failed.
+     * @throws MalformedURLException Thrown when malformed URL has occurred.
+     * @throws InvalidKeySpecException Thrown when invalid key specifications have occurred.
+     * @throws URISyntaxException Thrown when string could not be parsed as a URI reference.
+     */
+    JsonNode ga4ghById(Long userId) throws PerunUnknownException, PerunConnectionException, NoSuchAlgorithmException, FileNotFoundException, MalformedURLException, InvalidKeySpecException, URISyntaxException, MissingOrInvalidFileException;
+
+    /**
+     * Get GA4GH passport based on the user's ID
+     *
+     * @param login login of a user
+     * @return GA4GH passport as a JsonNode
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
+     * @throws NoSuchAlgorithmException Thrown when there is no appropriate algorithm to tie the keys to.
+     * @throws FileNotFoundException Thrown when attempt to open the file denoted by a specified pathname has failed.
+     * @throws MalformedURLException Thrown when malformed URL has occurred.
+     * @throws InvalidKeySpecException Thrown when invalid key specifications have occurred.
+     * @throws URISyntaxException Thrown when string could not be parsed as a URI reference.
+     */
+    JsonNode ga4ghByLogin(String login) throws PerunUnknownException, PerunConnectionException, NoSuchAlgorithmException, FileNotFoundException, MalformedURLException, InvalidKeySpecException, URISyntaxException, EntityNotFoundException, MissingOrInvalidFileException;
 }

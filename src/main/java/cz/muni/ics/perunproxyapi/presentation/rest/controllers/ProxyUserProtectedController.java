@@ -3,9 +3,11 @@ package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.InvalidRequestParameterException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.MissingOrInvalidFileException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
@@ -25,6 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import javax.validation.constraints.NotNull;
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Map;
 
@@ -412,6 +420,18 @@ public class ProxyUserProtectedController {
             attributes.put(fieldName, jsonAttributes.get(fieldName));
         }
         return facade.updateUserIdentityAttributes(login, decodedIdentityIdentifier, attributes);
+    }
+
+    @ResponseBody
+    @GetMapping(value = "/ga4gh", produces = APPLICATION_JSON_VALUE)
+    public JsonNode ga4ghById(@RequestParam(value = USER_ID) @NotNull Long userId) throws NoSuchAlgorithmException, MalformedURLException, PerunConnectionException, FileNotFoundException, URISyntaxException, PerunUnknownException, InvalidKeySpecException, MissingOrInvalidFileException {
+        return facade.ga4ghById(userId);
+    }
+
+    @ResponseBody
+    @GetMapping(value = "/{login}/ga4gh", produces = APPLICATION_JSON_VALUE)
+    public JsonNode ga4ghByLogin(@PathVariable(value = LOGIN) @NotNull String login) throws NoSuchAlgorithmException, MalformedURLException, PerunConnectionException, FileNotFoundException, URISyntaxException, PerunUnknownException, InvalidKeySpecException, EntityNotFoundException, MissingOrInvalidFileException {
+        return facade.ga4ghByLogin(login);
     }
 
 }
