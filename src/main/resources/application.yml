@@ -7,6 +7,7 @@ connector:
     perun_url: "https://perun-dev.cesnet.cz/ba/rpc"
     perun_user: "user"
     perun_password: "pass"
+    serializer: "json"
     enabled: true
     request_timeout: 30000
     connect_timeout: 30000

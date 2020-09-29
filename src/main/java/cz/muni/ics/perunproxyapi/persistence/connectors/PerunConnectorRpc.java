@@ -38,7 +38,7 @@ public class PerunConnectorRpc {
     public PerunConnectorRpc(RestTemplate restTemplate, RpcConnectorProperties properties) {
         this.restTemplate = restTemplate;
         this.enabled = properties.isEnabled();
-        this.perunUrl = properties.getPerunUrl();
+        this.perunUrl = properties.getPerunUrl() + '/' + properties.getSerializer();
     }
 
     public PerunConnectorRpc(boolean enabled, @NonNull RestTemplate restTemplate, @NonNull String perunUrl) {
@@ -65,7 +65,7 @@ public class PerunConnectorRpc {
             return JsonNodeFactory.instance.nullNode();
         }
 
-        String actionUrl = this.perunUrl + "/json/" + manager + '/' + method;
+        String actionUrl = this.perunUrl + '/' + manager + '/' + method;
 
         // make the call
         try {
