@@ -59,7 +59,7 @@ public class PerunConnectorRpc {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    public JsonNode post(String manager, String method, Map<String, Object> map)
+    public JsonNode post(@NonNull String manager, @NonNull String method, @NonNull Map<String, Object> map)
             throws PerunUnknownException, PerunConnectionException {
         if (!enabled) {
             return JsonNodeFactory.instance.nullNode();
@@ -69,12 +69,13 @@ public class PerunConnectorRpc {
 
         // make the call
         try {
-            log.trace("calling {} with {}", actionUrl, map);
+            log.trace("Calling perun RPC:\n URL: {},\n params: {}", actionUrl, map);
             long startTime = currentTimeMillis();
             JsonNode result = restTemplate.postForObject(actionUrl, map, JsonNode.class);
             long endTime = currentTimeMillis();
             long responseTime = endTime - startTime;
             log.trace("POST call proceeded in {} ms.",responseTime);
+            log.trace("Calling perun RPC:\n URL: {},\n params: {}\n returns: {}", actionUrl, map, result);
             return result;
         } catch (HttpClientErrorException ex) {
             return handleHttpClientErrorException(ex, actionUrl);

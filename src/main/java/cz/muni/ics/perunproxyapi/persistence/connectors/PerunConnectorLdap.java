@@ -1,6 +1,7 @@
 package cz.muni.ics.perunproxyapi.persistence.connectors;
 
 import cz.muni.ics.perunproxyapi.persistence.exceptions.LookupException;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -39,8 +40,9 @@ public class PerunConnectorLdap {
      * @param <T> Class that the result should be mapped to.
      * @return Found entry mapped to target class
      */
-    public <T> T searchForObject(LdapQuery query, ContextMapper<T> mapper) {
-        log.trace("searchForObject({}, {})", query, mapper);
+    public <T> T searchForObject(@NonNull LdapQuery query, @NonNull ContextMapper<T> mapper) {
+        log.trace("searchForObject(\nbase: {},\nscope: {},\nfilters: {},\n attributes: {}\n)",
+                query.base(), query.searchScope(), query.filter(), query.attributes());
         long startTime = currentTimeMillis();
         T result = null;
         try {
@@ -51,7 +53,8 @@ public class PerunConnectorLdap {
         long endTime = currentTimeMillis();
         long responseTime = endTime - startTime;
         log.trace("searchForObject query proceeded in {} ms.", responseTime);
-        log.trace("searchForObject({}, {}) returns: {}", query, mapper, result);
+        log.trace("searchForObject(\nbase: {},\nscope: {},\nfilters: {},\n attributes: {}\n)\n returns: {}",
+                query.base(), query.searchScope(), query.filter(), query.attributes(), result);
 
         return result;
     }
@@ -63,14 +66,16 @@ public class PerunConnectorLdap {
      * @param <T> Class that the result should be mapped to.
      * @return List of found entries mapped to target class
      */
-    public <T> List<T> search(LdapQuery query, ContextMapper<T> mapper) {
-        log.trace("search({}, {})", query, mapper);
+    public <T> List<T> search(@NonNull LdapQuery query, @NonNull ContextMapper<T> mapper) {
+        log.trace("searchForObject(\nbase: {},\nscope: {},\nfilters: {},\n attributes: {},\n)",
+                query.base(), query.searchScope(), query.filter(), query.attributes());
         long startTime = currentTimeMillis();
         List<T> result = ldapTemplate.search(query, mapper);
         long endTime = currentTimeMillis();
         long responseTime = endTime - startTime;
         log.trace("search query proceeded in {} ms.", responseTime);
-        log.trace("search({}, {}) returns: {}", query, mapper, result);
+        log.trace("searchForObject(\nbase: {},\nscope: {},\nfilters: {},\n attributes: {}\n)\n returns: {}",
+                query.base(), query.searchScope(), query.filter(), query.attributes(), result);
         return result;
     }
 
@@ -83,8 +88,10 @@ public class PerunConnectorLdap {
      * @return Found entry mapped to target class
      * @throws LookupException When entry cannot be found
      */
-    public <T> T lookup(String dn, String[] attributes, ContextMapper<T> mapper) throws LookupException {
-        log.trace("lookup({}, {}, {})", dn, attributes, mapper);
+    public <T> T lookup(@NonNull String dn, @NonNull String[] attributes, @NonNull ContextMapper<T> mapper)
+            throws LookupException
+    {
+        log.trace("lookup(\ndn: {},\n attributes: {}\n)", dn, attributes);
         long startTime = currentTimeMillis();
         T result;
         try {
@@ -92,7 +99,7 @@ public class PerunConnectorLdap {
             long endTime = currentTimeMillis();
             long responseTime = endTime - startTime;
             log.trace("lookup query proceeded in {} ms.", responseTime);
-            log.trace("lookup({}, {}, {}) returns: {}", dn, attributes, mapper, result);
+            log.trace("lookup(\ndn: {},\n attributes: {}\n)\n returns: {}", dn, attributes, result);
             return result;
         } catch (NamingException e) {
             throw new LookupException();
