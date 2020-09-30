@@ -54,9 +54,9 @@ public class ProxyUserProtectedControllerTest {
     @Test
     public void findByPerunUserIdCallsFacadesMethodFindByPerunUserId() throws PerunUnknownException, PerunConnectionException, EntityNotFoundException, InvalidRequestParameterException {
         List<String> list = new ArrayList<>();
-        controller.findByPerunUserId(1L);
+        controller.findByPerunUserId(1L, new ArrayList<>());
 
-        verify(facade, times(1)).findByPerunUserId(1L);
+        verify(facade, times(1)).findByPerunUserId(1L, new ArrayList<>());
     }
 
 }

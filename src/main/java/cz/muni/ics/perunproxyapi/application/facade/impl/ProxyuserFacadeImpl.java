@@ -113,13 +113,14 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public UserDTO findByPerunUserId(Long userId)
+    public UserDTO findByPerunUserId(Long userId, List<String> fields)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
     {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_PERUN_USER_ID, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
+        List<String> fieldsToFetch = (fields != null && !fields.isEmpty()) ? fields : this.getDefaultFields(options);
 
-        User user = proxyUserService.findByPerunUserId(adapter, userId);
+        User user = proxyUserService.findByPerunUserIdWithAttributes(adapter, userId, fieldsToFetch);
         if (user == null) {
             throw new EntityNotFoundException("No user has been found for given user ID");
         }

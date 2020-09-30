@@ -156,6 +156,7 @@ public class ProxyUserProtectedController {
      * --header 'authorization: Basic auth'
      *
      * @param userId Id of a Perun user.
+     * @param fields OPTIONAL attributes for the user we want to obtain
      * @return JSON representation of the User object.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
@@ -164,14 +165,15 @@ public class ProxyUserProtectedController {
      */
     @ResponseBody
     @GetMapping(value = "/findByPerunUserId", produces = APPLICATION_JSON_VALUE)
-    public UserDTO findByPerunUserId(@RequestParam(value = USER_ID) Long userId)
+    public UserDTO findByPerunUserId(@RequestParam(value = USER_ID) Long userId,
+                                     @RequestParam(required = false, value = FIELDS) List<String> fields)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
             InvalidRequestParameterException
     {
         if (userId == null) {
             throw new InvalidRequestParameterException("User ID cannot be null");
         }
-        return facade.findByPerunUserId(userId);
+        return facade.findByPerunUserId(userId, fields);
     }
 
     /**

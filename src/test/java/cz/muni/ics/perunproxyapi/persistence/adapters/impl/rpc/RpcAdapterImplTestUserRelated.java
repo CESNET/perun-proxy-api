@@ -190,7 +190,7 @@ public class RpcAdapterImplTestUserRelated {
         params.put(PARAM_ID, sampleUser.getPerunId());
 
         when(connector.post(USERS_MANAGER, GET_USER_BY_ID, params)).thenReturn(sampleUserJson);
-        User actual = rpcAdapter.findPerunUserById(sampleUser.getPerunId());
+        User actual = rpcAdapter.findPerunUserById(sampleUser.getPerunId(), new ArrayList<>());
         assertNotNull(actual);
         assertEquals(sampleUser, actual, "Expected and found users are different");
     }
@@ -204,7 +204,7 @@ public class RpcAdapterImplTestUserRelated {
         when(connector.post(USERS_MANAGER, GET_USER_BY_ID, params))
                 .thenReturn(JsonNodeFactory.instance.nullNode());
 
-        User actual = rpcAdapter.findPerunUserById(uid);
+        User actual = rpcAdapter.findPerunUserById(uid, new ArrayList<>());
         assertNull(actual, "Expected null to be returned");
     }
 

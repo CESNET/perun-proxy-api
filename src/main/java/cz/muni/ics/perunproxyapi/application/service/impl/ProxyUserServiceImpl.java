@@ -75,9 +75,11 @@ public class ProxyUserServiceImpl implements ProxyUserService {
     }
 
     @Override
-    public User findByPerunUserId(@NonNull DataAdapter preferredAdapter, @NonNull Long userId)
-            throws PerunUnknownException, PerunConnectionException {
-        return preferredAdapter.findPerunUserById(userId);
+    public User findByPerunUserIdWithAttributes(@NonNull DataAdapter preferredAdapter,
+                                                @NonNull Long userId, List<String> attrIdentifiers)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        return preferredAdapter.findPerunUserById(userId, attrIdentifiers);
     }
 
     @Override

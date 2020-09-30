@@ -122,15 +122,15 @@ public class RpcAdapterImpl implements FullAdapter {
     @Override
     public Map<String, PerunAttribute> getAttributes(@NonNull Entity entity,
                                                      @NonNull Long entityId,
-                                                     List<String> attrsToFetch)
+                                                     List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException
     {
-        if (attrsToFetch == null || attrsToFetch.isEmpty()) {
-            log.debug("No attrs to fetch - attrsToFetch: {}", (attrsToFetch == null ? "null" : "empty"));
+        if (attrIdentifiers == null || attrIdentifiers.isEmpty()) {
+            log.debug("No attrs to fetch - attrIdentifiers: {}", (attrIdentifiers == null ? "null" : "empty"));
             return new HashMap<>();
         }
 
-        Set<AttributeObjectMapping> mappings = attributeMappingService.getMappingsByIdentifiers(attrsToFetch);
+        Set<AttributeObjectMapping> mappings = attributeMappingService.getMappingsByIdentifiers(attrIdentifiers);
 
         List<String> rpcNames = mappings.stream()
                 .map(AttributeObjectMapping::getRpcName)
@@ -246,14 +246,21 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public User findPerunUserById(Long userId)
+    public User findPerunUserById(Long userId, List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException
     {
         Map<String, Object> params = new LinkedHashMap<>();
         params.put(PARAM_ID, userId);
 
         JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUserById", params);
-        return this.returnUser(perunResponse);
+        User user = this.returnUser(perunResponse);
+        if (user != null) {
+            Map<String, PerunAttributeValue> attrValues = this.getAttributesValues(USER, user.getPerunId(),
+                    attrIdentifiers);
+            user.setAttributes(attrValues);
+        }
+
+        return user;
     }
 
     @Override

@@ -59,12 +59,13 @@ public interface ProxyuserFacade {
     /**
      * Find user by id.
      * @param userId Id of a Perun user.
+     * @param fields OPTIONAL attributes for the user we want to obtain
      * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    UserDTO findByPerunUserId(Long userId)
+    UserDTO findByPerunUserId(Long userId, List<String> fields)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
     /**

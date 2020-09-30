@@ -33,11 +33,13 @@ public interface DataAdapter {
     /**
      * Get user from Perun by id.
      * @param userId ID of a Perun user.
+     * @param attrIdentifiers List of attribute identifiers that should be fetched as well.
      * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findPerunUserById(Long userId) throws PerunUnknownException, PerunConnectionException;
+    User findPerunUserById(Long userId, List<String> attrIdentifiers)
+            throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Get groups the user is member of in particular VO.
@@ -120,7 +122,8 @@ public interface DataAdapter {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    List<Facility> getFacilitiesByAttribute(@NonNull String attributeName, @NonNull String attrValue) throws PerunUnknownException, PerunConnectionException;
+    List<Facility> getFacilitiesByAttribute(@NonNull String attributeName, @NonNull String attrValue)
+            throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Get facility representing the RP by it's identifier.
@@ -140,7 +143,8 @@ public interface DataAdapter {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    List<Group> getUsersGroupsOnFacility(@NonNull Long facilityId, @NonNull Long userId) throws PerunUnknownException, PerunConnectionException;
+    List<Group> getUsersGroupsOnFacility(@NonNull Long facilityId, @NonNull Long userId)
+            throws PerunUnknownException, PerunConnectionException;
 
     /**
      * Get entitlements forwarded from external sources.

@@ -167,20 +167,29 @@ public class LdapAdapterImpl implements DataAdapter {
     }
 
     @Override
-    public User findPerunUserById(Long userId) {
+    public User findPerunUserById(@NonNull Long userId, List<String> attrIdentifiers) {
+        final Set<AttributeObjectMapping> finalMappings = this.getAttributeMappings(attrIdentifiers);
+        ContextMapper<User> mapper = this.userWithAttributesMapper(finalMappings);
 
-        Filter filter = new AndFilter()
-                .and(new EqualsFilter(OBJECT_CLASS, PERUN_USER))
-                .and(new EqualsFilter(PERUN_USER_ID, String.valueOf(userId)));
+        Set<String> attributes = new HashSet<>();
+        attributes.addAll(Arrays.asList(PERUN_USER_REQUIRED_ATTRIBUTES));
+        attributes.addAll(Arrays.asList(this.getAttributesFromMappings(finalMappings)));
 
-        return this.getUser(filter);
+        String dn = this.constructUserDn(userId, null);
+        try {
+            return connectorLdap.lookup(dn, attributes.toArray(new String[] {}), mapper);
+        } catch (LookupException e) {
+            log.debug("Caught LookupException, returning NULL", e);
+            return null;
+        }
     }
 
     @Override
     public List<Group> getUserGroups(@NonNull Long userId) {
+        String uniqueMember = this.constructUserDn(userId, baseDn);
         Filter filter = new AndFilter()
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_GROUP))
-                .and(new EqualsFilter(UNIQUE_MEMBER, PERUN_USER_ID + '=' + userId + ",ou=People," + baseDn));
+                .and(new EqualsFilter(UNIQUE_MEMBER, uniqueMember));
         return getGroups(filter);
     }
 
@@ -338,9 +347,10 @@ public class LdapAdapterImpl implements DataAdapter {
             resourceIdsFilter.or(new EqualsFilter(ASSIGNED_TO_RESOURCE_ID, String.valueOf(id)));
         }
 
+        String uniqueMember = this.constructUserDn(userId, baseDn);
         AndFilter filter = new AndFilter()
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_GROUP))
-                .and(new EqualsFilter(UNIQUE_MEMBER, PERUN_USER_ID + '=' + userId + ",ou=People," + baseDn))
+                .and(new EqualsFilter(UNIQUE_MEMBER, uniqueMember))
                 .and(resourceIdsFilter);
 
         return getGroups(filter);
@@ -533,7 +543,7 @@ public class LdapAdapterImpl implements DataAdapter {
     private String getPrefixForEntity(@NonNull Entity entity, @NonNull Long entityId) {
         String prefix = null;
         switch (entity) {
-            case USER: prefix = PERUN_USER_ID + '=' + entityId + ",ou=People"; break;
+            case USER: prefix = this.constructUserDn(entityId, null); break;
             case VO: prefix = PERUN_VO_ID + '=' + entityId; break;
             case GROUP: prefix = PERUN_GROUP_ID + '=' + entityId; break;
             case FACILITY: prefix = PERUN_FACILITY_ID + '=' + entityId; break;
@@ -923,6 +933,14 @@ public class LdapAdapterImpl implements DataAdapter {
                     }
                     return true;
                 }).collect(Collectors.toSet());
+    }
+
+    private String constructUserDn(@NonNull Long userId, String baseDn) {
+        String dn = PERUN_USER_ID + '=' + userId + ',' + OU_PEOPLE;
+        if (baseDn != null) {
+            dn += (',' + baseDn);
+        }
+        return dn;
     }
 
 }
