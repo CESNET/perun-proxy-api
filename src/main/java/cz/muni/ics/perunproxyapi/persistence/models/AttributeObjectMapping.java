@@ -27,7 +27,7 @@ public class AttributeObjectMapping {
     @NonNull private String identifier;
     @NonNull private String rpcName;
     private String ldapName;
-    @EqualsAndHashCode.Exclude private AttributeType attrType;
+    @NonNull private AttributeType attrType;
     private String separator;
 
     public AttributeObjectMapping() {

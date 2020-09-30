@@ -8,6 +8,7 @@ import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
 import cz.muni.ics.perunproxyapi.persistence.connectors.PerunConnectorRpc;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.enums.MemberStatus;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.ConfigurationException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.InternalErrorException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
@@ -111,12 +112,21 @@ public class RpcAdapterImpl implements FullAdapter {
         this.connectorRpc = perunConnectorRpc;
         this.attributeMappingService = attributeMappingService;
 
-        this.rpIdentifierAttr = AdapterUtils.getRequiredRpcNameFromMapping(
-                this.attributeMappingService.getMappingByIdentifier(rpIdentifierAttrIdentifier));
-        this.additionalIdentifiersAttr = AdapterUtils.getRequiredRpcNameFromMapping(
-                this.attributeMappingService.getMappingByIdentifier(additionalIdentifiersAttrIdentifier));
-        this.loginAttr = AdapterUtils.getRequiredRpcNameFromMapping(
-                this.attributeMappingService.getMappingByIdentifier(loginAttrIdentifier));
+        try {
+            this.rpIdentifierAttr = AdapterUtils.getRequiredRpcNameFromMapping(
+                    this.attributeMappingService.getMappingByIdentifier(rpIdentifierAttrIdentifier));
+            this.additionalIdentifiersAttr = AdapterUtils.getRequiredRpcNameFromMapping(
+                    this.attributeMappingService.getMappingByIdentifier(additionalIdentifiersAttrIdentifier));
+            this.loginAttr = AdapterUtils.getRequiredRpcNameFromMapping(
+                    this.attributeMappingService.getMappingByIdentifier(loginAttrIdentifier));
+        } catch (IllegalArgumentException e) {
+            log.error("An exception caught when fetching mappings for required attributes.\nRequired attributes:" +
+                            "\nattributes.identifiers.relying_party = {}\n" +
+                            "\nattributes.identifiers.additional_identifiers = {}\n" +
+                            "\nattributes.identifiers.login = {}\n", rpIdentifierAttrIdentifier,
+                    additionalIdentifiersAttrIdentifier, loginAttrIdentifier, e);
+            throw new ConfigurationException("Could not fetch mappings for required RPC adapter attributes.", e);
+        }
     }
 
     @Override

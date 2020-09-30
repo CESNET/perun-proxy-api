@@ -69,6 +69,7 @@ public class AttributeMappingService {
      */
     public AttributeObjectMapping getMappingByIdentifier(String identifier) {
         if (!attributeMap.containsKey(identifier)) {
+            log.warn("Could not fetch mapping for identifier {}. Check your attribute mapping file.", identifier);
             throw new IllegalArgumentException("Unknown identifier, check your configuration");
         }
 

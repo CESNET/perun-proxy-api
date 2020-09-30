@@ -11,6 +11,7 @@ import cz.muni.ics.perunproxyapi.persistence.connectors.PerunConnectorLdap;
 import cz.muni.ics.perunproxyapi.persistence.connectors.properties.LdapProperties;
 import cz.muni.ics.perunproxyapi.persistence.enums.AttributeType;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.ConfigurationException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.InconvertibleValueException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.LookupException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
@@ -139,12 +140,21 @@ public class LdapAdapterImpl implements DataAdapter {
         this.attributeMappingService = attributeMappingService;
         this.baseDn = ldapProperties.getBaseDn();
 
-        this.rpIdentifierAttr = AdapterUtils.getRequiredLdapNameFromMapping(
-                this.attributeMappingService.getMappingByIdentifier(rpIdentifierAttrIdentifier));
-        this.additionalIdentifiersAttr = AdapterUtils.getRequiredLdapNameFromMapping(
-                this.attributeMappingService.getMappingByIdentifier(additionalIdentifiersAttrIdentifier));
-        this.loginAttr = AdapterUtils.getRequiredLdapNameFromMapping(
-                this.attributeMappingService.getMappingByIdentifier(loginAttrIdentifier));
+        try {
+            this.rpIdentifierAttr = AdapterUtils.getRequiredLdapNameFromMapping(
+                    this.attributeMappingService.getMappingByIdentifier(rpIdentifierAttrIdentifier));
+            this.additionalIdentifiersAttr = AdapterUtils.getRequiredLdapNameFromMapping(
+                    this.attributeMappingService.getMappingByIdentifier(additionalIdentifiersAttrIdentifier));
+            this.loginAttr = AdapterUtils.getRequiredLdapNameFromMapping(
+                    this.attributeMappingService.getMappingByIdentifier(loginAttrIdentifier));
+        } catch (IllegalArgumentException e) {
+            log.error("An exception caught when fetching mappings for required attributes.\nRequired attributes:" +
+                            "\nattributes.identifiers.relying_party = {}\n" +
+                            "\nattributes.identifiers.additional_identifiers = {}\n" +
+                            "\nattributes.identifiers.login = {}\n", rpIdentifierAttrIdentifier,
+                    additionalIdentifiersAttrIdentifier, loginAttrIdentifier, e);
+            throw new ConfigurationException("Could not fetch mappings for required RPC adapter attributes.", e);
+        }
 
         this.PERUN_USER_REQUIRED_ATTRIBUTES = new String[] { PERUN_USER_ID, SN, loginAttr };
         this.PERUN_USER_BEAN_ATTRIBUTES = new String[] { PERUN_USER_ID, GIVEN_NAME, SN, loginAttr };
