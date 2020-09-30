@@ -9,8 +9,8 @@ import cz.muni.ics.perunproxyapi.persistence.adapters.AdapterUtils;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.connectors.PerunConnectorLdap;
 import cz.muni.ics.perunproxyapi.persistence.connectors.properties.LdapProperties;
-import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.enums.AttributeType;
+import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.InconvertibleValueException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.LookupException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
@@ -30,7 +30,6 @@ import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.Filter;
-import org.springframework.ldap.filter.LikeFilter;
 import org.springframework.ldap.filter.OrFilter;
 import org.springframework.ldap.query.LdapQuery;
 import org.springframework.stereotype.Component;
@@ -50,7 +49,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.FACILITY;
-import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue.*;
+import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue.INTEGER_TYPE;
+import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue.LARGE_STRING_TYPE;
+import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue.MAP_TYPE;
+import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue.STRING_TYPE;
 import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValueAwareModel.ARRAY_TYPE;
 import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValueAwareModel.BOOLEAN_TYPE;
 import static cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValueAwareModel.LARGE_ARRAY_LIST_TYPE;
@@ -407,9 +409,7 @@ public class LdapAdapterImpl implements DataAdapter {
         OrFilter identifiersFilter = new OrFilter();
         for (String identifier : identifiers) {
             if (StringUtils.hasText(identifier)) {
-                identifiersFilter.or(
-                        new LikeFilter(additionalIdentifiersAttr, '*' + identifier + '*')
-                );
+                identifiersFilter.or(new EqualsFilter(additionalIdentifiersAttr, identifier));
             }
         }
         AndFilter filter = new AndFilter()
