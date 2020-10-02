@@ -51,74 +51,74 @@ public class ProxyUserServiceTest {
 
     @Test
     public void testFindByExtLoginsViaRpc() throws PerunUnknownException, PerunConnectionException {
-        when(ldapAdapter.getPerunUser(anyString(), anyList())).thenReturn(sampleUser);
-        when(rpcAdapter.getPerunUser(anyString(), anyList())).thenReturn(sampleUser);
+        when(ldapAdapter.getPerunUser(anyString(), anyList(), anyList())).thenReturn(sampleUser);
+        when(rpcAdapter.getPerunUser(anyString(), anyList(), anyList())).thenReturn(sampleUser);
 
-        User actual = service.findByExtLogins(rpcAdapter, IDP_ENTITY_ID, uids);
+        User actual = service.findByExtLogins(rpcAdapter, IDP_ENTITY_ID, uids, new ArrayList<>());
         assertNotNull(actual);
         assertEquals(sampleUser, actual);
-        verify(rpcAdapter, times(1)).getPerunUser(IDP_ENTITY_ID, uids);
-        verify(ldapAdapter, times(0)).getPerunUser(IDP_ENTITY_ID, uids);
+        verify(rpcAdapter, times(1)).getPerunUser(IDP_ENTITY_ID, uids, new ArrayList<>());
+        verify(ldapAdapter, times(0)).getPerunUser(IDP_ENTITY_ID, uids, new ArrayList<>());
     }
 
     @Test
     public void testFindByExtLoginsViaLdap() throws PerunUnknownException, PerunConnectionException {
-        when(ldapAdapter.getPerunUser(anyString(), anyList())).thenReturn(sampleUser);
-        when(rpcAdapter.getPerunUser(anyString(), anyList())).thenReturn(sampleUser);
+        when(ldapAdapter.getPerunUser(anyString(), anyList(), anyList())).thenReturn(sampleUser);
+        when(rpcAdapter.getPerunUser(anyString(), anyList(), anyList())).thenReturn(sampleUser);
 
-        User actual = service.findByExtLogins(ldapAdapter, IDP_ENTITY_ID, uids);
+        User actual = service.findByExtLogins(ldapAdapter, IDP_ENTITY_ID, uids, new ArrayList<>());
         assertNotNull(actual);
         assertEquals(sampleUser, actual);
-        verify(ldapAdapter, times(1)).getPerunUser(IDP_ENTITY_ID, uids);
-        verify(rpcAdapter, times(0)).getPerunUser(IDP_ENTITY_ID, uids);
+        verify(ldapAdapter, times(1)).getPerunUser(IDP_ENTITY_ID, uids, new ArrayList<>());
+        verify(rpcAdapter, times(0)).getPerunUser(IDP_ENTITY_ID, uids, new ArrayList<>());
     }
 
     @Test
     public void testFindByExtLoginsUserNotFoundViaRpc() throws PerunUnknownException, PerunConnectionException {
-        when(ldapAdapter.getPerunUser(anyString(), anyList())).thenReturn(null);
-        when(rpcAdapter.getPerunUser(anyString(), anyList())).thenReturn(null);
+        when(ldapAdapter.getPerunUser(anyString(), anyList(), anyList())).thenReturn(null);
+        when(rpcAdapter.getPerunUser(anyString(), anyList(), anyList())).thenReturn(null);
 
-        User actual = service.findByExtLogins(rpcAdapter, IDP_ENTITY_ID, uids);
+        User actual = service.findByExtLogins(rpcAdapter, IDP_ENTITY_ID, uids, new ArrayList<>());
         assertNull(actual);
-        verify(rpcAdapter, times(1)).getPerunUser(IDP_ENTITY_ID, uids);
-        verify(ldapAdapter, times(0)).getPerunUser(IDP_ENTITY_ID, uids);
+        verify(rpcAdapter, times(1)).getPerunUser(IDP_ENTITY_ID, uids, new ArrayList<>());
+        verify(ldapAdapter, times(0)).getPerunUser(IDP_ENTITY_ID, uids, new ArrayList<>());
     }
 
     @Test
     public void testFindByExtLoginsUserNotFoundViaLdap() throws PerunUnknownException, PerunConnectionException {
-        when(ldapAdapter.getPerunUser(anyString(), anyList())).thenReturn(null);
-        when(rpcAdapter.getPerunUser(anyString(), anyList())).thenReturn(null);
+        when(ldapAdapter.getPerunUser(anyString(), anyList(), anyList())).thenReturn(null);
+        when(rpcAdapter.getPerunUser(anyString(), anyList(), anyList())).thenReturn(null);
 
-        User actual = service.findByExtLogins(ldapAdapter, IDP_ENTITY_ID, uids);
+        User actual = service.findByExtLogins(ldapAdapter, IDP_ENTITY_ID, uids, new ArrayList<>());
         assertNull(actual);
-        verify(ldapAdapter, times(1)).getPerunUser(IDP_ENTITY_ID, uids);
-        verify(rpcAdapter, times(0)).getPerunUser(IDP_ENTITY_ID, uids);
+        verify(ldapAdapter, times(1)).getPerunUser(IDP_ENTITY_ID, uids, new ArrayList<>());
+        verify(rpcAdapter, times(0)).getPerunUser(IDP_ENTITY_ID, uids, new ArrayList<>());
     }
 
     @Test
     public void testFindByExtLoginsNullAdapter() {
-        assertThrows(NullPointerException.class, () -> service.findByExtLogins(null, IDP_ENTITY_ID, uids));
+        assertThrows(NullPointerException.class, () -> service.findByExtLogins(null, IDP_ENTITY_ID, uids, new ArrayList<>()));
     }
 
     @Test
     public void testFindByExtLoginsNullIdpIdentifier() {
-        assertThrows(NullPointerException.class, () -> service.findByExtLogins(rpcAdapter, null, uids));
+        assertThrows(NullPointerException.class, () -> service.findByExtLogins(rpcAdapter, null, uids, new ArrayList<>()));
     }
 
     @Test
     public void testFindByExtLoginsNullUids() {
-        assertThrows(NullPointerException.class, () -> service.findByExtLogins(rpcAdapter, IDP_ENTITY_ID, null));
+        assertThrows(NullPointerException.class, () -> service.findByExtLogins(rpcAdapter, IDP_ENTITY_ID, null, new ArrayList<>()));
     }
 
     @Test
     public void testFindByExtLoginsEmptyIdpIdentifier() {
-        assertThrows(IllegalArgumentException.class, () -> service.findByExtLogins(rpcAdapter, "", uids));
-        assertThrows(IllegalArgumentException.class, () -> service.findByExtLogins(rpcAdapter, " ", uids));
+        assertThrows(IllegalArgumentException.class, () -> service.findByExtLogins(rpcAdapter, "", uids, new ArrayList<>()));
+        assertThrows(IllegalArgumentException.class, () -> service.findByExtLogins(rpcAdapter, " ", uids, new ArrayList<>()));
     }
 
     @Test
     public void testFindByExtLoginsEmptyUids() {
-        assertThrows(IllegalArgumentException.class, () -> service.findByExtLogins(rpcAdapter, IDP_ENTITY_ID, new ArrayList<>()));
+        assertThrows(IllegalArgumentException.class, () -> service.findByExtLogins(rpcAdapter, IDP_ENTITY_ID, new ArrayList<>(), new ArrayList<>()));
     }
 
 }

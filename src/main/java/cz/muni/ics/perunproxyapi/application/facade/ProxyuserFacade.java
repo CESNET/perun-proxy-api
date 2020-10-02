@@ -24,12 +24,13 @@ public interface ProxyuserFacade {
      *
      * @param idpIdentifier Identifier of source Identity Provider.
      * @param userIdentifiers List of string containing identifiers of a user.
+     * @param fields List of user's attributes we want to retrieve.
      * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    UserDTO findByExtLogins(@NonNull String idpIdentifier, @NonNull List<String> userIdentifiers)
+    UserDTO findByExtLogins(@NonNull String idpIdentifier, @NonNull List<String> userIdentifiers, List<String> fields)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
     /**
@@ -37,10 +38,11 @@ public interface ProxyuserFacade {
      * !!!! Works only with LDAP adapter !!!!
      * @param idpIdentifier Identifier of source Identity Provider.
      * @param identifiers List of strings containing identifiers of a user.
+     * @param fields List of user's attributes we want to retrieve.
      * @return User or null.
      * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    UserDTO findByIdentifiers(@NonNull String idpIdentifier, @NonNull List<String> identifiers)
+    UserDTO findByIdentifiers(@NonNull String idpIdentifier, @NonNull List<String> identifiers, List<String> fields)
             throws EntityNotFoundException;
 
     /**
@@ -59,7 +61,7 @@ public interface ProxyuserFacade {
     /**
      * Find user by id.
      * @param userId Id of a Perun user.
-     * @param fields OPTIONAL attributes for the user we want to obtain
+     * @param fields List of user's attributes we want to retrieve.
      * @return User or null.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.

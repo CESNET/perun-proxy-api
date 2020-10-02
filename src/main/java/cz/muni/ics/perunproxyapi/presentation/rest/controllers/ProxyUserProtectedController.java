@@ -76,7 +76,8 @@ public class ProxyUserProtectedController {
     @ResponseBody
     @GetMapping(value = "/findByExtLogins", produces = APPLICATION_JSON_VALUE)
     public UserDTO findByExtLogins(@RequestParam(value = IDP_IDENTIFIER) String idpIdentifier,
-                                   @RequestParam(value = IDENTIFIERS) List<String> identifiers)
+                                   @RequestParam(value = IDENTIFIERS) List<String> identifiers,
+                                   @RequestParam(value = FIELDS, required = false) List<String> fields)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
             InvalidRequestParameterException
     {
@@ -86,8 +87,7 @@ public class ProxyUserProtectedController {
             throw new InvalidRequestParameterException("User identifiers cannot be empty");
         }
         String decodedIdpIdentifier = ControllerUtils.decodeUrlSafeBase64(idpIdentifier);
-
-        return facade.findByExtLogins(decodedIdpIdentifier, identifiers);
+        return facade.findByExtLogins(decodedIdpIdentifier, identifiers, fields);
     }
 
     @ResponseBody
@@ -107,8 +107,9 @@ public class ProxyUserProtectedController {
         if (identifiers.isEmpty()) {
             throw new InvalidRequestParameterException("User identifiers cannot be empty");
         }
+        List<String> fields = ControllerUtils.extractFieldsFromBody(body, FIELDS);
 
-        return facade.findByExtLogins(decodedIdpIdentifier, identifiers);
+        return facade.findByExtLogins(decodedIdpIdentifier, identifiers, fields);
     }
 
     /**
@@ -130,7 +131,8 @@ public class ProxyUserProtectedController {
     @ResponseBody
     @GetMapping(value = "/findByIdentifiers", produces = APPLICATION_JSON_VALUE)
     public UserDTO findByIdentifiers(@RequestParam(value = IDP_IDENTIFIER) String idpIdentifier,
-                                     @RequestParam(value = IDENTIFIERS) List<String> identifiers)
+                                     @RequestParam(value = IDENTIFIERS) List<String> identifiers,
+                                     @RequestParam(value = FIELDS, required = false) List<String> fields)
             throws EntityNotFoundException, InvalidRequestParameterException
     {
         if (!StringUtils.hasText(idpIdentifier)) {
@@ -139,7 +141,7 @@ public class ProxyUserProtectedController {
             throw new InvalidRequestParameterException("User identifiers cannot be empty");
         }
         String decodedIdpIdentifier = ControllerUtils.decodeUrlSafeBase64(idpIdentifier);
-        return facade.findByIdentifiers(decodedIdpIdentifier, identifiers);
+        return facade.findByIdentifiers(decodedIdpIdentifier, identifiers, fields);
     }
 
     @ResponseBody
@@ -159,7 +161,7 @@ public class ProxyUserProtectedController {
         }
         List<String> fields = ControllerUtils.extractFieldsFromBody(body, FIELDS);
 
-        return facade.findByIdentifiers(decodedIdpIdentifier, identifiers);
+        return facade.findByIdentifiers(decodedIdpIdentifier, identifiers, fields);
     }
 
     /**
@@ -181,7 +183,7 @@ public class ProxyUserProtectedController {
     @ResponseBody
     @GetMapping(value = "/{login}", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDTO getUserByLogin(@PathVariable(value = LOGIN) String login,
-                                  @RequestParam(required = false, value = FIELDS) List<String> fields)
+                                  @RequestParam(value = FIELDS, required = false) List<String> fields)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
             InvalidRequestParameterException
     {
@@ -222,7 +224,7 @@ public class ProxyUserProtectedController {
     @ResponseBody
     @GetMapping(value = "/findByPerunUserId", produces = APPLICATION_JSON_VALUE)
     public UserDTO findByPerunUserId(@RequestParam(value = USER_ID) Long userId,
-                                     @RequestParam(required = false, value = FIELDS) List<String> fields)
+                                     @RequestParam(value = FIELDS, required = false) List<String> fields)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
             InvalidRequestParameterException
     {

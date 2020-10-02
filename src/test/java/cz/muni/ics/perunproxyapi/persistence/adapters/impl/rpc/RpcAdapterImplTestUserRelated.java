@@ -121,7 +121,7 @@ public class RpcAdapterImplTestUserRelated {
         when(connector.post(eq(USERS_MANAGER), eq(GET_USER_BY_EXT_SOURCE_NAME_AND_EXT_LOGIN), anyMap()))
                 .thenReturn(userJson);
 
-        User actual = rpcAdapter.getPerunUser(TEST_IDP_ENTITY_ID, uids);
+        User actual = rpcAdapter.getPerunUser(TEST_IDP_ENTITY_ID, uids, new ArrayList<>());
         assertNotNull(actual, "Expected non-null user to be found.");
         assertEquals(sampleUser, actual, "Found user is not the same as expected.");
     }
@@ -131,7 +131,7 @@ public class RpcAdapterImplTestUserRelated {
         when(connector.post(eq(USERS_MANAGER), eq(GET_USER_BY_EXT_SOURCE_NAME_AND_EXT_LOGIN), anyMap()))
                 .thenReturn(JsonNodeFactory.instance.nullNode());
 
-        assertNull(rpcAdapter.getPerunUser(TEST_IDP_ENTITY_ID, uids));
+        assertNull(rpcAdapter.getPerunUser(TEST_IDP_ENTITY_ID, uids, new ArrayList<>()));
     }
 
     @Test

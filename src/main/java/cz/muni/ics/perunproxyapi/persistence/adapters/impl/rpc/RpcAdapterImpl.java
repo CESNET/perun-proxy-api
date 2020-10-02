@@ -241,7 +241,7 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids)
+    public User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids, List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException
     {
         User user = null;
@@ -250,6 +250,12 @@ public class RpcAdapterImpl implements FullAdapter {
             if (user != null) {
                 break;
             }
+        }
+
+        if (user != null && user.getPerunId() != null) {
+            Map<String, PerunAttributeValue> attrValues = this.getAttributesValues(USER,
+                    user.getPerunId(), attrIdentifiers);
+            user.setAttributes(attrValues);
         }
 
         return this.returnUser(user);

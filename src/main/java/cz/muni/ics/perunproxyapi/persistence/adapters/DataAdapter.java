@@ -27,7 +27,7 @@ public interface DataAdapter {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids)
+    User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids, List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException;
 
     /**
@@ -38,7 +38,7 @@ public interface DataAdapter {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findPerunUserById(Long userId, List<String> attrIdentifiers)
+    User findPerunUserById(@NonNull Long userId, List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException;
 
     /**

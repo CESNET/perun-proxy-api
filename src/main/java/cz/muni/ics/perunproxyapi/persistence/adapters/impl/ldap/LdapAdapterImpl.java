@@ -163,7 +163,7 @@ public class LdapAdapterImpl implements DataAdapter {
     }
 
     @Override
-    public User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids) {
+    public User getPerunUser(@NonNull String idpEntityId, @NonNull List<String> uids, List<String> attrIdentifiers) {
         OrFilter uidsOrFilter = new OrFilter();
         for (String uid: uids) {
             uidsOrFilter.or(new EqualsFilter(EDU_PERSON_PRINCIPAL_NAMES, uid));
@@ -173,7 +173,7 @@ public class LdapAdapterImpl implements DataAdapter {
                 .and(new EqualsFilter(OBJECT_CLASS, PERUN_USER))
                 .and(uidsOrFilter);
 
-        return this.getUser(filter);
+        return this.getUser(filter, attrIdentifiers);
     }
 
     @Override
@@ -752,11 +752,13 @@ public class LdapAdapterImpl implements DataAdapter {
         return flatSet;
     }
 
-    private User getUser(Filter filter) {
+    private User getUser(Filter filter, List<String> attrIdentifiers) {
+        final Set<AttributeObjectMapping> finalMappings = this.getAttributeMappings(attrIdentifiers);
+        String[] attributes = this.constructUserAttributes(finalMappings);
         LdapQuery query = query().base(OU_PEOPLE)
-                .attributes(PERUN_USER_BEAN_ATTRIBUTES)
+                .attributes(attributes)
                 .filter(filter);
-        ContextMapper<User> mapper = this.userMapper();
+        ContextMapper<User> mapper = this.userWithAttributesMapper(finalMappings);
         return connectorLdap.searchForObject(query, mapper);
     }
 

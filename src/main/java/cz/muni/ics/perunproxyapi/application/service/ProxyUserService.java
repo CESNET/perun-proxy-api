@@ -33,7 +33,7 @@ public interface ProxyUserService {
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
     User findByExtLogins(@NonNull DataAdapter preferredAdapter, @NonNull String idpIdentifier,
-                         @NonNull List<String> userIdentifiers)
+                         @NonNull List<String> userIdentifiers, List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException;
 
     /**
@@ -46,7 +46,8 @@ public interface ProxyUserService {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    User findByExtLogin(@NonNull DataAdapter preferredAdapter, @NonNull String idpIdentifier, @NonNull String login)
+    User findByExtLogin(@NonNull DataAdapter preferredAdapter, @NonNull String idpIdentifier,
+                        @NonNull String login, List<String> attrIdentifiers)
             throws PerunUnknownException, PerunConnectionException;
 
     /**

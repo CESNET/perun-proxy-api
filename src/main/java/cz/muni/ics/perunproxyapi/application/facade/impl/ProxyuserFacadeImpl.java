@@ -61,7 +61,8 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public UserDTO findByExtLogins(@NonNull String idpIdentifier, @NonNull List<String> userIdentifiers)
+    public UserDTO findByExtLogins(@NonNull String idpIdentifier, @NonNull List<String> userIdentifiers,
+                                   List<String> fields)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
     {
         if (userIdentifiers.isEmpty()) {
@@ -70,8 +71,10 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
         JsonNode options = FacadeUtils.getOptions(FIND_BY_EXT_LOGINS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
+        List<String> fieldsToFetch = this.getFields(fields, options);
 
-        User user = proxyUserService.findByExtLogins(adapter, idpIdentifier, userIdentifiers);
+        User user = proxyUserService.findByExtLogins(adapter, idpIdentifier,
+                userIdentifiers, fieldsToFetch);
         if (user == null) {
             throw new EntityNotFoundException("No user has been found for given identifiers");
         }
@@ -80,7 +83,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     }
 
     @Override
-    public UserDTO findByIdentifiers(@NonNull String idpIdentifier, @NonNull List<String> identifiers)
+    public UserDTO findByIdentifiers(@NonNull String idpIdentifier, @NonNull List<String> identifiers, List<String> fields)
             throws EntityNotFoundException
     {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_IDENTIFIERS, methodConfigurations);
@@ -88,8 +91,9 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         //DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
         DataAdapter adapter = adaptersContainer.getLdapAdapter();
 
-        List<String> fieldsToFetch = this.getDefaultFields(options);
-        User user = proxyUserService.findByIdentifiers(adapter, idpIdentifier, identifiers, fieldsToFetch);
+        List<String> fieldsToFetch = this.getFields(fields, options);
+        User user = proxyUserService.findByIdentifiers(adapter, idpIdentifier, identifiers,
+                fieldsToFetch);
         if (user == null) {
             throw new EntityNotFoundException("No user has been found for given identifiers");
         }
@@ -102,7 +106,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     {
         JsonNode options = FacadeUtils.getOptions(GET_USER_BY_LOGIN, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
-        List<String> fieldsToFetch = (fields != null && !fields.isEmpty()) ? fields : this.getDefaultFields(options);
+        List<String> fieldsToFetch = this.getFields(fields, options);
 
         User user = proxyUserService.getUserWithAttributesByLogin(adapter, login, fieldsToFetch);
         if (user == null) {
@@ -118,7 +122,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_PERUN_USER_ID, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
-        List<String> fieldsToFetch = (fields != null && !fields.isEmpty()) ? fields : this.getDefaultFields(options);
+        List<String> fieldsToFetch = this.getFields(fields, options);
 
         User user = proxyUserService.findByPerunUserIdWithAttributes(adapter, userId, fieldsToFetch);
         if (user == null) {
@@ -183,6 +187,10 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
                 .collect(Collectors.toList());
         return proxyUserService.updateUserIdentityAttributes(login, identityId, adapter, requestAttributes,
                 mapper, externalToInternal, searchAttributes);
+    }
+
+    private List<String> getFields(List<String> fields, JsonNode options) {
+        return (fields != null && !fields.isEmpty()) ? fields : this.getDefaultFields(options);
     }
 
     private List<String> getDefaultFields(JsonNode options) {

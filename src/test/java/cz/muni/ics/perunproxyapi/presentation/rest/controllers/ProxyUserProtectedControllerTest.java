@@ -8,6 +8,7 @@ import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.Base64Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +24,9 @@ public class ProxyUserProtectedControllerTest {
     private final ProxyuserFacadeImpl facade;
     private final ProxyUserProtectedController controller;
 
-    private static final String IDP_ENTITY_ID = "testIdpEntityId";
+    private static final String IDP_ENTITY_ID_DECODED = "testIdpEntityId";
+    private static final String IDP_ENTITY_ID_ENCODED = Base64Utils.encodeToUrlSafeString(
+            IDP_ENTITY_ID_DECODED.getBytes());
     private static final String USERS_LOGIN = "usersLogin";
 
     private final List<String> uids = new ArrayList<>(Arrays.asList("firstUid", "secondUid", "thirdUid"));
@@ -38,9 +41,9 @@ public class ProxyUserProtectedControllerTest {
 
     @Test
     public void FindByExtLoginsCallsFacadesMethodFindByExtLogins() throws PerunUnknownException, PerunConnectionException, EntityNotFoundException, InvalidRequestParameterException {
-        controller.findByExtLogins(IDP_ENTITY_ID, uids);
+        controller.findByExtLogins(IDP_ENTITY_ID_ENCODED, uids, new ArrayList<>());
 
-        verify(facade, times(1)).findByExtLogins(IDP_ENTITY_ID, uids);
+        verify(facade, times(1)).findByExtLogins(IDP_ENTITY_ID_DECODED, uids, new ArrayList<>());
     }
 
     @Test
