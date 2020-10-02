@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,10 +48,9 @@ public class ProxyUserProtectedController {
     public static final String LOGIN = "login";
     public static final String FIELDS = "fields";
     public static final String USER_ID = "userId";
-    public static final String IDENTITY_ID = "identityId";
+    public static final String ATTRIBUTES = "attributes";
 
     private final ProxyuserFacade facade;
-
 
     @Autowired
     public ProxyUserProtectedController(ProxyuserFacade facade) {
@@ -85,8 +85,30 @@ public class ProxyUserProtectedController {
         } else if (identifiers == null || identifiers.isEmpty()) {
             throw new InvalidRequestParameterException("User identifiers cannot be empty");
         }
+        String decodedIdpIdentifier = ControllerUtils.decodeUrlSafeBase64(idpIdentifier);
 
-        return facade.findByExtLogins(idpIdentifier, identifiers);
+        return facade.findByExtLogins(decodedIdpIdentifier, identifiers);
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/findByExtLogins", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+    public UserDTO findByExtLogins(@RequestBody JsonNode body)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
+    {
+        ControllerUtils.validateRequestBody(body);
+        String idpIdentifier = ControllerUtils.extractRequiredString(body, IDP_IDENTIFIER);
+        if (!StringUtils.hasText(idpIdentifier)) {
+            throw new InvalidRequestParameterException("IdP identifier cannot be empty");
+        }
+        String decodedIdpIdentifier = ControllerUtils.decodeUrlSafeBase64(idpIdentifier);
+
+        List<String> identifiers = ControllerUtils.extractRequiredListOfStrings(body, IDENTIFIERS);
+        if (identifiers.isEmpty()) {
+            throw new InvalidRequestParameterException("User identifiers cannot be empty");
+        }
+
+        return facade.findByExtLogins(decodedIdpIdentifier, identifiers);
     }
 
     /**
@@ -116,7 +138,28 @@ public class ProxyUserProtectedController {
         } else if (identifiers == null || identifiers.isEmpty()) {
             throw new InvalidRequestParameterException("User identifiers cannot be empty");
         }
-        return facade.findByIdentifiers(idpIdentifier, identifiers);
+        String decodedIdpIdentifier = ControllerUtils.decodeUrlSafeBase64(idpIdentifier);
+        return facade.findByIdentifiers(decodedIdpIdentifier, identifiers);
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/findByIdentifiers", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+    public UserDTO findByIdentifiers(@RequestBody JsonNode body)
+            throws EntityNotFoundException, InvalidRequestParameterException
+    {
+        ControllerUtils.validateRequestBody(body);
+        String idpIdentifier = ControllerUtils.extractRequiredString(body, IDP_IDENTIFIER);
+        if (!StringUtils.hasText(idpIdentifier)) {
+            throw new InvalidRequestParameterException("IdP identifier cannot be empty");
+        }
+        String decodedIdpIdentifier = ControllerUtils.decodeUrlSafeBase64(idpIdentifier);
+        List<String> identifiers = ControllerUtils.extractRequiredListOfStrings(body, IDENTIFIERS);
+        if (identifiers.isEmpty()) {
+            throw new InvalidRequestParameterException("User identifiers cannot be empty");
+        }
+        List<String> fields = ControllerUtils.extractFieldsFromBody(body, FIELDS);
+
+        return facade.findByIdentifiers(decodedIdpIdentifier, identifiers);
     }
 
     /**
@@ -148,6 +191,19 @@ public class ProxyUserProtectedController {
         return facade.getUserByLogin(login, fields);
     }
 
+    @ResponseBody
+    @PostMapping(value = "/{login}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public UserDTO getUserByLogin(@PathVariable(value = LOGIN) String login, @RequestBody JsonNode body)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
+    {
+        if (!StringUtils.hasText(login)) {
+            throw new InvalidRequestParameterException("IdP identifier cannot be empty");
+        }
+        List<String> fields = ControllerUtils.extractFieldsFromBody(body, FIELDS);
+        return facade.getUserByLogin(login, fields);
+    }
+
     /**
      * Find Perun user by its id.
      *
@@ -173,6 +229,17 @@ public class ProxyUserProtectedController {
         if (userId == null) {
             throw new InvalidRequestParameterException("User ID cannot be null");
         }
+        return facade.findByPerunUserId(userId, fields);
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/findByPerunUserId", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+    public UserDTO findByPerunUserId(@RequestBody JsonNode body)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
+    {
+        Long userId = ControllerUtils.extractRequiredLong(body, USER_ID);
+        List<String> fields = ControllerUtils.extractFieldsFromBody(body, FIELDS);
         return facade.findByPerunUserId(userId, fields);
     }
 
@@ -212,31 +279,30 @@ public class ProxyUserProtectedController {
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
     @ResponseBody
-    @PutMapping(value = "/{login}/identity",
+    @PutMapping(value = "/{login}/identity/{IdPIdentifier}",
             produces = APPLICATION_JSON_VALUE,
             consumes = APPLICATION_JSON_VALUE)
     public boolean updateUserIdentityAttributes(@PathVariable(value = LOGIN) String login,
-                                                @RequestParam(value = IDENTITY_ID) String identityId,
+                                                @PathVariable(value = IDP_IDENTIFIER) String identityId,
                                                 @RequestBody JsonNode body)
             throws PerunUnknownException, PerunConnectionException, InvalidRequestParameterException
     {
-        if (body == null || !body.hasNonNull("attributes")) {
+        if (body == null || !body.hasNonNull(ATTRIBUTES)) {
             throw new InvalidRequestParameterException("The request body cannot be null and must contain attributes");
-        }
-        if (!StringUtils.hasText(login)) {
+        } else if (!StringUtils.hasText(login)) {
             throw new InvalidRequestParameterException("Users login cannot be empty");
-        }
-        if (!StringUtils.hasText(identityId)) {
+        } else if (!StringUtils.hasText(identityId)) {
             throw new InvalidRequestParameterException("identityId cannot be empty");
         }
-        ObjectNode jsonAttributes = (ObjectNode) body.get("attributes");
+        String decodedIdentityIdentifier = ControllerUtils.decodeUrlSafeBase64(identityId);
+        ObjectNode jsonAttributes = (ObjectNode) body.get(ATTRIBUTES);
         Map<String, JsonNode> attributes = new HashMap<>();
         Iterator<String> it = jsonAttributes.fieldNames();
         while (it.hasNext()) {
             String fieldName = it.next();
             attributes.put(fieldName, jsonAttributes.get(fieldName));
         }
-        return facade.updateUserIdentityAttributes(login, identityId, attributes);
+        return facade.updateUserIdentityAttributes(login, decodedIdentityIdentifier, attributes);
     }
 
 }

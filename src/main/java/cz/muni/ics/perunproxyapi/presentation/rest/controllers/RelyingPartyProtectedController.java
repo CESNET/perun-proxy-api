@@ -72,7 +72,8 @@ public class RelyingPartyProtectedController {
         } else if (!StringUtils.hasText(login)) {
             throw new InvalidRequestParameterException("User login cannot be empty");
         }
-        return facade.getEntitlements(rpIdentifier, login);
+        String decodedRpIdentifier = ControllerUtils.decodeUrlSafeBase64(rpIdentifier);
+        return facade.getEntitlements(decodedRpIdentifier, login);
     }
 
 }
