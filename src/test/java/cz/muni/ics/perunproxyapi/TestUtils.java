@@ -1,17 +1,21 @@
 package cz.muni.ics.perunproxyapi;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import cz.muni.ics.perunproxyapi.persistence.models.ExtSource;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttribute;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValueAwareModel;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
+import cz.muni.ics.perunproxyapi.persistence.models.UserExtSource;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,4 +75,19 @@ public class TestUtils {
         return result;
     }
 
+    public static UserExtSource createSampleUserExtSource() {
+        return new UserExtSource(1L, createSampleExtSource(), "login",0, true,
+                Timestamp.valueOf("2018-02-13 21:30:55"));
+    }
+
+    public static JsonNode getJsonForUserExtSource(UserExtSource userExtSource) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode userExtSourceJson = mapper.convertValue(userExtSource, ObjectNode.class);
+        userExtSourceJson.put("lastAccess","2018-02-13 21:30:55");
+        return userExtSourceJson;
+    }
+
+    private static ExtSource createSampleExtSource() {
+        return new ExtSource(1L, "example.cz/idp/test","example.ExtSourceIdp");
+    }
 }

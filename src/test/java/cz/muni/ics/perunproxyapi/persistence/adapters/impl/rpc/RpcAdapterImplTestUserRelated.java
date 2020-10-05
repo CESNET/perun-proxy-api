@@ -2,6 +2,7 @@ package cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,6 +17,7 @@ import cz.muni.ics.perunproxyapi.persistence.models.AttributeObjectMapping;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttribute;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
+import cz.muni.ics.perunproxyapi.persistence.models.UserExtSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,8 @@ import java.util.stream.Collectors;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.ATTRIBUTES_MANAGER;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.PARAM_ATTRIBUTE_NAME;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.PARAM_ATTR_NAMES;
+import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.PARAM_EXT_SOURCE_LOGIN;
+import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.PARAM_EXT_SOURCE_NAME;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.PARAM_ID;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.USERS_MANAGER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,6 +59,7 @@ public class RpcAdapterImplTestUserRelated {
     public static final String GET_ATTRIBUTES = "getAttributes";
     public static final String GET_ATTRIBUTE = "getAttribute";
     public static final String GET_USER_BY_ID = "getUserById";
+    public static final String GET_USER_EXT_SOURCE_BY_EXT_LOGIN_AND_EXT_SOURCE_NAME = "getUserExtSourceByExtLoginAndExtSourceName";
 
     public static final String TEST_IDP_ENTITY_ID = "testIdpEntityId";
     private static final String USER_LOGIN = "login";
@@ -71,6 +76,8 @@ public class RpcAdapterImplTestUserRelated {
 
     private User sampleUser;
     private JsonNode sampleUserJson;
+    private UserExtSource sampleUserExtSource;
+    private JsonNode sampleUserExtSourceJson;
 
     @Value("${attributes.identifiers.relying_party}") private String rpIdentifierAttrIdentifier;
     @Value("${attributes.identifiers.additional_identifiers}") private String additionalIdentifiersAttrIdentifier;
@@ -88,6 +95,8 @@ public class RpcAdapterImplTestUserRelated {
                 rpIdentifierAttrIdentifier, additionalIdentifiersAttrIdentifier, loginAttrIdentifier);
         sampleUser = TestUtils.createSampleUser(USER_LOGIN);
         sampleUserJson = TestUtils.getJsonForUser(sampleUser);
+        sampleUserExtSource = TestUtils.createSampleUserExtSource();
+        sampleUserExtSourceJson = TestUtils.getJsonForUserExtSource(sampleUserExtSource);
         this.initializeLoginAttribute();
         TestUtils.initializeUserAttributes(this.userAttributes, this.userAttributesValues, this.userAttributesJsonArray);
     }
@@ -206,6 +215,18 @@ public class RpcAdapterImplTestUserRelated {
 
         User actual = rpcAdapter.findPerunUserById(uid, new ArrayList<>());
         assertNull(actual, "Expected null to be returned");
+    }
+
+    @Test
+    public void testGetUserExtSource() throws PerunUnknownException, PerunConnectionException {
+        Map<String,Object> params = new LinkedHashMap<>();
+        params.put(PARAM_EXT_SOURCE_NAME, "example.cz/idp/test");
+        params.put(PARAM_EXT_SOURCE_LOGIN, "login");
+
+        when(connector.post(USERS_MANAGER, GET_USER_EXT_SOURCE_BY_EXT_LOGIN_AND_EXT_SOURCE_NAME, params))
+                .thenReturn(sampleUserExtSourceJson);
+        UserExtSource actual = rpcAdapter.getUserExtSource(sampleUserExtSource.getExtSource().getName(), sampleUserExtSource.getLogin());
+        assertEquals(actual, sampleUserExtSource, "Expected and found userExtSources are different.");
     }
 
 }
