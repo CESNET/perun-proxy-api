@@ -621,7 +621,7 @@ public class RpcAdapterImpl implements FullAdapter {
         params.put(PARAM_ATTRIBUTE_NAME, loginAttr);
         params.put(PARAM_ATTRIBUTE_VALUE, login);
 
-            JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUsersByAttributeValue", params);
+        JsonNode perunResponse = connectorRpc.post(USERS_MANAGER, "getUsersByAttributeValue", params);
         List<User> users = RpcMapper.mapUsers(perunResponse);
         if (users.size() < 1) {
             log.debug("No users with login {} stored in the attr {} found.", login, loginAttr);

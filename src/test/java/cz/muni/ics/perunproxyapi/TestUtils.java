@@ -32,8 +32,8 @@ public class TestUtils {
         BooleanNode attr3Value = JsonNodeFactory.instance.booleanNode(true);
 
         PerunAttribute attr1 = new PerunAttribute(11L, "Attr1Rpc", "user", "userAttr1Rpc", "java.lang.String", "userAttr1Rpc", true, true, "user", "userAttr1Rpc", "userAttr1Rpc", attr1Value);
-        PerunAttribute attr2 = new PerunAttribute(12L, "Attr2Rpc", "user", "userAttr2Rpc", "java.lang.String", "userAttr2Rpc", true, true, "user", "userAttr2Rpc", "userAttr2Rpc", attr2Value);
-        PerunAttribute attr3 = new PerunAttribute(13L, "Attr3Rpc", "user", "userAttr3Rpc", "java.lang.String", "userAttr3Rpc", true, true, "user", "userAttr3Rpc", "userAttr3Rpc", attr3Value);
+        PerunAttribute attr2 = new PerunAttribute(12L, "Attr2Rpc", "user", "userAttr2Rpc", "java.util.ArrayList", "userAttr2Rpc", true, true, "user", "userAttr2Rpc", "userAttr2Rpc", attr2Value);
+        PerunAttribute attr3 = new PerunAttribute(13L, "Attr3Rpc", "user", "userAttr3Rpc", "java.lang.Boolean", "userAttr3Rpc", true, true, "user", "userAttr3Rpc", "userAttr3Rpc", attr3Value);
 
         userAttributes.put("user:Attr1", attr1);
         userAttributes.put("user:Attr2", attr2);
