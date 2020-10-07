@@ -11,20 +11,27 @@ components:
       type: http
       scheme: basic
   schemas:
-    Attribute:
+    Attributes:
+      type: object
+      additionalProperties:
+        type:
+          anyOf:
+            - string
+            - boolean
+            - object
+            - array
+            - int
+        example: "value"
+      example:
+        "urn:attribute:name:1": 12354
+        "urn:attribute:name:2": "value2"
+        "urn:attribute:name:3": ["value1", "array2"]
+        "urn:attribute:name:4": true
+    PutAttributes:
       type: object
       properties:
-        name:
-          type: string
-          description: Attribute name
-          example: 'urn:aaa'
-        value:
-          description: Attribute value
-          example: ['aaa', 'bbb']
-    Attributes:
-      type: array
-      items:
-        $ref: '#/components/schemas/Attribute'
+        attributes:
+          $ref: '#/components/schemas/Attributes'
     ProxyUser:
       type: object
       properties:
@@ -32,25 +39,45 @@ components:
           type: string
           description: User's login
           example: '1a2b3c@example.com'
-        firstName:
-          type: string
-          description: User's first name
-          example: 'John'
-        lastName:
-          type: string
-          description: User's last name
-          example: 'Doe'
-        displayName:
-          type: string
-          description: User's full name
-          example: 'John Doe'
-        perunUserId:
-          type: integer
-          description: User's perun ID
-          minimum: 1
-          example: 1
         attributes:
           $ref: '#/components/schemas/Attributes'
+    FieldsObject:
+      type: object
+      properties:
+        fields:
+          $ref: '#/components/schemas/Fields'
+      required: []
+    Fields:
+      type: array
+      items:
+        type: string
+        example: "urn:attribute:name"
+    FindByIdentifiersRequestBody:
+      type: object
+      properties:
+        IdPIdentifier:
+          type: string
+          example: "https://example.com/"
+        identifiers:
+          type: array
+          items:
+            type: string
+          example: ["identifier1", "identifiers2"]
+        fields:
+          $ref: '#/components/schemas/Fields'
+      required:
+        - IdPIdentifier
+        - identifiers
+    FindByPerunUserIdRequestBody:
+      type: object
+      properties:
+        userId:
+          type: int
+          example: 123456
+        fields:
+          $ref: '#/components/schemas/Fields'
+      required:
+        - userId
   responses:
     400BadRequest:
       description: Bad Request
@@ -90,12 +117,48 @@ paths:
         - name: fields
           in: query
           required: false
-          description: List of attributes
+          description: List of user's identifiers
           example: ['urn:attrname:attribute1', 'urn:attrname:attribute2']
           schema:
             type: array
             items:
               type: string
+      security:
+        - BasicAuth: []
+      responses:
+        '200' :
+          description: Returns JSON object user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+    post:
+      summary: Returns a user by login.
+      parameters:
+        - name: login
+          in: path
+          required: true
+          description: User's login
+          example: '1a2b3c@example.com'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldsObject'
       security:
         - BasicAuth: []
       responses:
@@ -132,7 +195,7 @@ paths:
         - BasicAuth: []
       responses:
         '200' :
-          description: Returns JSON list of user's entitlements
+          description: Returns JSON object user
           content:
             application/json:
               schema:
@@ -151,12 +214,51 @@ paths:
           $ref: '#/components/responses/500InternalError'
         '503':
           $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/proxy-user/{login}/identity/{identityId}:
+    put:
+      summary: Update User-Identity attributes
+      parameters:
+        - name: login
+          in: path
+          required: true
+          description: User's login
+          schema:
+            type: string
+        - name: identityId
+          in: path
+          required: true
+          description: Identity unique identifier(in base64url saf)
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutAttributes'
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
   /auth/proxy-user/findByIdentifiers:
     get:
       summary:  Find proxy user by given sourceIdP EntityId and addition source identifiers
       parameters:
         - name: IdPIdentifier
           in: query
+          description: IdP Identifier in base64url safe format
           required: true
           example: 'https://idp.example.com/idp/'
           schema:
@@ -170,6 +272,15 @@ paths:
             items:
               type: string
             minItems: 1
+        - name: fields
+          in: query
+          required: false
+          description: List of user's identifiers
+          example: ['urn:attrname:attribute1', 'urn:attrname:attribute2']
+          schema:
+            type: array
+            items:
+              type: string
       security:
         - BasicAuth: []
       responses:
@@ -187,6 +298,36 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '405':
           $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+    post:
+      summary:  Find proxy user by given sourceIdP EntityId and addition source identifiers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindByIdentifiersRequestBody'
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Returns JSON object user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
         '503':
           $ref: '#/components/responses/503TemporaryUnavailable'
   /auth/proxy-user/findByExtLogins:
@@ -195,6 +336,7 @@ paths:
       parameters:
         - name: IdPIdentifier
           in: query
+          description: IdP Identifier in base64url safe format
           required: true
           example: 'https://idp.example.com/idp/'
           schema:
@@ -208,6 +350,43 @@ paths:
             items:
               type: string
             minItems: 1
+        - name: fields
+          in: query
+          required: false
+          description: List of user's identifiers
+          example: ['urn:attrname:attribute1', 'urn:attrname:attribute2']
+          schema:
+            type: array
+            items:
+              type: string
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Returns JSON object user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+    post:
+      summary: Find proxy user by given sourceIdP EntityId and extLogins
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindByIdentifiersRequestBody'
       security:
         - BasicAuth: []
       responses:
@@ -240,6 +419,43 @@ paths:
           example: 11
           schema:
             type: integer
+        - name: fields
+          in: query
+          required: false
+          description: List of user's identifiers
+          example: ['urn:attrname:attribute1', 'urn:attrname:attribute2']
+          schema:
+            type: array
+            items:
+              type: string
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Returns JSON object user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyUser'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
+    post:
+      summary: Search user by given sourceIdP EntityId and source identifiers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindByPerunUserIdRequestBody'
       security:
         - BasicAuth: []
       responses:
@@ -268,7 +484,7 @@ paths:
         - name: rp-identifier
           in: path
           required: true
-          description: Relying party identifier
+          description: Relying party identifier in base64url safe format
           examples:
             entityId:
               $ref: '#/components/examples/rp-identifier1'
@@ -304,5 +520,7 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '405':
           $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
         '503':
           $ref: '#/components/responses/503TemporaryUnavailable'
