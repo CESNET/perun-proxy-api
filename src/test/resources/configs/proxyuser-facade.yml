@@ -11,7 +11,7 @@
       - "urn:attrname:attribute1"
       - "urn:attrname:attribute2"
 - methodName: "update_user_identity_attributes"
-  options:
+  configuration:
     attrMapper:
       attrIdentifier1:
         externalNames: ["name1", "name2"]

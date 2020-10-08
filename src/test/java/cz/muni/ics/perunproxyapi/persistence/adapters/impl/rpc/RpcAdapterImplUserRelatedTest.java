@@ -58,7 +58,7 @@ import static org.mockito.Mockito.when;
 
 
 @SpringBootTest
-public class RpcAdapterImplTestUserRelated {
+public class RpcAdapterImplUserRelatedTest {
 
     // called methods
     public static final String GET_USER_BY_EXT_SOURCE_NAME_AND_EXT_LOGIN = "getUserByExtSourceNameAndExtLogin";
