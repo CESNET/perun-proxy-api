@@ -18,10 +18,8 @@ import cz.muni.ics.perunproxyapi.persistence.models.PerunAttribute;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.persistence.models.UserExtSource;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -71,7 +69,9 @@ public class RpcAdapterImplUserRelatedTest {
 
     public static final String TEST_IDP_ENTITY_ID = "testIdpEntityId";
     private static final String USER_LOGIN = "login";
+    private static final String TEST_LOGIN_IDENTIFIER_VALUE = "login@login.com";
     private static final String UPDATE_USER_EXT_SOURCE_LAST_ACCESS = "updateUserExtSourceLastAccess";
+    private static final String TEST_EXT_SOURCE_NAME = "example.cz/idp/test";
 
     private final String uid1 = "uid1";
     private final String uid2 = "uid2";
@@ -239,8 +239,8 @@ public class RpcAdapterImplUserRelatedTest {
     @Test
     public void testGetUserExtSource() throws PerunUnknownException, PerunConnectionException {
         Map<String,Object> params = new LinkedHashMap<>();
-        params.put(PARAM_EXT_SOURCE_NAME, "example.cz/idp/test");
-        params.put(PARAM_EXT_SOURCE_LOGIN, "login");
+        params.put(PARAM_EXT_SOURCE_NAME, TEST_EXT_SOURCE_NAME);
+        params.put(PARAM_EXT_SOURCE_LOGIN, USER_LOGIN);
 
         when(connector.post(USERS_MANAGER, GET_USER_EXT_SOURCE_BY_EXT_LOGIN_AND_EXT_SOURCE_NAME, params))
                 .thenReturn(sampleUserExtSourceJson);
@@ -254,24 +254,25 @@ public class RpcAdapterImplUserRelatedTest {
 
         Map<String,Object> params = new LinkedHashMap<>();
         params.put(PARAM_ATTRIBUTE_NAME, loginAttrIdentifier);
-        params.put(PARAM_ATTRIBUTE_VALUE, "login@login.com");
+        params.put(PARAM_ATTRIBUTE_VALUE, USER_LOGIN);
         when(connector.post(USERS_MANAGER, GET_USER_BY_LOGIN, params))
                 .thenReturn(usersArray);
 
         this.prepareGetAttributesMock();
-        User actual = rpcAdapter.getUserWithAttributesByLogin("login@login.com", this.userAttrIdentifiers);
-        assertEquals(actual.getFirstName(), sampleUser.getFirstName());
-        assertEquals(actual.getAttributes(),this.userAttributesValues);
+        sampleUser.setAttributes(this.userAttributesValues);
+        User actual = rpcAdapter.getUserWithAttributesByLogin(USER_LOGIN, this.userAttrIdentifiers);
+        assertEquals(sampleUser, actual);
+        assertEquals(actual.getAttributes(), this.userAttributesValues);
     }
 
     @Test
     public void testGetUserWithAttributesByLoginNoneUser() throws PerunUnknownException, PerunConnectionException {
         Map<String,Object> params = new LinkedHashMap<>();
         params.put(PARAM_ATTRIBUTE_NAME, loginAttrIdentifier);
-        params.put(PARAM_ATTRIBUTE_VALUE, "login@login.com");
+        params.put(PARAM_ATTRIBUTE_VALUE, TEST_LOGIN_IDENTIFIER_VALUE);
         when(connector.post(USERS_MANAGER, GET_USER_BY_LOGIN, params))
                 .thenReturn(JsonNodeFactory.instance.arrayNode());
-        User actual = rpcAdapter.getUserWithAttributesByLogin("login@login.com", this.userAttrIdentifiers);
+        User actual = rpcAdapter.getUserWithAttributesByLogin(TEST_LOGIN_IDENTIFIER_VALUE, this.userAttrIdentifiers);
         assertNull(actual, "Expected null to be returned.");
     }
 
@@ -284,12 +285,12 @@ public class RpcAdapterImplUserRelatedTest {
                 .add(userJson);
         Map<String,Object> params = new LinkedHashMap<>();
         params.put(PARAM_ATTRIBUTE_NAME, loginAttrIdentifier);
-        params.put(PARAM_ATTRIBUTE_VALUE, "login@login.com");
+        params.put(PARAM_ATTRIBUTE_VALUE, TEST_LOGIN_IDENTIFIER_VALUE);
         when(connector.post(USERS_MANAGER, GET_USER_BY_LOGIN, params))
                 .thenReturn(usersArray);
 
         assertThrows(InternalErrorException.class,
-                () -> rpcAdapter.getUserWithAttributesByLogin("login@login.com", this.userAttrIdentifiers),
+                () -> rpcAdapter.getUserWithAttributesByLogin(TEST_LOGIN_IDENTIFIER_VALUE, this.userAttrIdentifiers),
                 "Excepted InternalErrorException() to be thrown.");
     }
 
@@ -314,7 +315,7 @@ public class RpcAdapterImplUserRelatedTest {
         params.put(PARAM_ATTRIBUTES, attributes);
         when(connector.post(ATTRIBUTES_MANAGER, SET_ATTRIBUTES, params)).thenReturn(JsonNodeFactory.instance.nullNode());
 
-        boolean response = rpcAdapter.setAttributes(Entity.USER, sampleUser.getPerunId(), attributes);
+        boolean response = rpcAdapter.setAttributes(Entity.USER, sampleUser.getPerunId(), new ArrayList<>());
         assertTrue(response);
     }
 
