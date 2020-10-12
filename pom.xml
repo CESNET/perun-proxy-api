@@ -10,7 +10,7 @@
     </parent>
     <groupId>cz.muni.ics</groupId>
     <artifactId>perun-proxy-api</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.0</version>
 
     <properties>
         <java.version>11</java.version>

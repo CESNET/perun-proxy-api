@@ -22,6 +22,18 @@ Example:
 
 ## [Unreleased]
 
+## [v0.2.0]
+### Added
+- Add POST API methods:
+    - /proxy-user/findByExtLogins
+    - /proxy-user/findByIdentifiers
+    - /proxy-user/findByPerunUserId
+    - /proxy-user/{login}
+- Add tests for models
+
+### Changed
+- Use base64 encoding for  IdPIdentifiers and RPIdentifiers
+
 ## [v0.1.1]
 ### Changed
 - Method /proxy-user/findByPerunUserId now accepts passing fields from the request
@@ -42,6 +54,7 @@ Example:
 - Add PUT API method /proxy-user/{login}/identity
 - Add GET API method /relying-party/{rp-identifier}/proxy-user/{login}/entitlements
 
+[v0.2.0]: https://github.com/CESNET/perun-proxy-api/commits/tree/v0.2.0
 [v0.1.1]: https://github.com/CESNET/perun-proxy-api/commits/tree/v0.1.1
 [v0.1.0]: https://github.com/CESNET/perun-proxy-api/commits/tree/v0.1.0
 [Unreleased]: https://github.com/CESNET/perun-proxy-api/commits/master
