@@ -71,7 +71,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
 
         JsonNode options = FacadeUtils.getOptions(FIND_BY_EXT_LOGINS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
-        List<String> fieldsToFetch = this.getFields(fields, options);
+        List<String> fieldsToFetch = this.getFields(fields, FIND_BY_EXT_LOGINS, options);
 
         User user = proxyUserService.findByExtLogins(adapter, idpIdentifier,
                 userIdentifiers, fieldsToFetch);
@@ -91,7 +91,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         //DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
         DataAdapter adapter = adaptersContainer.getLdapAdapter();
 
-        List<String> fieldsToFetch = this.getFields(fields, options);
+        List<String> fieldsToFetch = this.getFields(fields, FIND_BY_IDENTIFIERS, options);
         User user = proxyUserService.findByIdentifiers(adapter, idpIdentifier, identifiers,
                 fieldsToFetch);
         if (user == null) {
@@ -106,7 +106,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     {
         JsonNode options = FacadeUtils.getOptions(GET_USER_BY_LOGIN, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
-        List<String> fieldsToFetch = this.getFields(fields, options);
+        List<String> fieldsToFetch = this.getFields(fields, GET_USER_BY_LOGIN, options);
 
         User user = proxyUserService.getUserWithAttributesByLogin(adapter, login, fieldsToFetch);
         if (user == null) {
@@ -122,7 +122,7 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     {
         JsonNode options = FacadeUtils.getOptions(FIND_BY_PERUN_USER_ID, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
-        List<String> fieldsToFetch = this.getFields(fields, options);
+        List<String> fieldsToFetch = this.getFields(fields, FIND_BY_PERUN_USER_ID, options);
 
         User user = proxyUserService.findByPerunUserIdWithAttributes(adapter, userId, fieldsToFetch);
         if (user == null) {
@@ -139,8 +139,8 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
         JsonNode options = FacadeUtils.getOptions(GET_ALL_ENTITLEMENTS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
-        String prefix = FacadeUtils.getRequiredStringOption(PREFIX, options);
-        String authority = FacadeUtils.getRequiredStringOption(AUTHORITY, options);
+        String prefix = FacadeUtils.getRequiredStringOption(PREFIX, GET_ALL_ENTITLEMENTS, options);
+        String authority = FacadeUtils.getRequiredStringOption(AUTHORITY, GET_ALL_ENTITLEMENTS, options);
         String forwardedEntitlementsAttrIdentifier = FacadeUtils.getStringOption(FORWARDED_ENTITLEMENTS, options);
 
         User user = proxyUserService.getUserByLogin(adapter, login);
@@ -189,15 +189,15 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
                 mapper, externalToInternal, searchAttributes);
     }
 
-    private List<String> getFields(List<String> fields, JsonNode options) {
-        return (fields != null && !fields.isEmpty()) ? fields : this.getDefaultFields(options);
+    private List<String> getFields(List<String> fields, String method, JsonNode options) {
+        return (fields != null) ? fields : this.getDefaultFields(method, options);
     }
 
-    private List<String> getDefaultFields(JsonNode options) {
+    private List<String> getDefaultFields(String method, JsonNode options) {
         List<String> fields = new ArrayList<>();
         if (!options.hasNonNull(DEFAULT_FIELDS)) {
-                log.error("Required option {} has not been found by the getEntitlements method. " +
-                        "Check your configuration.", DEFAULT_FIELDS);
+                log.error("Required option {} has not been found by method {}. Check your configuration.",
+                        method, DEFAULT_FIELDS);
                 throw new IllegalArgumentException("Required option has not been found");
         }
 

@@ -53,11 +53,12 @@ public class FacadeUtils {
      * @param options JSON containing the method options.
      * @return Extracted option as String.
      */
-    public static String getRequiredStringOption(@NonNull String key, @NonNull JsonNode options) {
+    public static String getRequiredStringOption(@NonNull String key, @NonNull String method,
+                                                 @NonNull JsonNode options)
+    {
         String option = options.hasNonNull(key) ? options.get(key).asText() : null;
         if (option == null) {
-            log.error("Required option {} has not been found by the getEntitlements method. " +
-                    "Check your configuration.", key);
+            log.error("Required option {} has not been found by method {}. Check your configuration.", key, method);
             throw new IllegalArgumentException("Required option has not been found");
         }
 

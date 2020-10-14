@@ -61,8 +61,8 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
         JsonNode options = FacadeUtils.getOptions(GET_ENTITLEMENTS, methodConfigurations);
         DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
 
-        String prefix = FacadeUtils.getRequiredStringOption(PREFIX, options);
-        String authority =FacadeUtils.getRequiredStringOption(AUTHORITY, options);
+        String prefix = FacadeUtils.getRequiredStringOption(PREFIX, GET_ENTITLEMENTS, options);
+        String authority = FacadeUtils.getRequiredStringOption(AUTHORITY, GET_ENTITLEMENTS, options);
 
         String forwardedEntitlementsAttrIdentifier = FacadeUtils.getStringOption(FORWARDED_ENTITLEMENTS, options);
         String resourceCapabilitiesAttrIdentifier = FacadeUtils.getStringOption(RESOURCE_CAPABILITIES, options);
