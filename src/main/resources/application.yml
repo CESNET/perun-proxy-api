@@ -41,6 +41,9 @@ security:
   basicauth:
     path: /etc/perun/api-auth.yml
 
+ga4gh:
+  type: NONE
+
 server:
   error:
     include-stacktrace: NEVER

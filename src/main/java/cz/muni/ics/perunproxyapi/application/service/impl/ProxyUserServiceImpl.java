@@ -2,16 +2,8 @@ package cz.muni.ics.perunproxyapi.application.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.nimbusds.jose.jwk.source.RemoteJWKSet;
-import com.nimbusds.jose.proc.SecurityContext;
-import cz.muni.ics.perunproxyapi.persistence.models.ClaimRepository;
 import cz.muni.ics.perunproxyapi.application.service.ProxyUserService;
 import cz.muni.ics.perunproxyapi.application.service.ServiceUtils;
-import cz.muni.ics.perunproxyapi.persistence.models.Affiliation;
-import cz.muni.ics.perunproxyapi.persistence.models.Ga4ghAttributes;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
@@ -30,13 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,11 +34,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
-
-import static cz.muni.ics.perunproxyapi.application.service.Ga4ghUtils.addAcceptedTermsAndPolicies;
-import static cz.muni.ics.perunproxyapi.application.service.Ga4ghUtils.addAffiliationAndRoles;
-import static cz.muni.ics.perunproxyapi.application.service.Ga4ghUtils.addControlledAccessGrants;
-import static cz.muni.ics.perunproxyapi.application.service.Ga4ghUtils.addResearcherStatuses;
 
 @Component
 @Slf4j
@@ -327,7 +307,7 @@ public class ProxyUserServiceImpl implements ProxyUserService {
 
     private List<PerunAttribute> getAttributesToUpdate(@NonNull Map<String, PerunAttribute> oldValuesMap,
                                                        @NonNull Map<String, JsonNode> newValuesMap,
-                                       @NonNull Map<String, UpdateAttributeMappingEntry> internalToAttrMappingEntries)
+                                                       @NonNull Map<String, UpdateAttributeMappingEntry> internalToAttrMappingEntries)
     {
         List<PerunAttribute> attributesToUpdateList = new ArrayList<>();
 
@@ -388,30 +368,6 @@ public class ProxyUserServiceImpl implements ProxyUserService {
             return new HashSet<>();
         }
         return Arrays.asList(value.textValue().split(UES_VALUES_SEPARATOR));
-    }
-
-    @Override
-    public JsonNode ga4gh(@NonNull FullAdapter adapter,
-                          Long userId,
-                          Ga4ghAttributes attrs,
-                          List<ClaimRepository> claimRepositories,
-                          Map<URI, RemoteJWKSet<SecurityContext>> remoteJwkSets,
-                          Map<URI, String> signers) throws PerunUnknownException, PerunConnectionException, URISyntaxException, InvalidKeySpecException, FileNotFoundException, MalformedURLException, NoSuchAlgorithmException {
-
-        List<Affiliation> affiliations = adapter.getUserExtSourcesAffiliations(userId, attrs.getAffiliation(), attrs.getOrgUrl());
-        PerunAttribute sub = adapter.getAttribute(Entity.USER, userId, attrs.getSub());
-        String subValue = sub.getValue().asText();
-        attrs.setSub(subValue);
-
-        ArrayNode ga4gh_passport_v1 = JsonNodeFactory.instance.arrayNode();
-        long now = Instant.now().getEpochSecond();
-        
-        addAffiliationAndRoles(now, ga4gh_passport_v1, affiliations, attrs, userId, adapter);
-        addAcceptedTermsAndPolicies(now, ga4gh_passport_v1, adapter, userId, attrs);
-        addResearcherStatuses(now, ga4gh_passport_v1, affiliations, adapter, userId, attrs);
-        addControlledAccessGrants(now, ga4gh_passport_v1, claimRepositories,  signers, remoteJwkSets, userId, attrs);
-
-        return ga4gh_passport_v1;
     }
 
 }

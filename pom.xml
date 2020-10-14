@@ -18,7 +18,6 @@
         <maven-model.version>3.6.3</maven-model.version>
         <mockito.version>3.4.0</mockito.version>
         <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
-        <guava.version>29.0-jre</guava.version>
     </properties>
 
     <dependencies>
@@ -127,11 +126,6 @@
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
             <version>${nimbus-jose-jwt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
         </dependency>
     </dependencies>
 

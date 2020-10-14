@@ -189,7 +189,7 @@ public class RpcAdapterImpl implements FullAdapter {
     @Override
     public List<UserExtSource> getUserExtSources(@NonNull Long userId) throws PerunUnknownException, PerunConnectionException {
         Map<String, Object> params = new LinkedHashMap<>();
-        params.put("user", userId);
+        params.put(PARAM_USER, userId);
 
         JsonNode response = connectorRpc.post(USERS_MANAGER, "getUserExtSources", params);
         return RpcMapper.mapUserExtSources(response);
@@ -525,8 +525,9 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public List<Affiliation> getUserExtSourcesAffiliations(Long userId, String affiliationAttr, String orgUrlAttr) throws PerunUnknownException, PerunConnectionException {
-
+    public List<Affiliation> getUserExtSourcesAffiliations(Long userId, String affiliationAttr, String orgUrlAttr)
+            throws PerunUnknownException, PerunConnectionException
+    {
         List<UserExtSource> userExtSources = getUserExtSources(userId);
         List<Affiliation> affiliations = new ArrayList<>();
 
@@ -537,19 +538,19 @@ public class RpcAdapterImpl implements FullAdapter {
 
         for (UserExtSource ues : userExtSources) {
             if (EXT_SOURCE_TYPE.equals(ues.getExtSource().getType())) {
-                Map<String, PerunAttributeValue> uesAttrValues = getUserExtSourceAttributeValues(ues.getId(), attributeMappings);
-
+                Map<String, PerunAttributeValue> uesAttrValues = getUserExtSourceAttributeValues(
+                        ues.getId(), attributeMappings);
                 long asserted = ues.getLastAccess().getTime() / 1000L;
-
-                if (uesAttrValues.get(affiliationMapping.getIdentifier()) != null && uesAttrValues.get(orgUrlMapping.getIdentifier()) != null) {
+                if (uesAttrValues.getOrDefault(affiliationMapping.getIdentifier(), null) != null
+                        && uesAttrValues.getOrDefault(orgUrlMapping.getIdentifier(), null) != null)
+                {
                     String orgUrl = uesAttrValues.get(orgUrlMapping.getIdentifier()).valueAsString();
                     String affs = uesAttrValues.get(affiliationMapping.getIdentifier()).valueAsString();
                     if (affs != null) {
                         for (String aff : affs.split(";")) {
-                            String source = ( (orgUrl != null) ? orgUrl : ues.getExtSource().getName() );
+                            String source = (orgUrl != null) ? orgUrl : ues.getExtSource().getName();
                             Affiliation affiliation = new Affiliation(source, aff, asserted);
-                            log.debug("found {} from IdP {} with orgURL {} asserted at {}", aff, ues.getExtSource().getName(),
-                                    orgUrl, asserted);
+                            log.debug("found affiliation {}", affiliation);
                             affiliations.add(affiliation);
                         }
                     }
@@ -563,22 +564,22 @@ public class RpcAdapterImpl implements FullAdapter {
     @Override
     public boolean isUserInGroup(Long userId, Long groupId) throws PerunUnknownException, PerunConnectionException {
         Map<String, Object> groupParams = new LinkedHashMap<>();
-        groupParams.put("id", groupId);
+        groupParams.put(PARAM_ID, groupId);
         JsonNode groupResponse = connectorRpc.post(GROUPS_MANAGER, "getGroupById", groupParams);
         Group group = RpcMapper.mapGroup(groupResponse);
 
         Map<String, Object> memberParams = new LinkedHashMap<>();
 
         if (group != null) {
-            memberParams.put("vo", group.getVoId());
-            memberParams.put("user", userId);
+            memberParams.put(PARAM_VO, group.getVoId());
+            memberParams.put(PARAM_USER, userId);
             JsonNode memberResponse = connectorRpc.post(MEMBERS_MANAGER, "getMemberByUser", memberParams);
             Member member = RpcMapper.mapMember(memberResponse);
 
             if (member != null) {
                 Map<String, Object> isGroupMemberParams = new LinkedHashMap<>();
-                isGroupMemberParams.put("group", group.getId());
-                isGroupMemberParams.put("member", member.getId());
+                isGroupMemberParams.put(PARAM_GROUP, group.getId());
+                isGroupMemberParams.put(PARAM_MEMBER, member.getId());
                 JsonNode res = connectorRpc.post(GROUPS_MANAGER, "isGroupMember", isGroupMemberParams);
                 return res.asBoolean();
             }
@@ -596,12 +597,13 @@ public class RpcAdapterImpl implements FullAdapter {
             if (VALID.equals(member.getStatus())) {
                 List<Group> memberGroups = getMemberGroups(member.getId());
                 for (Group group : memberGroups) {
-                    PerunAttributeValue attrValue = this.getAttributeValue(Entity.GROUP, group.getId(), groupAffiliationsAttr);
+                    PerunAttributeValue attrValue = this.getAttributeValue(
+                            Entity.GROUP, group.getId(), groupAffiliationsAttr);
                     if (attrValue != null && attrValue.valueAsString() != null) {
                         long linuxTime = System.currentTimeMillis() / 1000L;
                         for (String value : attrValue.valueAsList()) {
                             Affiliation affiliation = new Affiliation(null, value, linuxTime);
-                            log.debug("found {} on group {}", value, group.getName());
+                            log.debug("found affiliation {} on group {}", affiliation, group.getName());
                             affiliations.add(affiliation);
                         }
                     }
@@ -803,29 +805,18 @@ public class RpcAdapterImpl implements FullAdapter {
         return facilities;
     }
 
-    private Set<AttributeObjectMapping> getMappingsForAttrNames(@NonNull Collection<String> attrsToFetch) {
-        return this.attributeMappingService.getMappingsByIdentifiers(attrsToFetch);
-    }
-
-    private AttributeObjectMapping getMappingForAttrName(@NonNull String attrToFetch) {
-        return this.attributeMappingService.getMappingByIdentifier(attrToFetch);
-    }
-
-    private List<UserExtSource> getUserExtSources(Long userId) throws PerunUnknownException, PerunConnectionException {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("user", userId);
-
-        JsonNode response = connectorRpc.post(USERS_MANAGER, "getUserExtSources", map);
-        return RpcMapper.mapUserExtSources(response);
-    }
-
-    private Map<String, PerunAttributeValue> getUserExtSourceAttributeValues(Long uesId, Set<AttributeObjectMapping> attrMappings) throws PerunUnknownException, PerunConnectionException {
-        List<String> attrNames = attrMappings.stream().map(AttributeObjectMapping::getRpcName).collect(Collectors.toList());
+    private Map<String, PerunAttributeValue> getUserExtSourceAttributeValues(Long uesId,
+                                                                             Set<AttributeObjectMapping> attrMappings)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        List<String> attrNames = attrMappings.stream()
+                .map(AttributeObjectMapping::getRpcName)
+                .collect(Collectors.toList());
         attrNames.removeAll(Collections.singletonList(null));
 
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("userExtSource", uesId);
-        map.put("attrNames", attrNames);
+        map.put(PARAM_USER_EXT_SOURCE, uesId);
+        map.put(PARAM_ATTR_NAMES, attrNames);
 
         JsonNode response = connectorRpc.post(ATTRIBUTES_MANAGER, "getAttributes", map);
         Map<String, PerunAttribute> attributeMap = RpcMapper.mapAttributes(response, attrMappings);
@@ -847,10 +838,18 @@ public class RpcAdapterImpl implements FullAdapter {
 
     private List<Group> getMemberGroups(Long memberId) throws PerunUnknownException, PerunConnectionException {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("member", memberId);
+        map.put(PARAM_MEMBER, memberId);
 
         JsonNode response = connectorRpc.post(GROUPS_MANAGER, "getMemberGroups", map);
         return RpcMapper.mapGroups(response);
+    }
+
+    private Set<AttributeObjectMapping> getMappingsForAttrNames(@NonNull Collection<String> attrsToFetch) {
+        return this.attributeMappingService.getMappingsByIdentifiers(attrsToFetch);
+    }
+
+    private AttributeObjectMapping getMappingForAttrName(@NonNull String attrToFetch) {
+        return this.attributeMappingService.getMappingByIdentifier(attrToFetch);
     }
 
 }

@@ -48,3 +48,6 @@ facade:
 security:
   basicauth:
     path: "${PWD}/src/test/resources/configs/api-auth.yml"
+
+ga4gh:
+  type: NONE

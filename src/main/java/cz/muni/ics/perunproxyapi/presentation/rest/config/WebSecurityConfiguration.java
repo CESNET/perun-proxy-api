@@ -3,6 +3,7 @@ package cz.muni.ics.perunproxyapi.presentation.rest.config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import cz.muni.ics.perunproxyapi.ga4gh.JWKSetPublishingEndpoint;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -47,7 +48,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
-                .antMatchers(NO_AUTH_PATH + "/**").permitAll()
+                .antMatchers('/' + JWKSetPublishingEndpoint.URL, NO_AUTH_PATH + "/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();

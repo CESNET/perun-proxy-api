@@ -8,6 +8,7 @@ import cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfigur
 import cz.muni.ics.perunproxyapi.application.facade.impl.ProxyuserFacadeImpl;
 import cz.muni.ics.perunproxyapi.application.service.ProxyUserService;
 import cz.muni.ics.perunproxyapi.application.service.impl.ProxyUserServiceImpl;
+import cz.muni.ics.perunproxyapi.ga4gh.service.Ga4ghService;
 import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
@@ -53,6 +54,8 @@ public class ProxyUserFacadeTest {
     private final AdaptersContainer adaptersContainer = mock(AdaptersContainer.class);
     private final MockedStatic<FacadeUtils> facadeUtils = mockStatic(FacadeUtils.class);
     private final FacadeConfiguration facadeConfiguration = mock(FacadeConfiguration.class);
+    private final Ga4ghService ga4ghService = mock (Ga4ghService.class);
+
     private ProxyuserFacade facade;
     private User sampleUser;
     private UserDTO sampleUserDTO;
@@ -60,7 +63,8 @@ public class ProxyUserFacadeTest {
 
     @BeforeEach
     public void setUp() {
-        facade = new ProxyuserFacadeImpl(service, adaptersContainer, facadeConfiguration);
+        FacadeConfiguration facadeConfiguration = mock(FacadeConfiguration.class);
+        facade = new ProxyuserFacadeImpl(service, adaptersContainer, facadeConfiguration, ga4ghService);
         sampleUser = TestUtils.createSampleUser(USER_LOGIN);
         sampleUserDTO = TestUtils.getDTOForUser(sampleUser);
 
