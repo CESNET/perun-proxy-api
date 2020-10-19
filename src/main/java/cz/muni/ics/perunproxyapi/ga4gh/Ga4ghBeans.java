@@ -33,7 +33,7 @@ public class Ga4ghBeans {
         String configFilePath = properties.getConfigFilePath();
         switch (properties.getType()) {
             case ELIXIR: {
-                ElixirGa4ghConfig config = loadConfig(configFilePath);
+                ElixirGa4ghConfig config = loadElixirConfig(configFilePath);
                 return new ElixirGa4ghService(config, publishingEndpoint);
             }
             case CESNET:
@@ -44,7 +44,7 @@ public class Ga4ghBeans {
         }
     }
 
-    private <T> T loadConfig(String configFilePath) throws IOException {
+    private ElixirGa4ghConfig loadElixirConfig(String configFilePath) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         return mapper.readValue(new File(configFilePath), new TypeReference<>() {});
     }

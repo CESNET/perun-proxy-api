@@ -43,7 +43,7 @@ public class ElixirGa4ghConfig {
     @NonNull private List<Signer> signers = new ArrayList<>();
 
     public ElixirGa4ghConfig(@NonNull String issuer,
-                             @NonNull AttrIdentifiers attrIdentifiers,
+                             @NonNull AttrIdentifiers identifiers,
                              @NonNull String keystore,
                              @NonNull String defaultSignerKeyId,
                              @NonNull String defaultSigningAlgorithmName,
@@ -54,7 +54,7 @@ public class ElixirGa4ghConfig {
                              @NonNull List<Signer> signers)
     {
         this.setIssuer(issuer);
-        this.setIdentifiers(attrIdentifiers);
+        this.setIdentifiers(identifiers);
         this.setKeyStore(keystore);
         this.setDefaultSignerKeyId(defaultSignerKeyId);
         this.setDefaultSigningAlgorithmName(defaultSigningAlgorithmName);
@@ -114,30 +114,31 @@ public class ElixirGa4ghConfig {
     }
 
     public String getAffiliation() {
-        return this.identifiers.affiliation;
+        return this.identifiers.getAffiliation();
     }
 
     public String getOrgUrl() {
-        return this.identifiers.orgUrl;
+        return this.identifiers.getOrgUrl();
     }
 
     public String getSub() {
-        return this.identifiers.sub;
+        return this.identifiers.getSub();
     }
 
     public String getBonaFideStatus() {
-        return this.identifiers.bonaFideStatus;
+        return this.identifiers.getBonaFideStatus();
     }
 
     public String getElixirBonaFideStatusREMS() {
-        return this.identifiers.elixirBonaFideStatusREMS;
+        return this.identifiers.getElixirBonaFideStatusREMS();
     }
 
     public String getGroupAffiliations() {
-        return this.identifiers.groupAffiliations;
+        return this.identifiers.getGroupAffiliations();
     }
 
     @Setter
+    @Getter
     @ToString
     @EqualsAndHashCode
     @NoArgsConstructor
