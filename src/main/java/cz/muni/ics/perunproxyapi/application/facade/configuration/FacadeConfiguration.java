@@ -40,8 +40,12 @@ public class FacadeConfiguration {
     @Value("${facade.config_path.relying_party}")
     private String relyingPartyPath;
 
+    @Value("${facade.config_path.gui}")
+    private String guiPath;
+
     private final Map<String, JsonNode> proxyUserAdapterMethodConfigurations = new HashMap<>();
     private final Map<String, JsonNode> relyingPartyAdapterMethodConfigurations = new HashMap<>();
+    private final Map<String, JsonNode> guiAdapterMethodConfigurations = new HashMap<>();
 
     @PostConstruct
     public void postInit() {
@@ -55,6 +59,12 @@ public class FacadeConfiguration {
             initAdapterPreferences(relyingPartyPath, relyingPartyAdapterMethodConfigurations);
         } else {
             log.warn("No path for RelyingPartyFacade file given, no adapter preferences initialized");
+        }
+
+        if (guiPath != null && !guiPath.isEmpty()) {
+            initAdapterPreferences(guiPath, guiAdapterMethodConfigurations);
+        } else {
+            log.warn("No path for GuiFacade file given, no adapter preferences initialized");
         }
     }
 

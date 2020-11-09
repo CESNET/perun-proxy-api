@@ -40,7 +40,6 @@ public class ProxyuserFacadeImpl implements ProxyuserFacade {
     public static final String FIND_BY_PERUN_USER_ID = "find_by_perun_user_id";
     public static final String GET_ALL_ENTITLEMENTS = "get_all_entitlements";
     public static final String UPDATE_USER_IDENTITY_ATTRIBUTES = "update_user_identity_attributes";
-    public static final String GA4GH = "ga4gh";
 
     public static final String PREFIX = "prefix";
     public static final String AUTHORITY = "authority";

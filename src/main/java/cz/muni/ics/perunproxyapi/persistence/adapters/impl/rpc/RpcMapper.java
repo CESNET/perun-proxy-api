@@ -415,6 +415,34 @@ public class RpcMapper {
     }
 
     /**
+     * Maps JsonNode to PerunAttribute model.
+     *
+     * @param json PerunAttribute in JSON format from Perun to be mapped.
+     * @return Mapped PerunAttribute object.
+     */
+    public static PerunAttribute mapAttributeWithUnrequiredValue(@NonNull JsonNode json) {
+        if (json.isNull()) {
+            return null;
+        }
+
+        Long id = getRequiredFieldAsLong(json, ID);
+        String friendlyName = getRequiredFieldAsString(json, FRIENDLY_NAME);
+        String namespace = getRequiredFieldAsString(json, NAMESPACE);
+        String description = getRequiredFieldAsString(json, DESCRIPTION);
+        String type = getRequiredFieldAsString(json, TYPE);
+        String displayName = getRequiredFieldAsString(json, DISPLAY_NAME);
+        boolean writable = getRequiredFieldAsBoolean(json, WRITABLE);
+        boolean unique = getRequiredFieldAsBoolean(json, UNIQUE);
+        String entity = getRequiredFieldAsString(json, ENTITY);
+        String baseFriendlyName = getRequiredFieldAsString(json, BASE_FRIENDLY_NAME);
+        String friendlyNameParameter = getRequiredFieldAsString(json, FRIENDLY_NAME_PARAMETER);
+        JsonNode value = getUnrequiredFieldAsJsonNode(json, VALUE);
+
+        return new PerunAttribute(id, friendlyName, namespace, description, type, displayName,
+                writable, unique, entity, baseFriendlyName, friendlyNameParameter, value);
+    }
+
+    /**
      * Maps JsonNode to Map<String, PerunAttribute>.
      * Keys are the internal identifiers of the attributes.
      * Values are attributes corresponding to the names.
@@ -435,6 +463,46 @@ public class RpcMapper {
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonNode attribute = jsonArray.get(i);
             PerunAttribute mappedAttribute = RpcMapper.mapAttribute(attribute);
+
+            if (mappedAttribute != null) {
+                mappedAttrsMap.put(mappedAttribute.getUrn(), mappedAttribute);
+            }
+        }
+
+        for (AttributeObjectMapping mapping : attrMappings) {
+            String attrKey = mapping.getRpcName();
+            if (mappedAttrsMap.containsKey(attrKey)) {
+                PerunAttribute attribute = mappedAttrsMap.get(attrKey);
+                map.put(mapping.getIdentifier(), attribute);
+            } else {
+                map.put(mapping.getIdentifier(), null);
+            }
+        }
+
+        return map;
+    }
+
+    /**
+     * Maps JsonNode to Map<String, PerunAttribute>.
+     * Keys are the internal identifiers of the attributes.
+     * Values are attributes corresponding to the names.
+     *
+     * @param jsonArray    JSON array of perunAttributes in JSON format from Perun to be mapped.
+     * @param attrMappings Set of the AttributeObjectMapping objects that will be used for mapping of the attributes.
+     * @return Map<String, PerunAttribute>. If attribute for identifier has not been mapped, key contains NULL as value.
+     */
+    public static Map<String, PerunAttribute> mapAttributesWithUnrequiredValue(@NonNull JsonNode jsonArray,
+                                                                               @NonNull Set<AttributeObjectMapping> attrMappings) {
+        if (jsonArray.isNull()) {
+            return new HashMap<>();
+        }
+
+        Map<String, PerunAttribute> map = new HashMap<>(); //key is internal identifier
+        Map<String, PerunAttribute> mappedAttrsMap = new HashMap<>(); //key is URN of the attribute
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonNode attribute = jsonArray.get(i);
+            PerunAttribute mappedAttribute = RpcMapper.mapAttributeWithUnrequiredValue(attribute);
 
             if (mappedAttribute != null) {
                 mappedAttrsMap.put(mappedAttribute.getUrn(), mappedAttribute);
@@ -514,6 +582,10 @@ public class RpcMapper {
         if (!json.hasNonNull(name)) {
             throw new MissingFieldException();
         }
+        return json.get(name);
+    }
+
+    private static JsonNode getUnrequiredFieldAsJsonNode(JsonNode json, String name) {
         return json.get(name);
     }
 

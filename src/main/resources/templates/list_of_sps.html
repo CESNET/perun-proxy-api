@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <meta charset="UTF-8">
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
+    <link th:href="@{/res/css/default.css}" rel="stylesheet" />
+    <th:block th:insert="${header_path} :: header_head"/>
+    <link th:href="@{/res/css/listOfSps.css}" rel="stylesheet" />
+
+<body>
+    <div id="wrap">
+        <div id="languagebar_line">
+            <div id="languagebar">
+                <div th:if="${#locale.getLanguage()} == 'cs'">
+                    <a href="?lang=en">English</a>
+                    | Čeština
+                </div>
+                <div th:unless="${#locale.getLanguage()} == 'cs'">
+                    English |
+                    <a href="?lang=cs">Čeština</a>
+                </div>
+            </div>
+        </div>
+        <div id="header" th:replace="${header_path} :: header_body"/>
+        <div id="content">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3 th:text="#{statistics}">Statistics</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-stats">
+                                <tr>
+                                    <th></th>
+                                    <th th:text="#{production_services}">Production services</th>
+                                    <th th:text="#{stage_services}">Stage services</th>
+                                    <th th:text="#{test_services}">Test services</th>
+                                </tr>
+                                <tr>
+                                    <th th:text="#{all}">All</th>
+                                    <td class="center" th:text="${statistics.get('allProductionServicesCount')}"></td>
+                                    <td class="center" th:text="${statistics.get('allStagingServicesCount')}"></td>
+                                    <td class="center" th:text="${statistics.get('allTestingServicesCount')}"></td>
+                                </tr>
+                                <tr>
+                                    <th>SAML</th>
+                                    <td class="center" th:text="${statistics.get('samlProductionServicesCount')}"></td>
+                                    <td class="center" th:text="${statistics.get('samlStagingServicesCount')}"></td>
+                                    <td class="center" th:text="${statistics.get('samlTestingServicesCount')}"></td>
+                                </tr>
+                                <tr>
+                                    <th>OIDC</th>
+                                    <td class="center" th:text="${statistics.get('oidcProductionServicesCount')}"></td>
+                                    <td class="center" th:text="${statistics.get('oidcStagingServicesCount')}"></td>
+                                    <td class="center" th:text="${statistics.get('oidcTestingServicesCount')}"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6 center">
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3 th:text="#{services}">Services</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 table-responsive">
+                            <table class="table table-striped" id="table1">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Authenticate protocol</th>
+                                        <th th:each="attr: ${attributesToShow}" th:if="${services.size() > 0}" th:class="${services.get(0).getAttributes().get('__${attr}__').getType()}" th:text="${services.get(0).getAttributes().get('__${attr}__').getDisplayName()}"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="service: ${services}" th:if="${service.isShowOnServiceList()}">
+                                        <div>
+                                            <td th:if="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()} == null" th:text="${service.getName()}"></td>
+                                            <td th:unless="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()} == null">
+                                                <a class='customLink' th:href="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()}" th:text="${service.getName()}"></a>
+                                            </td>
+                                        </div>
+
+                                        <td th:text="${service.getAuthProtocol()}"></td>
+                                        <td th:each="attr: ${attributesToShow}" th:switch="${service.getAttributes().get('__${attr}__').getType()}">
+                                            <div th:case="'java.lang.String'">
+                                                <div th:if="${service.getAttributes().get('__${attr}__').valueAsString()} == null" class='center' th:text="'&horbar;'"></div>
+                                                <div th:unless="${service.getAttributes().get('__${attr}__').valueAsString()} == null">
+                                                    <div th:if="${urlAttributes.contains('__${attr}__')}">
+                                                        <a class='customLink' th:href="${service.getAttributes().get('__${attr}__').valueAsString()}" th:text="${service.getAttributes().get('__${attr}__').valueAsString()}"></a>
+                                                    </div>
+                                                    <div th:unless="${urlAttributes.contains('__${attr}__')}" th:text="${service.getAttributes().get('__${attr}__').valueAsString()}"></div>
+                                                </div>
+                                            </div>
+
+                                            <div th:case="'java.lang.LargeString'">
+                                                <div th:if="${service.getAttributes().get('__${attr}__').valueAsString()} == null" class='center' th:text="'&horbar;'"></div>
+                                                <div th:unless="${service.getAttributes().get('__${attr}__').valueAsString()} == null" th:text="${service.getAttributes().get('__${attr}__').valueAsString()}"></div>
+                                            </div>
+
+                                            <div th:case="'java.lang.Integer'">
+                                                <div th:if="${service.getAttributes().get('__${attr}__').valueAsString()} == null" class='center' th:text="'&horbar;'"></div>
+                                                <div th:unless="${service.getAttributes().get('__${attr}__').valueAsString()} == null" th:text="${service.getAttributes().get('__${attr}__').valueAsString()}"></div>
+                                            </div>
+
+                                            <div th:case="'java.lang.Boolean'" th:text="${service.getAttributes().get('__${attr}__').valueAsBoolean()} ? '&#x2714;' : '&#x2715;'"></div>
+
+                                            <div th:case="'java.util.ArrayList'">
+                                                <div th:if="${service.getAttributes().get('__${attr}__').valueAsList().size()} > 0">
+                                                    <ul>
+                                                        <li th:each="value: ${service.getAttributes().get('__${attr}__').valueAsList()}" th:text="${value}"></li>
+                                                    </ul>
+                                                </div>
+                                                <div th:unless="${service.getAttributes().get('__${attr}__').valueAsList().size()} > 0" class='center' th:text="'&horbar;'"></div>
+                                            </div>
+
+                                            <div th:case="'java.util.LargeArrayList'">
+                                                <div th:if="${service.getAttributes().get('__${attr}__').valueAsList().size()} > 0">
+                                                    <ul>
+                                                        <li th:each="value: ${service.getAttributes().get('__${attr}__').valueAsList()}" th:text="${value}"></li>
+                                                    </ul>
+                                                </div>
+                                                <div th:unless="${service.getAttributes().get('__${attr}__').valueAsList().size()} > 0" class='center' th:text="'&horbar;'"></div>
+                                            </div>
+
+                                            <div th:case="'java.util.LinkedHashMap'">
+                                                <div th:if="${service.getAttributes().get('__${attr}__').valueAsMap()} != null and ${service.getAttributes().get('__${attr}__').valueAsMap().size()} > 0">
+                                                    <div th:if="${multilingualAttributes.contains('__${attr}__')}">
+                                                        <div th:if="${service.getAttributes().get('__${attr}__').valueAsMap().get('__${#locale.getLanguage()}__')} != null" th:text="${service.getAttributes().get('__${attr}__').valueAsMap().get('__${#locale.getLanguage()}__')}"></div>
+                                                        <div th:unless="${service.getAttributes().get('__${attr}__').valueAsMap().get('__${#locale.getLanguage()}__')} != null" th:text="${service.getAttributes().get('__${attr}__').valueAsMap().get('en')}"></div>
+                                                    </div>
+                                                    <div th:unless="${multilingualAttributes.contains('__${attr}__')}">
+                                                        <ul>
+                                                            <li th:each="entry : ${service.getAttributes().get('__${attr}__').valueAsMap()}" th:text="${entry.key} + ' &rarr; ' + ${entry.value}"></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div th:unless="${service.getAttributes().get('__${attr}__').valueAsMap()} != null and ${service.getAttributes().get('__${attr}__').valueAsMap().size()} > 0" class='center' th:text="'&horbar;'"></div>
+                                            </div>
+
+                                            <div th:case="*" th:text="&horbar;"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="${footer_path} :: footer"/>
+
+    <script th:inline="javascript">
+        let labelsMap = {
+            "production_saml": [[#{production_services_saml}]],
+            "staging_saml": [[#{stage_services_saml}]],
+            "testing_saml": [[#{test_services_saml}]],
+            "production_oidc": [[#{production_services_oidc}]],
+            "staging_oidc": [[#{stage_services_oidc}]],
+            "testing_oidc": [[#{test_services_oidc}]]
+        }
+    </script>
+
+    <script type="text/javascript" th:src="@{/res/js/chart.js}"></script>
+    <script th:inline="javascript" id="dataStats" th:content="${statisticsJson}" type="text/javascript" th:src="@{/res/js/listOfSps.js}"></script>
+</body>
+</html>

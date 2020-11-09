@@ -91,6 +91,10 @@ public class FacadeUtils {
         return options.hasNonNull(key) ? options.get(key).asText() : null;
     }
 
+    public static boolean getBooleanOption(String key, JsonNode options) {
+        return options.hasNonNull(key) && options.get(key).asBoolean();
+    }
+
     /**
      * Get String option from method options. If option is not configured, defaultValue is returned.
      * For fetching required options as Strings see "FacadeUtils.getRequiredStringOption(...)" method.
@@ -119,6 +123,31 @@ public class FacadeUtils {
         });
 
         List<Long> values = options.hasNonNull(key) ? reader.readValue(options.get(key)) : null;
+        if (values == null) {
+            log.error("Required option {} has not been found by method {}. " +
+                    "Check your configuration.", key, method);
+            throw new IllegalArgumentException("Required option has not been found.");
+        }
+
+        return values;
+    }
+
+    /**
+     * Get list of string values from method options. If option is not configured, NULL is returned.
+     *
+     * @param key Key identifying the option.
+     * @param method Which method demands for the option.
+     * @param options JSON containing the method options.
+     * @return Extracted option as list of long values.
+     * @throws IOException Invalid I/O value occurred during conversion from JSON to list of long values.
+     */
+    public static List<String> getRequiredStringListOption(@NonNull String key,@NonNull String method,
+                                                       @NonNull JsonNode options) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectReader reader = mapper.readerFor(new TypeReference<List<String>>() {
+        });
+
+        List<String> values = options.hasNonNull(key) ? reader.readValue(options.get(key)) : null;
         if (values == null) {
             log.error("Required option {} has not been found by method {}. " +
                     "Check your configuration.", key, method);

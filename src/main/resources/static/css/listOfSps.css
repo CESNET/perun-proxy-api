@@ -1,0 +1,15 @@
+#listOfSps {
+    margin: 0 auto;
+    padding: 10px;
+}
+
+#myChart {
+    max-height: 200px;
+    max-width: 470px;
+    margin: auto;
+}
+
+#content, #languagebar {
+    max-width: 85% !important;
+    margin: auto;
+}

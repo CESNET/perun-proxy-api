@@ -1,6 +1,8 @@
 package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
+import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

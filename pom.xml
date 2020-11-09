@@ -17,6 +17,8 @@
         <maven-model.version>3.6.3</maven-model.version>
         <mockito.version>3.4.0</mockito.version>
         <nimbus-jose-jwt.version>7.9</nimbus-jose-jwt.version>
+        <bootstrap.version>3.3.7</bootstrap.version>
+        <webjars-locator.version>0.30</webjars-locator.version>
     </properties>
 
     <dependencies>
@@ -125,6 +127,16 @@
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
             <version>${nimbus-jose-jwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>webjars-locator</artifactId>
+            <version>${webjars-locator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>${bootstrap.version}</version>
         </dependency>
     </dependencies>
 

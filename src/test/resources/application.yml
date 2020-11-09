@@ -46,6 +46,7 @@ facade:
   config_path:
     proxyuser: "${PWD}/src/test/resources/configs/proxyuser-facade.yml"
     relying_party: "${PWD}/src/test/resources/configs/relying-party-facade.yml"
+    gui: "${PWD}/src/test/resources/configs/gui-facade.yml"
 
 security:
   basicauth:
@@ -53,3 +54,6 @@ security:
 
 ga4gh:
   type: NONE
+
+localization:
+  path: "${PWD}/src/test/resources/configs/localization/"

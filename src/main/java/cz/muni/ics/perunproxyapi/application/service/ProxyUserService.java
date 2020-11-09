@@ -9,6 +9,7 @@ import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.UpdateAttributeMappingEntry;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
+import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ServicesDataHolder;
 import lombok.NonNull;
 
 import java.util.List;

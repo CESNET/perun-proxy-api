@@ -1,0 +1,165 @@
+#wrap {
+    max-width: 100%;
+}
+
+#languagebar {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#languagebar a:link, #languagebar a:visited {
+    text-decoration: none;
+    color: #777;
+    border-bottom: 1px dotted #ccc;
+    font-weight: normal;
+}
+#languagebar a:hover {
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #333;
+}
+
+.table-stats th {
+    text-align: center;
+}
+
+.customLink, a:link, a:visited, a:hover {
+    color: black;
+    text-decoration: underline;
+    border: none;
+}
+
+.customLink:hover {
+    text-decoration: underline;
+}
+
+.java\.lang\.Boolean, .java\.util\.ArrayList, .java\.util\.LargeArrayList, .java\.util\.LinkedHashMap, .center {
+    text-align: center;
+}
+
+h3 {
+    padding-top: 50px;
+}
+
+@media screen and (max-width:767px) {
+    #content {
+        max-width: 95% !important;
+    }
+
+    td {
+        max-width: 150px;
+        word-wrap: break-word;
+    }
+
+    .table-responsive > .table > tbody > tr > td, .table-responsive > .table > tbody > tr > th, .table-responsive > .table > tfoot > tr > td, .table-responsive > .table > tfoot > tr > th, .table-responsive > .table > thead > tr > td, .table-responsive > .table > thead > tr > th{
+        white-space: unset !important;
+    }
+}
+
+@media screen and (min-width:767px) and (max-width:1080px) {
+    #content {
+        max-width: 90% !important;
+    }
+
+    td {
+        max-width: 200px;
+        word-wrap: break-word;
+    }
+}
+
+@media screen and (min-width:1080px) {
+    #content {
+        max-width: 85% !important;
+    }
+
+    td {
+        max-width: 300px;
+        word-wrap: break-word;
+    }
+}
+
+.row, .col-md-6 {
+    box-sizing: border-box;
+}
+.row {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+.col-md-6 {
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+
+}
+@media (min-width: 992px) {
+    .col-md-6 {
+        width: 50%;
+        float: left;
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/* LINKS */
+a, a:link, a:hover {
+    text-decoration: underline;
+    color: #212529;
+    border-bottom: 1px dotted #ccc;
+    font-weight: normal;
+}
+
+a:link, a:visited {
+    color: #212529;
+    border-bottom: 1px dotted #ccc;
+    font-weight: normal;
+}
+.ui-tabs-nav a {
+    border: none ! important;
+    text-decoration: none;
+}
+
+/* LISTS */
+ul {
+    margin: .3em 0 1.5em 2em;
+}
+
+ul.related {
+    margin-top: -1em;
+}
+
+li {
+    margin-left: 2em;
+}
+
+dt {
+    font-weight: normal;
+}
+
+#wrap {
+    position: relative;
+    text-align: left;
+}
+
+#content, #footer {
+    padding: 0 20px;
+}
+
+/* TYPOGRAPHY */
+p, ul, ol {
+    margin: 0 0 1.5em;
+}
+
+#content {
+    margin-top: 2em;
+}
+
+.old {
+    text-decoration: line-through;
+}
+
+caption {
+    display: none;
+}

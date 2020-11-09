@@ -19,4 +19,5 @@ public final class PathConstants {
     public static final String PROXY_USER = "/proxy-user";
     public static final String RELYING_PARTY = "/relying-party";
 
+    public static final String GUI = "/gui";
 }
