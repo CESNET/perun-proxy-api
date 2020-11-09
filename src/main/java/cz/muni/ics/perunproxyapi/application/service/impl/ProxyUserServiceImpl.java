@@ -19,9 +19,11 @@ import cz.muni.ics.perunproxyapi.persistence.models.User;
 import cz.muni.ics.perunproxyapi.persistence.models.UserExtSource;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Adapter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.management.InvalidAttributeValueException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

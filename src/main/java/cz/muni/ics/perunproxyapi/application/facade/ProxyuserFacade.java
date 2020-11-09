@@ -7,6 +7,7 @@ import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.UserDTO;
 import lombok.NonNull;
 
+import javax.management.InvalidAttributeValueException;
 import java.util.List;
 import java.util.Map;
 

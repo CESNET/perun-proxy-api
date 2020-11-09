@@ -33,4 +33,10 @@ public interface GuiFacade {
      */
     JsonNode getListOfSpsInJson() throws JsonProcessingException, PerunUnknownException, PerunConnectionException;
 
+
+    String getRpEnvironmentValue(@NonNull Long facilityId)
+            throws PerunUnknownException, PerunConnectionException, InvalidAttributeValueException;
+
+    ModelAndView addHeaderAndFooter(ModelAndView mav);
+
 }

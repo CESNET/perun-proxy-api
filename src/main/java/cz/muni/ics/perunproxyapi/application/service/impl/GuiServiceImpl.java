@@ -211,4 +211,17 @@ public class GuiServiceImpl implements GuiService {
         private ServicesCounter oidcCounter;
     }
 
+    @Override
+    public String getRpEnvironmentValue(@NonNull Long facilityId, @NonNull DataAdapter adapter, @NonNull String spStateAttrName) throws PerunUnknownException, PerunConnectionException, InvalidAttributeValueException {
+        String attrValue = adapter.getAttributeValue(Entity.FACILITY, facilityId, spStateAttrName).valueAsString();
+
+        if (!attrValue.equals("TESTING") && !attrValue.equals("STAGING") && !attrValue.equals("PRODUCTION")) {
+            throw new InvalidAttributeValueException(
+                    "Value of sp state has to be one of the following: TESTING, STAGING, PRODUCTION; but it is: " + attrValue
+            );
+        }
+
+        return attrValue;
+    }
+    
 }

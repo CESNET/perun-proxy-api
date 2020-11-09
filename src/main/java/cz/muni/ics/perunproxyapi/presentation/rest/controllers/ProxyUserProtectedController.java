@@ -49,6 +49,7 @@ public class ProxyUserProtectedController {
     public static final String FIELDS = "fields";
     public static final String USER_ID = "userId";
     public static final String ATTRIBUTES = "attributes";
+    public static final String FACILITY_ID = "facilityId";
 
     private final ProxyuserFacade facade;
 

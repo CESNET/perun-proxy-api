@@ -2,9 +2,8 @@ package cz.muni.ics.perunproxyapi.presentation.rest.controllers;
 
 import cz.muni.ics.perunproxyapi.application.facade.ProxyuserFacade;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.PathConstants.NO_AUTH_PATH;
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.PathConstants.PROXY_USER;
@@ -16,7 +15,7 @@ import static cz.muni.ics.perunproxyapi.presentation.rest.config.PathConstants.P
  *
  * @author Dominik Frantisek Bucik <bucik@ics.muni.cz>
  */
-@RestController
+@Controller
 @RequestMapping(value = NO_AUTH_PATH + PROXY_USER)
 @Slf4j
 public class ProxyUserUnprotectedController {

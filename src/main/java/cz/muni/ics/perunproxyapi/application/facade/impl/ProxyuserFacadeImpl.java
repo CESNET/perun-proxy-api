@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.management.InvalidAttributeValueException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

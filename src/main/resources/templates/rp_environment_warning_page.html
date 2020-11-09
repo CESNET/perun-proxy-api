@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css} "/>
+        <link th:href="@{/css/default.css}" rel="stylesheet" />
+        <th:block th:insert="${header_path} :: header_head"/>
+        <link th:href="@{/css/warning_page.css}" rel="stylesheet" />
+
+    </head>
+    <body>
+        <div id="wrap">
+            <div th:replace="${header_path} :: header_body"/>
+            <div id="content">
+                <form method="get" th:action="${spUrl}">
+                    <h3 th:if="${#locale.getLanguage()} == 'cs'" th:text="#{test_sp_warning_page.warning_text_beginning} + ' ' + ${rpEnvironmentValue} + ' ' + #{test_sp_warning_page.warning_text_end}"> Warning text </h3>
+                    <h3 th:unless="${#locale.getLanguage()} == 'cs'" th:text="#{test_sp_warning_page.warning_text_beginning} + ' ' + ${rpEnvironmentValue} + ' ' + #{test_sp_warning_page.warning_text_end}"> Warning text </h3>
+                    <br>
+                    <div id="submit_button" class="form-group">
+                        <input type="submit" class="btn btn-lg btn-primary btn-block" value="Continue" th:value="#{test_sp_warning_page.continue}">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div th:replace="${footer_path} :: footer"/>
+    </body>
+</html>

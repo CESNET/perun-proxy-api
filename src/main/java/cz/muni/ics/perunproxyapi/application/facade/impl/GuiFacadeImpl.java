@@ -117,4 +117,47 @@ public class GuiFacadeImpl implements GuiFacade {
                 rpProtocolAttr);
     }
 
+
+    public static final String RP_ENVIRONMENT = "rp_environment";
+    public static final String RP_ENVIRONMENT_ATTR = "rp_environment_attr";
+    public static final String GET_HEADER_AND_FOOTER = "get_header_and_footer";
+    public static final String HEADER = "header_path";
+    public static final String FOOTER = "footer_path";
+
+    private final Map<String, JsonNode> methodConfigurations;
+    private final AdaptersContainer adaptersContainer;
+    private final GuiService guiService;
+
+    @Autowired
+    public GuiFacadeImpl(@NonNull GuiService guiService,
+                         @NonNull AdaptersContainer adaptersContainer,
+                         @NonNull FacadeConfiguration facadeConfiguration)
+    {
+        this.guiService = guiService;
+        this.adaptersContainer = adaptersContainer;
+        this.methodConfigurations = facadeConfiguration.getGuiAdapterMethodConfigurations();
+    }
+
+    @Override
+    public String getRpEnvironmentValue(@NonNull Long facilityId) throws PerunUnknownException, PerunConnectionException, InvalidAttributeValueException {
+        JsonNode options = FacadeUtils.getOptions(RP_ENVIRONMENT, methodConfigurations);
+        DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
+
+        String attrName = FacadeUtils.getRequiredStringOption(RP_ENVIRONMENT_ATTR, RP_ENVIRONMENT, options);
+
+        return guiService.getRpEnvironmentValue(facilityId, adapter, attrName);
+    }
+
+    @Override
+    public ModelAndView addHeaderAndFooter(ModelAndView mav) {
+        JsonNode options = FacadeUtils.getOptions(GET_HEADER_AND_FOOTER, methodConfigurations);
+
+        String header = FacadeUtils.getRequiredStringOption(HEADER, GET_HEADER_AND_FOOTER, options);
+        String footer = FacadeUtils.getRequiredStringOption(FOOTER, GET_HEADER_AND_FOOTER, options);
+
+        mav.addObject(HEADER, header);
+        mav.addObject(FOOTER, footer);
+
+        return mav;
+    }
 }

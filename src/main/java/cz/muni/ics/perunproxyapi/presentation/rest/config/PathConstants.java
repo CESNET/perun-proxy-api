@@ -18,6 +18,8 @@ public final class PathConstants {
     // controller paths
     public static final String PROXY_USER = "/proxy-user";
     public static final String RELYING_PARTY = "/relying-party";
+    public static final String GUI = "/gui";
+    public static final String RP_ENVIRONMENT = "/rpEnvironment";
 
     public static final String GUI = "/gui";
 }

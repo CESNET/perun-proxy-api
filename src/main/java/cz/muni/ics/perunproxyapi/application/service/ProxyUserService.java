@@ -10,7 +10,9 @@ import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import cz.muni.ics.perunproxyapi.persistence.models.UpdateAttributeMappingEntry;
 import cz.muni.ics.perunproxyapi.persistence.models.User;
 import lombok.NonNull;
+import org.apache.coyote.Adapter;
 
+import javax.management.InvalidAttributeValueException;
 import java.util.List;
 import java.util.Map;
 
