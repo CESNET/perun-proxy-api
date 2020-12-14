@@ -35,8 +35,8 @@ connector:
 
 attributes:
   paths:
-    - "${PWD}/src/test/resources/configs/attributes.yml"
-    - "${PWD}/src/test/resources/configs/alternative_attributes.yml"
+    - "${PWD}/src/test/resources/configs/attributes/attributes.yml"
+    - "${PWD}/src/test/resources/configs/attributes/alternative_attributes.yml"
   identifiers:
     relying_party: "urn:perun:facility:attribute-def:def:rp_identifier"
     login: "urn:perun:user:attribute-def:def:login-namespace-example"

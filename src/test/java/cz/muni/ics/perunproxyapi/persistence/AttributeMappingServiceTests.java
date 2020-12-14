@@ -1,5 +1,6 @@
 package cz.muni.ics.perunproxyapi.persistence;
 
+import cz.muni.ics.perunproxyapi.persistence.configs.AttributeMappingServiceProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -10,28 +11,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AttributeMappingServiceTests {
 
-    private static final String ATTRIBUTES_PATH = "src/test/resources/configs/attributes.yml";
-    private static final String ALTERNATIVE_ATTRIBUTES_PATH = "src/test/resources/configs/alternative_attributes.yml";
-    private static final List<String> PATHS = new ArrayList<>(
-            Arrays.asList(ATTRIBUTES_PATH, ALTERNATIVE_ATTRIBUTES_PATH));
-
+    private static final String ATTRIBUTES_PATH = "src/test/resources/configs/attributes/attributes.yml";
+    private static final String ALTERNATIVE_ATTRIBUTES_PATH = "src/test/resources/configs/attributes/alternative_attributes.yml";
     private static final String IS_TEST_SP_ID = "urn:perun:facility:attribute-def:def:isTestSp";
 
     @Autowired
+    private AttributeMappingServiceProperties attributeMappingServiceProperties;
+
     private AttributeMappingService attributeMappingService;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
+        attributeMappingService = new AttributeMappingService(attributeMappingServiceProperties);
         clearAttributeMap();
     }
 
@@ -56,12 +55,6 @@ public class AttributeMappingServiceTests {
         ReflectionTestUtils.setField(attributeMappingService, "paths", Collections.singletonList(ATTRIBUTES_PATH));
         attributeMappingService.postInit();
         assertEquals(8, attributeMappingService.getAttributeMap().size());
-
-        this.clearAttributeMap();
-
-        ReflectionTestUtils.setField(attributeMappingService, "paths", Collections.singletonList(ALTERNATIVE_ATTRIBUTES_PATH));
-        attributeMappingService.postInit();
-        assertEquals(2 , attributeMappingService.getAttributeMap().size());
     }
 
     @Test

@@ -22,21 +22,16 @@ import cz.muni.ics.perunproxyapi.persistence.models.UserExtSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.ATTRIBUTES_MANAGER;
-import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.PARAM_ATTR_NAMES;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcAdapterImpl.USERS_MANAGER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -78,10 +73,6 @@ public class RpcAdapterImplUserRelatedTest {
     private UserExtSource sampleUserExtSource;
     private JsonNode sampleUserExtSourceJson;
 
-    @Value("${attributes.identifiers.relying_party}") private String rpIdentifierAttrIdentifier;
-    @Value("${attributes.identifiers.additional_identifiers}") private String additionalIdentifiersAttrIdentifier;
-    @Value("${attributes.identifiers.login}") private String loginAttrIdentifier;
-
     private final PerunConnectorRpc connector = mock(PerunConnectorRpc.class);
     private FullAdapter rpcAdapter;
 
@@ -103,7 +94,8 @@ public class RpcAdapterImplUserRelatedTest {
     }
 
     private void initializeLoginAttribute() throws PerunUnknownException, PerunConnectionException {
-        AttributeObjectMapping loginAttrMapping = attributeMappingService.getMappingByIdentifier(loginAttrIdentifier);
+        AttributeObjectMapping loginAttrMapping = attributeMappingService.getMappingByIdentifier(
+                attributeMappingServiceProperties.getLoginIdentifier());
         String rpcName = loginAttrMapping.getRpcName();
         int i = rpcName.lastIndexOf(':');
         String namespace = rpcName.substring(0, i);
@@ -117,12 +109,6 @@ public class RpcAdapterImplUserRelatedTest {
     }
 
     private void prepareGetAttributesMock() throws PerunUnknownException, PerunConnectionException {
-        Set<AttributeObjectMapping> mappings = attributeMappingService.getMappingsByIdentifiers(userAttrIdentifiers);
-        List<String> rpcNames = mappings.stream().map(AttributeObjectMapping::getRpcName).collect(Collectors.toList());
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put(Entity.USER.toString().toLowerCase(), sampleUser.getPerunId());
-        params.put(PARAM_ATTR_NAMES, rpcNames);
-
         when(connector.post(eq(ATTRIBUTES_MANAGER), eq(GET_ATTRIBUTES), anyMap())).thenReturn(this.userAttributesJsonArray);
     }
 

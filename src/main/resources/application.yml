@@ -1,7 +1,5 @@
 ---
 
-
-
 connector:
   rpc:
     perun_url: "https://perun-dev.cesnet.cz/ba/rpc"
@@ -37,6 +35,7 @@ facade:
   config_path:
     proxyuser: "/etc/perun/proxyuser-facade.yml"
     relying_party: "/etc/perun/relying-party-facade.yml"
+    gui: "/etc/perun/gui-facade.yml"
 
 security:
   basicauth:
