@@ -482,46 +482,6 @@ public class RpcMapper {
         return map;
     }
 
-    /**
-     * Maps JsonNode to Map<String, PerunAttribute>.
-     * Keys are the internal identifiers of the attributes.
-     * Values are attributes corresponding to the names.
-     *
-     * @param jsonArray    JSON array of perunAttributes in JSON format from Perun to be mapped.
-     * @param attrMappings Set of the AttributeObjectMapping objects that will be used for mapping of the attributes.
-     * @return Map<String, PerunAttribute>. If attribute for identifier has not been mapped, key contains NULL as value.
-     */
-    public static Map<String, PerunAttribute> mapAttributesWithUnrequiredValue(@NonNull JsonNode jsonArray,
-                                                                               @NonNull Set<AttributeObjectMapping> attrMappings) {
-        if (jsonArray.isNull()) {
-            return new HashMap<>();
-        }
-
-        Map<String, PerunAttribute> map = new HashMap<>(); //key is internal identifier
-        Map<String, PerunAttribute> mappedAttrsMap = new HashMap<>(); //key is URN of the attribute
-
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonNode attribute = jsonArray.get(i);
-            PerunAttribute mappedAttribute = RpcMapper.mapAttributeWithUnrequiredValue(attribute);
-
-            if (mappedAttribute != null) {
-                mappedAttrsMap.put(mappedAttribute.getUrn(), mappedAttribute);
-            }
-        }
-
-        for (AttributeObjectMapping mapping : attrMappings) {
-            String attrKey = mapping.getRpcName();
-            if (mappedAttrsMap.containsKey(attrKey)) {
-                PerunAttribute attribute = mappedAttrsMap.get(attrKey);
-                map.put(mapping.getIdentifier(), attribute);
-            } else {
-                map.put(mapping.getIdentifier(), null);
-            }
-        }
-
-        return map;
-    }
-
     private static Long getRequiredFieldAsLong(JsonNode json, String name) {
         if (!json.hasNonNull(name)) {
             throw new MissingFieldException();

@@ -1,6 +1,6 @@
 package cz.muni.ics.perunproxyapi.persistence.models.listOfServices;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import cz.muni.ics.perunproxyapi.application.facade.configuration.classes.LosAttribute;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import lombok.ToString;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Object containing all data needed for the list of services.
@@ -24,12 +23,13 @@ import java.util.Set;
 public class ServicesDataHolder {
 
     private Map<String, Integer> statistics;
-    private List<Map<String, JsonNode>> servicesJson;
     private List<LosFacility> services;
-    private Set<String> attributesToShow;
-    private List<String> multilingualAttributes;
-    private List<String> urlAttributes;
-    private String headerPath;
-    private String footerPath;
+    private List<LosAttribute> attributesToShow;
+    private boolean showSaml;
+    private boolean showOidc;
+    private boolean showTesting;
+    private boolean showStaging;
+    private boolean showProduction;
+
 }
 

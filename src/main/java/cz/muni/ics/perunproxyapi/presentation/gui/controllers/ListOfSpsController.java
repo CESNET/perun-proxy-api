@@ -6,6 +6,7 @@ import cz.muni.ics.perunproxyapi.application.facade.GuiFacade;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ServicesDataHolder;
+import cz.muni.ics.perunproxyapi.presentation.gui.GuiProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,16 +34,20 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class ListOfSpsController {
 
-    private final GuiFacade facade;
+    public static final String HEADER = "header_path";
+    public static final String FOOTER = "footer_path";
+    public static final String LANGUAGE_BAR_ENABLED = "language_bar_enabled";
 
     public static final String LIST_OF_SPS = "list_of_sps";
 
+    private final GuiProperties guiProperties;
+    private final GuiFacade facade;
 
     @Autowired
-    public ListOfSpsController(GuiFacade facade) {
+    public ListOfSpsController(GuiProperties guiProperties, GuiFacade facade) {
+        this.guiProperties = guiProperties;
         this.facade = facade;
     }
-
 
     /**
      * Show a template with the list of services
@@ -62,13 +67,14 @@ public class ListOfSpsController {
         mav.addObject("statistics", listOfSps.getStatistics());
         mav.addObject("statisticsJson", mapper.convertValue(listOfSps.getStatistics(), JsonNode.class));
         mav.addObject("services", listOfSps.getServices());
-        mav.addObject("attributesToShow", listOfSps.getAttributesToShow());
-        mav.addObject("multilingualAttributes", listOfSps.getMultilingualAttributes());
-        mav.addObject("urlAttributes", listOfSps.getUrlAttributes());
+        mav.addObject("attributes", listOfSps.getAttributesToShow());
+        mav.addObject("showOidc", listOfSps.isShowOidc());
+        mav.addObject("showSaml", listOfSps.isShowSaml());
+        mav.addObject("showTesting", listOfSps.isShowTesting());
+        mav.addObject("showStaging", listOfSps.isShowStaging());
+        mav.addObject("showProduction", listOfSps.isShowProduction());
 
-        facade.addHeaderAndFooter(mav);
-
-        return mav;
+        return this.addCommonOptions(mav);
     }
 
     /**
@@ -87,8 +93,18 @@ public class ListOfSpsController {
 
         Map<String, JsonNode> propertiesToShow = new HashMap<>();
         propertiesToShow.put("statistics", mapper.valueToTree(services.getStatistics()));
-        propertiesToShow.put("services", mapper.valueToTree(services.getServicesJson()));
+        //propertiesToShow.put("services", mapper.valueToTree(services.getServicesJson()));
 
         return propertiesToShow;
     }
+
+    private ModelAndView addCommonOptions(ModelAndView mav) {
+        mav.addObject(HEADER, guiProperties.getHeaderPath());
+        mav.addObject(FOOTER, guiProperties.getFooterPath());
+        mav.addObject(LANGUAGE_BAR_ENABLED, guiProperties.isLanguageBarEnabled());
+
+        return mav;
+    }
+
+
 }

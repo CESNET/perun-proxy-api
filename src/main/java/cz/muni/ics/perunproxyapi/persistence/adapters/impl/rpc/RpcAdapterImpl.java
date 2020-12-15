@@ -153,31 +153,6 @@ public class RpcAdapterImpl implements FullAdapter {
     }
 
     @Override
-    public Map<String, PerunAttribute> getAttributesWithUnrequiredValue(@NonNull Entity entity,
-                                                                        @NonNull Long entityId,
-                                                                        List<String> attrIdentifiers)
-            throws PerunUnknownException, PerunConnectionException
-    {
-        if (attrIdentifiers == null || attrIdentifiers.isEmpty()) {
-            log.debug("No attrs to fetch - attrIdentifiers: {}", (attrIdentifiers == null ? "null" : "empty"));
-            return new HashMap<>();
-        }
-
-        Set<AttributeObjectMapping> mappings = attributeMappingService.getMappingsByIdentifiers(attrIdentifiers);
-
-        List<String> rpcNames = mappings.stream()
-                .map(AttributeObjectMapping::getRpcName)
-                .collect(Collectors.toList());
-
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put(entity.toString(), entityId);
-        params.put(PARAM_ATTR_NAMES, rpcNames);
-
-        JsonNode perunResponse = connectorRpc.post(ATTRIBUTES_MANAGER, "getAttributes", params);
-        return RpcMapper.mapAttributesWithUnrequiredValue(perunResponse, mappings);
-    }
-
-    @Override
     public PerunAttribute getAttribute(@NonNull Entity entity,
                                        @NonNull Long entityId,
                                        @NonNull String attrToFetch)

@@ -3,7 +3,6 @@ package cz.muni.ics.perunproxyapi.application.facade.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import cz.muni.ics.perunproxyapi.application.facade.FacadeUtils;
 import cz.muni.ics.perunproxyapi.application.facade.GuiFacade;
 import cz.muni.ics.perunproxyapi.application.facade.configuration.FacadeConfiguration;
@@ -19,7 +18,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,30 +30,19 @@ import static cz.muni.ics.perunproxyapi.application.facade.FacadeUtils.getRequir
 @Slf4j
 public class GuiFacadeImpl implements GuiFacade {
 
-    public static final String HEADER_PATH = "header_path";
-    public static final String FOOTER_PATH = "footer_path";
-
-
     public static final String SAML_ENABLED = "saml_enabled";
     public static final String OIDC_ENABLED = "oidc_enabled";
     public static final String PRODUCTION_ENABLED = "production_enabled";
     public static final String STAGING_ENABLED = "staging_enabled";
     public static final String TESTING_ENABLED = "testing_enabled";
-
     public static final String GET_LIST_OF_SPS = "get_list_of_sps";
-    public static final String PROXY_IDENTIFIER = "proxy_identifier";
-    public static final String PERUN_PROXY_IDENTIFIER_ATTR = "perun_proxy_identifier_attr";
-    public static final String IS_TEST_SP_ATTR = "is_test_sp_attr";
+    public static final String PROXY_IDENTIFIER_VALUE = "proxy_identifier_value";
+    public static final String PERUN_PROXY_IDENTIFIER_ATTR = "proxy_identifier_attr";
+    public static final String RP_ENVIROMENT_ATTR = "rp_environment_attr";
     public static final String SHOW_ON_SERVICE_LIST_ATTR = "show_on_service_list_attr";
-    public static final String SAML2ENTITY_ID_ATTR = "saml2entity_id_attr";
+    public static final String SAML2_ENTITY_ID_ATTR = "saml2_entity_id_attr";
     public static final String OIDC_CLIENT_ID_ATTR = "oidc_client_id_attr";
-
     public static final String DISPLAYED_ATTRIBUTES = "displayed_attributes";
-
-    public static final String GET_COMMON_OPTIONS = "get_header_and_footer";
-    public static final String HEADER = "header_path";
-    public static final String FOOTER = "footer_path";
-    public static final String LANGUAGE_BAR_ENABLED = "language_bar_enabled";
 
     private final Map<String, JsonNode> methodConfigurations;
     private final AdaptersContainer adaptersContainer;
@@ -82,14 +69,14 @@ public class GuiFacadeImpl implements GuiFacade {
         boolean stagingEnabled = getBooleanOption(STAGING_ENABLED, options);
         boolean testingEnabled = getBooleanOption(TESTING_ENABLED, options);
 
-        String proxyIdentifier = getRequiredStringOption(PROXY_IDENTIFIER, GET_LIST_OF_SPS, options);
+        String proxyIdentifier = getRequiredStringOption(PROXY_IDENTIFIER_VALUE, GET_LIST_OF_SPS, options);
         String perunProxyIdentifierAttr = getRequiredStringOption(PERUN_PROXY_IDENTIFIER_ATTR, GET_LIST_OF_SPS, options);
-        String rpEnvironmentAttr = getRequiredStringOption(IS_TEST_SP_ATTR, GET_LIST_OF_SPS, options);
+        String rpEnvironmentAttr = getRequiredStringOption(RP_ENVIROMENT_ATTR, GET_LIST_OF_SPS, options);
         String showOnServiceListAttr = getRequiredStringOption(SHOW_ON_SERVICE_LIST_ATTR, GET_LIST_OF_SPS, options);
 
         String saml2EntityIdAttr = null;
         if (samlEnabled) {
-            saml2EntityIdAttr = getRequiredStringOption(SAML2ENTITY_ID_ATTR, GET_LIST_OF_SPS, options);
+            saml2EntityIdAttr = getRequiredStringOption(SAML2_ENTITY_ID_ATTR, GET_LIST_OF_SPS, options);
         }
 
         String oidcClientIdAttr = null;
@@ -97,30 +84,14 @@ public class GuiFacadeImpl implements GuiFacade {
             oidcClientIdAttr = getRequiredStringOption(OIDC_CLIENT_ID_ATTR, GET_LIST_OF_SPS, options);
         }
 
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        List<LosAttribute> displayedAttributes = mapper.readValue(options.get(DISPLAYED_ATTRIBUTES).asText(),
-                new TypeReference<>() {});
+        String str = options.get(DISPLAYED_ATTRIBUTES).toString();
+        List<LosAttribute> displayedAttributes = new ObjectMapper().readValue(str, new TypeReference<>() {});
 
         ServicesParams params = new ServicesParams(adapter, samlEnabled, oidcEnabled, productionEnabled, stagingEnabled,
-                testingEnabled, proxyIdentifier, perunProxyIdentifierAttr, rpEnvironmentAttr, showOnServiceListAttr,
+                testingEnabled, proxyIdentifier, perunProxyIdentifierAttr, showOnServiceListAttr, rpEnvironmentAttr,
                 saml2EntityIdAttr, oidcClientIdAttr, displayedAttributes);
 
         return guiService.getListOfSps(params);
-    }
-
-    @Override
-    public ModelAndView addHeaderAndFooter(ModelAndView mav) {
-        JsonNode options = FacadeUtils.getOptions(GET_COMMON_OPTIONS, methodConfigurations);
-
-        String header = getRequiredStringOption(HEADER, GET_COMMON_OPTIONS, options);
-        String footer = getRequiredStringOption(FOOTER, GET_COMMON_OPTIONS, options);
-        boolean languageBarEnabled = getBooleanOption(LANGUAGE_BAR_ENABLED, options);
-
-        mav.addObject(HEADER, header);
-        mav.addObject(FOOTER, footer);
-        mav.addObject(LANGUAGE_BAR_ENABLED, languageBarEnabled);
-
-        return mav;
     }
 
 }

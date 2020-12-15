@@ -33,19 +33,6 @@ public interface FullAdapter extends DataAdapter {
                                               @NonNull List<String> attributes) throws PerunUnknownException, PerunConnectionException;
 
     /**
-     * Get attributes for given entity.
-     * @param entity Entity enumeration value. Specifies Perun entity.
-     * @param entityId ID of the entity in Perun.
-     * @param attributes List of attribute names. Specifies what attributes we want to fetch.
-     * @return Map<String, PerunAttribute>, key is identifier of the attribute, value is the attribute.
-     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
-     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
-     */
-    Map<String, PerunAttribute> getAttributesWithUnrequiredValue(@NonNull Entity entity,
-                                              @NonNull Long entityId,
-                                              @NonNull List<String> attributes) throws PerunUnknownException, PerunConnectionException;
-
-    /**
      * Get a single attribute for given entity.
      * @param entity Entity enumeration value. Specifies Perun entity.
      * @param entityId ID of the entity in Perun.

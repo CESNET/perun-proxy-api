@@ -2,16 +2,13 @@ package cz.muni.ics.perunproxyapi.presentation.rest.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.thymeleaf.spring5.SpringTemplateEngine;
-import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
@@ -44,7 +41,7 @@ public class WebConfig implements WebMvcConfigurer {
     {
         FileTemplateResolver fileTemplateResolver = new FileTemplateResolver();
         fileTemplateResolver.setCharacterEncoding("UTF-8");
-        fileTemplateResolver.setTemplateMode("HTML5");
+        fileTemplateResolver.setTemplateMode("HTML");
         fileTemplateResolver.setCacheable( false );
         fileTemplateResolver.setOrder(2);
         fileTemplateResolver.setCheckExistence(true);
@@ -54,7 +51,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-        Set<ITemplateResolver> templateResolvers = new HashSet();
+        Set<ITemplateResolver> templateResolvers = new HashSet<>();
 
         templateResolvers.add( templateResolver() );
         templateResolvers.add( fileTemplateResolver() );

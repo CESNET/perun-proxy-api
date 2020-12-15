@@ -1,7 +1,7 @@
 package cz.muni.ics.perunproxyapi.persistence.models.listOfServices;
 
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
-import cz.muni.ics.perunproxyapi.persistence.models.PerunAttribute;
+import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,10 +23,7 @@ import java.util.Map;
 public class LosFacility {
 
     private Facility facility;
-    private String name;
-    private String loginUrl;
-    private boolean showOnServiceList;
     private String authProtocol;
-    private Map<String, PerunAttribute> attributes;
+    private Map<String, PerunAttributeValue> attributes;
 
 }

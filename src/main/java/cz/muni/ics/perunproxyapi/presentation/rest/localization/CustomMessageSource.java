@@ -29,9 +29,9 @@ public class CustomMessageSource extends AbstractMessageSource {
         File file = new File(externalMessagesPath);
         URL[] urls = {file.toURI().toURL()};
         ClassLoader loader = new URLClassLoader(urls);
-        ResourceBundle externalResourceBundle = ResourceBundle.getBundle(MESSAGES_EXTERNAL, locale, loader);
 
         try {
+            ResourceBundle externalResourceBundle = ResourceBundle.getBundle(MESSAGES_EXTERNAL, locale, loader);
             return new MessageFormat(externalResourceBundle.getString(key), locale);
         } catch (Exception ex) {
             // just ignore this exception and skip to the second resource bundle

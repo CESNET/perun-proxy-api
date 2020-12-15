@@ -3,7 +3,6 @@ package cz.muni.ics.perunproxyapi.application.facade;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ServicesDataHolder;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
 
@@ -23,13 +22,5 @@ public interface GuiFacade {
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
     ServicesDataHolder getListOfSps() throws IOException, PerunUnknownException, PerunConnectionException;
-
-    /**
-     * Adds path to header and footer to the given ModelAndView object
-     *
-     * @param mav ModelAndView to be filled
-     * @return ModelAndView with added paths to header and footer
-     */
-    ModelAndView addHeaderAndFooter(ModelAndView mav);
 
 }
