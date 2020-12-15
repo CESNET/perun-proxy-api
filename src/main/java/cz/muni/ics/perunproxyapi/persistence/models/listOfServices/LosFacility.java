@@ -21,10 +21,12 @@ import java.util.Map;
 @EqualsAndHashCode
 @ToString
 public class LosFacility {
+
     private Facility facility;
     private String name;
     private String loginUrl;
     private boolean showOnServiceList;
     private String authProtocol;
     private Map<String, PerunAttribute> attributes;
+
 }

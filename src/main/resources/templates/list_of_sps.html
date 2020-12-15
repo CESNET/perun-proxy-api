@@ -2,27 +2,26 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" >
 <head>
     <meta charset="UTF-8">
-
     <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
     <link th:href="@{/res/css/default.css}" rel="stylesheet" />
     <th:block th:insert="${header_path} :: header_head"/>
     <link th:href="@{/res/css/listOfSps.css}" rel="stylesheet" />
-
+    <title>List of services</title>
 <body>
     <div id="wrap">
         <div id="languagebar_line">
             <div id="languagebar">
                 <div th:if="${#locale.getLanguage()} == 'cs'">
-                    <a href="?lang=en">English</a>
-                    | Čeština
+                    <a href="?lang=en">English</a> | Čeština
                 </div>
                 <div th:unless="${#locale.getLanguage()} == 'cs'">
-                    English |
-                    <a href="?lang=cs">Čeština</a>
+                    English | <a href="?lang=cs">Čeština</a>
                 </div>
             </div>
         </div>
-        <div id="header" th:replace="${header_path} :: header_body"/>
+        <!-- REPLACEABLE HEADER -->
+        <div id="header" th:replace="${header_path} :: header_body"></div>
+
         <div id="content">
             <div class="row">
                 <div class="col-md-12">
@@ -85,14 +84,14 @@
                                 </thead>
                                 <tbody>
                                     <tr th:each="service: ${services}" th:if="${service.isShowOnServiceList()}">
-                                        <div>
-                                            <td th:if="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()} == null" th:text="${service.getName()}"></td>
-                                            <td th:unless="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()} == null">
-                                                <a class='customLink' th:href="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()}" th:text="${service.getName()}"></a>
-                                            </td>
-                                        </div>
-
+                                        <!-- SERVICE NAME with login link-->
+                                        <td th:if="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()} == null" th:text="${service.getName()}"></td>
+                                        <td th:unless="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()} == null">
+                                            <a class='customLink' th:href="${service.getAttributes().get('urn:perun:facility:attribute-def:def:loginURL').valueAsString()}" th:text="${service.getName()}"></a>
+                                        </td>
+                                        <!-- SERVICE PROTOCOL-->
                                         <td th:text="${service.getAuthProtocol()}"></td>
+                                        <!-- OTHER ATTRIBUTES -->
                                         <td th:each="attr: ${attributesToShow}" th:switch="${service.getAttributes().get('__${attr}__').getType()}">
                                             <div th:case="'java.lang.String'">
                                                 <div th:if="${service.getAttributes().get('__${attr}__').valueAsString()} == null" class='center' th:text="'&horbar;'"></div>
@@ -160,8 +159,7 @@
             </div>
         </div>
     </div>
-    <div th:replace="${footer_path} :: footer"/>
-
+    <div th:replace="${footer_path} :: footer"></div>
     <script th:inline="javascript">
         let labelsMap = {
             "production_saml": [[#{production_services_saml}]],
@@ -172,7 +170,6 @@
             "testing_oidc": [[#{test_services_oidc}]]
         }
     </script>
-
     <script type="text/javascript" th:src="@{/res/js/chart.js}"></script>
     <script th:inline="javascript" id="dataStats" th:content="${statisticsJson}" type="text/javascript" th:src="@{/res/js/listOfSps.js}"></script>
 </body>
