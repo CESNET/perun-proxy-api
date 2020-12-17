@@ -1,17 +1,29 @@
 package cz.muni.ics.perunproxyapi.application.service.impl;
 
-import cz.muni.ics.perunproxyapi.application.facade.configuration.classes.LosAttribute;
-import cz.muni.ics.perunproxyapi.application.facade.parameters.ServicesParams;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import cz.muni.ics.perunproxyapi.application.facade.configuration.classes.ListOfServicesJsonAttribute;
+import cz.muni.ics.perunproxyapi.application.facade.parameters.ListOfServicesGuiParams;
+import cz.muni.ics.perunproxyapi.application.facade.parameters.ListOfServicesJsonParams;
+import cz.muni.ics.perunproxyapi.application.facade.parameters.ListOfServicesParams;
 import cz.muni.ics.perunproxyapi.application.service.GuiService;
 import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
+import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ListOfServicesDAO;
 import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.LosFacility;
 import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.LosSorter;
-import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ServicesDataHolder;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -34,44 +46,73 @@ public class GuiServiceImpl implements GuiService {
     private static final String PRODUCTION = "PRODUCTION";
 
     @Override
-    public ServicesDataHolder getListOfSps(@NonNull ServicesParams servicesParams)
+    public ListOfServicesDAO getListOfSps(@NonNull ListOfServicesGuiParams params)
             throws PerunUnknownException, PerunConnectionException
     {
-        List<Facility> facilities = servicesParams.getAdapter().searchFacilitiesByAttributeValue(
-                servicesParams.getPerunProxyIdentifierAttr(), servicesParams.getProxyIdentifier());
+        Set<String> attrNames = initAttrNames(params);
+        ServicesAndCounters sac = getServicesAndCounters(params, attrNames);
+        Map<String, Integer> statistics = createCounterData(sac.getSamlCounter(), sac.getOidcCounter());
 
-        Set<String> attrNames = initAttrNames(servicesParams);
+        return new ListOfServicesDAO(statistics, sac.getServices(), params.getDisplayedAttributes(),
+                params.isShowSaml(), params.isShowOidc(), params.isShowTesting(),
+                params.isShowStaging(), params.isShowProduction());
+    }
 
-        List<LosFacility> samlServices = new ArrayList<>();
-        List<LosFacility> oidcServices = new ArrayList<>();
+    @Override
+    public JsonNode getListOfSpsJson(@NonNull ListOfServicesJsonParams params)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        Set<String> attrNames = initAttrNames(params);
+        ServicesAndCounters sac = getServicesAndCounters(params, attrNames);
 
+        sac.getServices().sort(new LosSorter());
+        ObjectNode json = JsonNodeFactory.instance.objectNode();
+        Map<String, Integer> statistics = createCounterData(sac.getSamlCounter(), sac.getOidcCounter());
+
+        json.set("services", getServicesJsonArray(sac.getServices(), params.getJsonAttributes()));
+        json.set("statistics", new ObjectMapper().convertValue(statistics, ObjectNode.class));
+
+        return json;
+    }
+
+    private ServicesAndCounters getServicesAndCounters(ListOfServicesParams params, Set<String> attrNames)
+            throws PerunUnknownException, PerunConnectionException {
+        List<Facility> facilities = params.getAdapter()
+                .searchFacilitiesByAttributeValue(params.getProxyIdentifierAttr(), params.getProxyIdentifierValue());
+        List<LosFacility> services = new ArrayList<>();
         ServicesCounter oidcCounter = new ServicesCounter();
         ServicesCounter samlCounter = new ServicesCounter();
 
         for (Facility facility : facilities) {
-            Map<String, PerunAttributeValue> attributes = servicesParams.getAdapter()
+            Map<String, PerunAttributeValue> attributes = params.getAdapter()
                     .getAttributesValues(Entity.FACILITY, facility.getId(), new ArrayList<>(attrNames));
-            PerunAttributeValue entityId = attributes.get(servicesParams.getSaml2EntityIdAttr());
-            if (entityId != null && StringUtils.hasText(entityId.valueAsString())) {
-                processFacility(samlServices, facility, attributes, servicesParams, samlCounter, SAML);
-            }
-
-            PerunAttributeValue clientId = attributes.get(servicesParams.getOidcClientIdAttr());
-            if (clientId != null && StringUtils.hasText(clientId.valueAsString())) {
-                processFacility(oidcServices, facility, attributes, servicesParams, oidcCounter, OIDC);
+            PerunAttributeValue protocol = attributes.get(params.getRpProtocolAttr());
+            if (protocol != null && StringUtils.hasText(protocol.valueAsString())) {
+                if (SAML.equalsIgnoreCase(protocol.valueAsString())) {
+                    processFacility(services, facility, attributes, params, samlCounter, SAML);
+                } else if (OIDC.equalsIgnoreCase(protocol.valueAsString())) {
+                    processFacility(services, facility, attributes, params, oidcCounter, OIDC);
+                } else {
+                    log.warn("Unrecognized protocol for Facility {}: {}", facility, protocol.valueAsString());
+                }
+            } else {
+                log.warn("No protocol attribute for Facility: {}", facility);
             }
         }
 
-        List<LosFacility> services = new ArrayList<>();
-        services.addAll(samlServices);
-        services.addAll(oidcServices);
-        services.sort(new LosSorter());
+        return new ServicesAndCounters(services, samlCounter, oidcCounter);
+    }
 
-        Map<String, Integer> statistics = createCounterData(samlCounter, oidcCounter);
-
-        return new ServicesDataHolder(statistics, services, servicesParams.getDisplayedAttributes(),
-                servicesParams.isShowSaml(), servicesParams.isShowOidc(), servicesParams.isShowTesting(),
-                servicesParams.isShowStaging(), servicesParams.isShowProduction());
+    private ArrayNode getServicesJsonArray(List<LosFacility> services, List<ListOfServicesJsonAttribute> attrs) {
+        ArrayNode json = JsonNodeFactory.instance.arrayNode();
+        for (LosFacility s: services) {
+            ObjectNode serviceJson = JsonNodeFactory.instance.objectNode();
+            for (ListOfServicesJsonAttribute a: attrs) {
+                serviceJson.set(a.getJsonKey(), s.getAttributes().get(a.getSourceAttrName()).getValue());
+            }
+            json.add(serviceJson);
+        }
+        return json;
     }
 
     private Map<String, Integer> createCounterData(ServicesCounter samlCounter, ServicesCounter oidcCounter) {
@@ -88,15 +129,17 @@ public class GuiServiceImpl implements GuiService {
         return stats;
     }
 
-    private void processFacility(List<LosFacility> services, Facility facility, Map<String, PerunAttributeValue> attributes,
-                                 ServicesParams servicesParams, ServicesCounter sc, String protocol)
+    private void processFacility(List<LosFacility> services, Facility facility,
+                                 Map<String, PerunAttributeValue> attributes,
+                                 ListOfServicesParams params, ServicesCounter sc, String protocol)
     {
-        PerunAttributeValue showOnServiceList = attributes.getOrDefault(servicesParams.getShowOnServiceListAttr(), null);
-        if (showOnServiceList == null || !showOnServiceList.valueAsBoolean()) {
+        PerunAttributeValue showOnServiceList = attributes.getOrDefault(
+                params.getShowOnServiceListAttr(), null);
+        if (showOnServiceList != null && showOnServiceList.valueAsBoolean()) {
             services.add(new LosFacility(facility, protocol, attributes));
         }
 
-        PerunAttributeValue environment = attributes.getOrDefault(servicesParams.getRpEnvironmentAttr(), null);
+        PerunAttributeValue environment = attributes.getOrDefault(params.getRpEnvironmentAttr(), null);
         if (environment != null && TESTING.equalsIgnoreCase(environment.valueAsString())) {
             sc.incrementTestingServiceCount();
         } else if (environment != null && STAGING.equalsIgnoreCase(environment.valueAsString())) {
@@ -108,29 +151,36 @@ public class GuiServiceImpl implements GuiService {
         }
     }
 
-    private Set<String> initAttrNames(ServicesParams servicesParams) {
-        Set<String> attrNames = new HashSet<>();
-        if (servicesParams.isShowOidc()) {
-            attrNames.add(servicesParams.getOidcClientIdAttr());
-        }
-        if (servicesParams.isShowSaml()) {
-            attrNames.add(servicesParams.getSaml2EntityIdAttr());
-        }
-
-        attrNames.add(servicesParams.getRpEnvironmentAttr());
-        attrNames.add(servicesParams.getShowOnServiceListAttr());
-
-        final List<LosAttribute> other = servicesParams.getDisplayedAttributes();
-        other.forEach(losAttr -> {
+    private Set<String> initAttrNames(ListOfServicesGuiParams params) {
+        final Set<String> attrNames = initAttrNamesBase(params);
+        params.getDisplayedAttributes().forEach(losAttr -> {
             attrNames.add(losAttr.getSourceAttrName());
             if (StringUtils.hasText(losAttr.getUrlSourceAttr())) {
                 attrNames.add(losAttr.getUrlSourceAttr());
             }
         });
-
         return attrNames;
     }
 
+    private Set<String> initAttrNames(ListOfServicesJsonParams params) {
+        final Set<String> attrNames = initAttrNamesBase(params);
+        params.getJsonAttributes().forEach(losAttr -> attrNames.add(losAttr.getSourceAttrName()));
+        return attrNames;
+    }
+
+    private Set<String> initAttrNamesBase(ListOfServicesParams params) {
+        Set<String> attrNames = new HashSet<>();
+        attrNames.add(params.getRpProtocolAttr());
+        attrNames.add(params.getRpEnvironmentAttr());
+        attrNames.add(params.getShowOnServiceListAttr());
+        return attrNames;
+    }
+
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    @NoArgsConstructor
+    @AllArgsConstructor
     private static class ServicesCounter {
         private int testing = 0;
         private int staging = 0;
@@ -148,17 +198,17 @@ public class GuiServiceImpl implements GuiService {
             production++;
         }
 
-        public int getTesting() {
-            return testing;
-        }
+    }
 
-        public int getStaging() {
-            return staging;
-        }
-
-        public int getProduction() {
-            return production;
-        }
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class ServicesAndCounters {
+        private List<LosFacility> services;
+        private ServicesCounter samlCounter;
+        private ServicesCounter oidcCounter;
     }
 
 }

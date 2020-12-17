@@ -17,7 +17,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LosAttribute {
+public class ListOfServicesDisplayedAttribute {
 
     @JsonAlias({"sourceAttrName", "source_attr_name"})
     @NonNull private String sourceAttrName;

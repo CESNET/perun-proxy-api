@@ -160,8 +160,7 @@
 </div>
 <div th:replace="${footer_path} :: footer"></div>
 <script th:inline="javascript" th:content="${statisticsJson}" id="dataStats" type="text/javascript"></script>
-<script th:inline="javascript">
-    /*<![CDATA[*/
+<script th:inline="javascript" type="text/javascript">
     const showOidc = [[${showOidc}]];
     const showSaml = [[${showSaml}]];
     const showTesting = [[${showTesting}]];
@@ -171,47 +170,59 @@
     const data = [];
     const backgroundColor = [];
     const borderColor = [];
-    if (showSaml) {
+    let jsonData = null;
+
+    function getData(dataKey) {
+      if (jsonData === null) {
+        jsonData = JSON.parse(document.getElementById("dataStats").getAttribute('content'));
+      }
+      return jsonData[dataKey];
+    }
+
+    function initializeChartData() {
+      if (showSaml) {
         if (showProduction) {
-            data.push(JSON.parse(document.getElementById("dataStats").getAttribute('content'))['samlProductionServicesCount']);
-            labels.push([[#{production_services_saml}]]);
-            backgroundColor.push('rgba(50, 0, 255, 0.2)');
-            borderColor.push('rgba(50, 0, 252, 1)');
+          data.push(getData('samlProductionCount'));
+          labels.push([[#{production_services_saml}]]);
+          backgroundColor.push('rgba(50, 0, 255, 0.2)');
+          borderColor.push('rgba(50, 0, 252, 1)');
         }
         if (showStaging) {
-            data.push(JSON.parse(document.getElementById("dataStats").getAttribute('content'))['samlStagingServicesCount']);
-            labels.push([[#{stage_services_saml}]]);
-            backgroundColor.push('rgba(50, 150, 255, 0.2)');
-            borderColor.push('rgba(50, 150, 252, 1)');
+          data.push(getData('samlStagingCount'));
+          labels.push([[#{stage_services_saml}]]);
+          backgroundColor.push('rgba(50, 150, 255, 0.2)');
+          borderColor.push('rgba(50, 150, 252, 1)');
         }
         if (showTesting) {
-            data.push(JSON.parse(document.getElementById("dataStats").getAttribute('content'))['samlTestingServicesCount']);
-            labels.push([[#{test_services_saml}]]);
-            backgroundColor.push('rgba(50, 220, 255, 0.2)');
-            borderColor.push('rgba(50, 220, 252, 1)');
+          data.push(getData('samlTestingCount'));
+          labels.push([[#{test_services_saml}]]);
+          backgroundColor.push('rgba(50, 220, 255, 0.2)');
+          borderColor.push('rgba(50, 220, 252, 1)');
         }
-    }
-    if (showOidc) {
+      }
+      if (showOidc) {
         if (showProduction) {
-            data.push(JSON.parse(document.getElementById("dataStats").getAttribute('content'))['oidcProductionServicesCount']);
-            labels.push([[#{production_services_oidc}]]);
-            backgroundColor.push('rgba(0, 255, 50, 0.2)');
-            borderColor.push('rgba(0, 255, 50, 1)');
+          data.push(getData('oidcProductionCount'));
+          labels.push([[#{production_services_oidc}]]);
+          backgroundColor.push('rgba(0, 255, 50, 0.2)');
+          borderColor.push('rgba(0, 255, 50, 1)');
         }
         if (showStaging) {
-            data.push(JSON.parse(document.getElementById("dataStats").getAttribute('content'))['oidcStagingServicesCount']);
-            labels.push([[#{stage_services_oidc}]]);
-            backgroundColor.push('rgba(150, 255, 50, 0.2)');
-            borderColor.push('rgba(150, 255, 50, 1)');
+          data.push(getData('oidcStagingCount'));
+          labels.push([[#{stage_services_oidc}]]);
+          backgroundColor.push('rgba(150, 255, 50, 0.2)');
+          borderColor.push('rgba(150, 255, 50, 1)');
         }
         if (showTesting) {
-            data.push(JSON.parse(document.getElementById("dataStats").getAttribute('content'))['oidcTestingServicesCount']);
-            labels.push([[#{test_services_oidc}]]);
-            backgroundColor.push('rgba(220, 255, 50, 0.2)');
-            borderColor.push('rgba(220, 255, 50, 1)');
+          data.push(getData('oidcTestingCount'));
+          labels.push([[#{test_services_oidc}]]);
+          backgroundColor.push('rgba(220, 255, 50, 0.2)');
+          borderColor.push('rgba(220, 255, 50, 1)');
         }
+      }
     }
-    /*]]>*/
+
+    initializeChartData();
 </script>
 <script type="text/javascript" th:src="@{/res/js/chart.js}"></script>
 <script th:inline="javascript" th:src="@{/res/js/listOfSps.js}" type="text/javascript"></script>

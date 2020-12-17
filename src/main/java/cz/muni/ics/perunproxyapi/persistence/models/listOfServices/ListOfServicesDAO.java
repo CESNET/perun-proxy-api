@@ -1,6 +1,6 @@
 package cz.muni.ics.perunproxyapi.persistence.models.listOfServices;
 
-import cz.muni.ics.perunproxyapi.application.facade.configuration.classes.LosAttribute;
+import cz.muni.ics.perunproxyapi.application.facade.configuration.classes.ListOfServicesDisplayedAttribute;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,11 +20,11 @@ import java.util.Map;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class ServicesDataHolder {
+public class ListOfServicesDAO {
 
     private Map<String, Integer> statistics;
     private List<LosFacility> services;
-    private List<LosAttribute> attributesToShow;
+    private List<ListOfServicesDisplayedAttribute> attributesToShow;
     private boolean showSaml;
     private boolean showOidc;
     private boolean showTesting;

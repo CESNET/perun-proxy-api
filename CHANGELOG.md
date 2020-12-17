@@ -21,6 +21,10 @@ Example:
 ```
 
 ## [Unreleased]
+### Added
+- added GUI method for listing services
+- added method for listing serivces in JSON format
+- added error template
 
 ## [v0.2.0]
 ### Added

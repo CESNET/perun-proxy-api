@@ -1,7 +1,7 @@
 Chart.platform.disableCSSInjection = true;
 
 const ctx = document.getElementById("myChart").getContext('2d');
-new Chart(ctx, { // eslint-disable-line no-new
+new Chart(ctx, {
     type: 'bar',
     data: {
         labels: labels,
