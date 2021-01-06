@@ -3,6 +3,8 @@ package cz.muni.ics.perunproxyapi.application.service.impl;
 import cz.muni.ics.perunproxyapi.application.service.RelyingPartyService;
 import cz.muni.ics.perunproxyapi.application.service.ServiceUtils;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
+import cz.muni.ics.perunproxyapi.persistence.enums.Entity;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
@@ -85,6 +87,23 @@ public class RelyingPartyServiceImpl implements RelyingPartyService {
 
         List<Group> groups = adapter.getFacilityGroupsWhereUserIsValidMember(userId, facilityId);
         return !groups.isEmpty();
+    }
+
+    @Override
+    public String getRpEnvironmentValue(@NonNull String rpIdentifier, @NonNull DataAdapter adapter,
+                                        @NonNull String rpEnvAttr)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    {
+        Facility f = adapter.getFacilityByRpIdentifier(rpIdentifier);
+        if (f == null || f.getId() == null) {
+            throw new EntityNotFoundException("No RP found for given identifier");
+        }
+
+        PerunAttributeValue env = adapter.getAttributeValue(Entity.FACILITY, f.getId(), rpEnvAttr);
+        if (env == null) {
+            return "";
+        }
+        return env.valueAsString();
     }
 
 }

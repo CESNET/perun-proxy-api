@@ -25,6 +25,8 @@ Example:
 - added GUI method for listing services
 - added method for listing serivces in JSON format
 - added error template
+- added GUI method for displaying warning page when accessing service in STAGING or TESTING environment
+- added method to get RP environment as JSON
 
 ## [v0.2.0]
 ### Added

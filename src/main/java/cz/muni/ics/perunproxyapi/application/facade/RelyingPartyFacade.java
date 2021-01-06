@@ -44,4 +44,15 @@ public interface RelyingPartyFacade {
     boolean hasAccessToService(@NonNull String rpIdentifier,@NonNull String login)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException, IOException;
 
+    /**
+     * Get environment for RP
+     * @param rpIdentifier Rp identifier.
+     * @return Environment
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Throw when no RP has been found for given identifier.
+     */
+    String getRpEnvironmentValue(@NonNull String rpIdentifier)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
+
 }

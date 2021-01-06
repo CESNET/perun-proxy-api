@@ -102,4 +102,26 @@ public class RelyingPartyProtectedController {
         return facade.hasAccessToService(decodedRpIdentifier, login);
     }
 
+    /**
+     * Finds value of rpEnvironment attribute of the given facility. Returns it as JSON.
+     *
+     * @param rpIdentifier RP identifier URL SAFE BASE64 encoded
+     * @return RP environment - one of: TESTING | STAGING | PRODUCTION
+     * @throws InvalidRequestParameterException Thrown when passed request parameters do not meet criteria.
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     */
+    @ResponseBody
+    @GetMapping(value = "/{rp-identifier}/environment")
+    public String rpEnvironmentJson(@PathVariable(RP_IDENTIFIER) String rpIdentifier)
+            throws InvalidRequestParameterException, PerunUnknownException, PerunConnectionException,
+            EntityNotFoundException
+    {
+        if (!StringUtils.hasText(rpIdentifier)) {
+            throw new InvalidRequestParameterException("Invalid RP identifier");
+        }
+        String decodedRpIdentifier = ControllerUtils.decodeUrlSafeBase64(rpIdentifier);
+        return facade.getRpEnvironmentValue(decodedRpIdentifier);
+    }
+
 }

@@ -1,6 +1,7 @@
 package cz.muni.ics.perunproxyapi.application.service;
 
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.Facility;
@@ -72,5 +73,19 @@ public interface RelyingPartyService {
                                @NonNull String checkGroupMembershipAttrIdentifier,
                                @NonNull String isTestSpIdentifier)
             throws PerunUnknownException, PerunConnectionException;
+
+    /**
+     * Get environment for RP
+     * @param rpIdentifier RP identifier
+     * @param adapter Adapter to be used.
+     * @param rpEnvAttr Attribute in which the RP env is stored.
+     * @return Environment.
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Throw when no RP has been found for given identifier.
+     */
+    String getRpEnvironmentValue(@NonNull String rpIdentifier, @NonNull DataAdapter adapter,
+                                 @NonNull String rpEnvAttr)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
 }

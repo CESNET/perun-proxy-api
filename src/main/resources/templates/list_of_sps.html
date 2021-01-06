@@ -2,26 +2,18 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" >
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
   <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
   <link th:href="@{/res/css/default.css}" rel="stylesheet" />
-  <th:block th:insert="${header_path} :: header_head"/>
+  <th:block th:replace="${header_path} :: header_head"/>
   <link th:href="@{/res/css/listOfSps.css}" rel="stylesheet" />
   <title>List of services</title>
 <body>
 <div id="wrap">
-  <!-- LANG BAR -->
-  <div th:if="${language_bar_enabled}" id="languagebar_line">
-    <div id="languagebar">
-      <div th:if="${#locale.getLanguage()} == 'cs'">
-        <a href="?lang=en">English</a> | Čeština
-      </div>
-      <div th:unless="${#locale.getLanguage()} == 'cs'">
-        English | <a href="?lang=cs">Čeština</a>
-      </div>
-    </div>
-  </div>
   <!-- REPLACEABLE HEADER -->
-  <div id="header" th:replace="${header_path} :: header_body"></div>
+  <th:block th:if="${language_bar_enabled}" th:replace="${header_path} :: languagebar"/>
+  <th:block id="header" th:replace="${header_path} :: header_body"/>
   <!-- CONTENT -->
   <div id="content">
     <div class="row">

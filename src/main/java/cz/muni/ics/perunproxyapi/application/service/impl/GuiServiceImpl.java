@@ -45,6 +45,9 @@ public class GuiServiceImpl implements GuiService {
     private static final String STAGING = "STAGING";
     private static final String PRODUCTION = "PRODUCTION";
 
+    public static final String SERVICES = "services";
+    public static final String STATISTICS = "statistics";
+
     @Override
     public ListOfServicesDAO getListOfSps(@NonNull ListOfServicesGuiParams params)
             throws PerunUnknownException, PerunConnectionException
@@ -69,8 +72,8 @@ public class GuiServiceImpl implements GuiService {
         ObjectNode json = JsonNodeFactory.instance.objectNode();
         Map<String, Integer> statistics = createCounterData(sac.getSamlCounter(), sac.getOidcCounter());
 
-        json.set("services", getServicesJsonArray(sac.getServices(), params.getJsonAttributes()));
-        json.set("statistics", new ObjectMapper().convertValue(statistics, ObjectNode.class));
+        json.set(SERVICES, getServicesJsonArray(sac.getServices(), params.getJsonAttributes()));
+        json.set(STATISTICS, new ObjectMapper().convertValue(statistics, ObjectNode.class));
 
         return json;
     }
@@ -211,17 +214,4 @@ public class GuiServiceImpl implements GuiService {
         private ServicesCounter oidcCounter;
     }
 
-    @Override
-    public String getRpEnvironmentValue(@NonNull Long facilityId, @NonNull DataAdapter adapter, @NonNull String spStateAttrName) throws PerunUnknownException, PerunConnectionException, InvalidAttributeValueException {
-        String attrValue = adapter.getAttributeValue(Entity.FACILITY, facilityId, spStateAttrName).valueAsString();
-
-        if (!attrValue.equals("TESTING") && !attrValue.equals("STAGING") && !attrValue.equals("PRODUCTION")) {
-            throw new InvalidAttributeValueException(
-                    "Value of sp state has to be one of the following: TESTING, STAGING, PRODUCTION; but it is: " + attrValue
-            );
-        }
-
-        return attrValue;
-    }
-    
 }

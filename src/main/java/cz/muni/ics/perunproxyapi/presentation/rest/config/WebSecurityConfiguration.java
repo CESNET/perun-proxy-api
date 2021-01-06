@@ -44,9 +44,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private static final String ROLE_API_USER = "API_USER";
     private static final String BOOTSTRAP = "/webjars/bootstrap";
-    private static final String CSS = "/css";
-    private static final String JS = "/js";
-    private static final String IMG = "/img";
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

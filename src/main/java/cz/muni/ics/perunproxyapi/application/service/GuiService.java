@@ -38,7 +38,4 @@ public interface GuiService {
     JsonNode getListOfSpsJson(@NonNull ListOfServicesJsonParams params)
             throws PerunUnknownException, PerunConnectionException;
 
-    String getRpEnvironmentValue(@NonNull Long facilityId, @NonNull DataAdapter adapter, @NonNull String spStateAttrName)
-            throws PerunUnknownException, PerunConnectionException, InvalidAttributeValueException;
-
 }

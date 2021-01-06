@@ -7,6 +7,7 @@ import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ListOfServicesDAO;
 import cz.muni.ics.perunproxyapi.presentation.gui.GuiProperties;
+import cz.muni.ics.perunproxyapi.presentation.gui.GuiUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,10 +31,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping(value = NO_AUTH_PATH)
 @Slf4j
 public class ListOfSpsController {
-
-    public static final String HEADER = "header_path";
-    public static final String FOOTER = "footer_path";
-    public static final String LANGUAGE_BAR_ENABLED = "language_bar_enabled";
 
     public static final String LIST_OF_SPS = "list_of_sps";
 
@@ -71,7 +68,7 @@ public class ListOfSpsController {
         mav.addObject("showStaging", listOfSps.isShowStaging());
         mav.addObject("showProduction", listOfSps.isShowProduction());
 
-        return this.addCommonGuiOptions(mav);
+        return GuiUtils.addCommonGuiOptions(mav, guiProperties);
     }
 
     /**
@@ -87,13 +84,5 @@ public class ListOfSpsController {
     public JsonNode getListOfSpsJson() throws IOException, PerunUnknownException, PerunConnectionException {
         return facade.getListOfSpsInJson();
     }
-
-    private ModelAndView addCommonGuiOptions(ModelAndView mav) {
-        mav.addObject(HEADER, guiProperties.getHeaderPath());
-        mav.addObject(FOOTER, guiProperties.getFooterPath());
-        mav.addObject(LANGUAGE_BAR_ENABLED, guiProperties.isLanguageBarEnabled());
-        return mav;
-    }
-
 
 }

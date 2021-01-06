@@ -13,9 +13,12 @@ import cz.muni.ics.perunproxyapi.application.facade.parameters.ListOfServicesGui
 import cz.muni.ics.perunproxyapi.application.facade.parameters.ListOfServicesJsonParams;
 import cz.muni.ics.perunproxyapi.application.facade.parameters.ListOfServicesParams;
 import cz.muni.ics.perunproxyapi.application.service.GuiService;
+import cz.muni.ics.perunproxyapi.application.service.RelyingPartyService;
+import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.ConfigurationException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ListOfServicesDAO;
@@ -43,22 +46,26 @@ public class GuiFacadeImpl implements GuiFacade {
     public static final String GET_LIST_OF_SPS_JSON = "get_list_of_sps_json";
     public static final String PROXY_IDENTIFIER_VALUE = "proxy_identifier_value";
     public static final String PERUN_PROXY_IDENTIFIER_ATTR = "proxy_identifier_attr";
-    public static final String RP_ENVIRONMENT_ATTR = "rp_environment_attr";
     public static final String SHOW_ON_SERVICE_LIST_ATTR = "show_on_service_list_attr";
     public static final String RP_PROTOCOL_ATTR = "rp_protocol_attr";
     public static final String DISPLAYED_ATTRIBUTES = "displayed_attributes";
     public static final String JSON_ATTRIBUTES = "json_attributes";
+    public static final String RP_ENVIRONMENT_ATTR = "rp_environment_attr";
+    public static final String RP_ENVIRONMENT = "rp_environment";
 
     private final Map<String, JsonNode> methodConfigurations;
     private final AdaptersContainer adaptersContainer;
     private final GuiService guiService;
+    private final RelyingPartyService relyingPartyService;
 
     @Autowired
     public GuiFacadeImpl(@NonNull GuiService guiService,
-                               @NonNull AdaptersContainer adaptersContainer,
-                               @NonNull FacadeConfiguration facadeConfiguration)
+                         @NonNull RelyingPartyService relyingPartyService,
+                         @NonNull AdaptersContainer adaptersContainer,
+                         @NonNull FacadeConfiguration facadeConfiguration)
     {
         this.guiService = guiService;
+        this.relyingPartyService = relyingPartyService;
         this.adaptersContainer = adaptersContainer;
         this.methodConfigurations = facadeConfiguration.getGuiAdapterMethodConfigurations();
     }
@@ -69,7 +76,7 @@ public class GuiFacadeImpl implements GuiFacade {
     {
         JsonNode options = FacadeUtils.getOptions(GET_LIST_OF_SPS, methodConfigurations);
 
-        if (!options.hasNonNull(JSON_ATTRIBUTES)) {
+        if (!options.hasNonNull(DISPLAYED_ATTRIBUTES)) {
             throw new ConfigurationException("Required option " + DISPLAYED_ATTRIBUTES + " not found by method "
                     + GET_LIST_OF_SPS);
         }
@@ -99,6 +106,17 @@ public class GuiFacadeImpl implements GuiFacade {
         return guiService.getListOfSpsJson(params);
     }
 
+    @Override
+    public String getRpEnvironmentValue(@NonNull String rpIdentifier)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    {
+        JsonNode options = FacadeUtils.getOptions(RP_ENVIRONMENT, methodConfigurations);
+        DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
+        String attrName = FacadeUtils.getRequiredStringOption(RP_ENVIRONMENT_ATTR, RP_ENVIRONMENT, options);
+
+        return relyingPartyService.getRpEnvironmentValue(rpIdentifier, adapter, attrName);
+    }
+
     private ListOfServicesParams getListOfServicesParams(JsonNode options) {
         FullAdapter adapter = FacadeUtils.getFullAdapter(adaptersContainer);
         boolean samlEnabled = getBooleanOption(SAML_ENABLED, options);
@@ -117,47 +135,4 @@ public class GuiFacadeImpl implements GuiFacade {
                 rpProtocolAttr);
     }
 
-
-    public static final String RP_ENVIRONMENT = "rp_environment";
-    public static final String RP_ENVIRONMENT_ATTR = "rp_environment_attr";
-    public static final String GET_HEADER_AND_FOOTER = "get_header_and_footer";
-    public static final String HEADER = "header_path";
-    public static final String FOOTER = "footer_path";
-
-    private final Map<String, JsonNode> methodConfigurations;
-    private final AdaptersContainer adaptersContainer;
-    private final GuiService guiService;
-
-    @Autowired
-    public GuiFacadeImpl(@NonNull GuiService guiService,
-                         @NonNull AdaptersContainer adaptersContainer,
-                         @NonNull FacadeConfiguration facadeConfiguration)
-    {
-        this.guiService = guiService;
-        this.adaptersContainer = adaptersContainer;
-        this.methodConfigurations = facadeConfiguration.getGuiAdapterMethodConfigurations();
-    }
-
-    @Override
-    public String getRpEnvironmentValue(@NonNull Long facilityId) throws PerunUnknownException, PerunConnectionException, InvalidAttributeValueException {
-        JsonNode options = FacadeUtils.getOptions(RP_ENVIRONMENT, methodConfigurations);
-        DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
-
-        String attrName = FacadeUtils.getRequiredStringOption(RP_ENVIRONMENT_ATTR, RP_ENVIRONMENT, options);
-
-        return guiService.getRpEnvironmentValue(facilityId, adapter, attrName);
-    }
-
-    @Override
-    public ModelAndView addHeaderAndFooter(ModelAndView mav) {
-        JsonNode options = FacadeUtils.getOptions(GET_HEADER_AND_FOOTER, methodConfigurations);
-
-        String header = FacadeUtils.getRequiredStringOption(HEADER, GET_HEADER_AND_FOOTER, options);
-        String footer = FacadeUtils.getRequiredStringOption(FOOTER, GET_HEADER_AND_FOOTER, options);
-
-        mav.addObject(HEADER, header);
-        mav.addObject(FOOTER, footer);
-
-        return mav;
-    }
 }

@@ -39,6 +39,8 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
     public static final String HAS_ACCESS_TO_SERVICE = "has_access_to_service";
     public static final String PROD_VO_IDS = "prod_vo_ids";
     public static final String TEST_VO_IDS = "test_vo_ids";
+    public static final String RP_ENVIRONMENT_ATTR = "rp_environment_attr";
+    public static final String RP_ENVIRONMENT = "rp_environment";
 
     private final Map<String, JsonNode> methodConfigurations;
     private final AdaptersContainer adaptersContainer;
@@ -117,6 +119,17 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
 
         return relyingPartyService.hasAccessToService(adapter, facility.getId(), user.getPerunId(),
                 testVoIds, prodVoIds, checkGroupMembershipAttrIdentifier, isTestSpIdentifier);
+    }
+
+    @Override
+    public String getRpEnvironmentValue(@NonNull String rpIdentifier)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    {
+        JsonNode options = FacadeUtils.getOptions(RP_ENVIRONMENT, methodConfigurations);
+        DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
+        String attrName = FacadeUtils.getRequiredStringOption(RP_ENVIRONMENT_ATTR, RP_ENVIRONMENT, options);
+
+        return relyingPartyService.getRpEnvironmentValue(rpIdentifier, adapter, attrName);
     }
 
 }

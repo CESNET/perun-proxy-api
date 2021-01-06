@@ -21,5 +21,4 @@ public final class PathConstants {
     public static final String GUI = "/gui";
     public static final String RP_ENVIRONMENT = "/rpEnvironment";
 
-    public static final String GUI = "/gui";
 }

@@ -568,6 +568,42 @@ paths:
           $ref: '#/components/responses/500InternalError'
         '503':
           $ref: '#/components/responses/503TemporaryUnavailable'
+  /auth/relying-party/{rp-identifier}/environment:
+    get:
+      summary: Get environment of the RP
+      parameters:
+        - name: rp-identifier
+          in: path
+          required: true
+          description: Relying party identifier in base64url safe format
+          examples:
+            entityId:
+              $ref: '#/components/examples/rp-identifier1'
+            clientId:
+              $ref: '#/components/examples/rp-identifier2'
+          schema:
+            type: string
+      security:
+        - BasicAuth: [ ]
+      responses:
+        '200':
+          description: Returns one of STAGING, PRODUCTION, TESTING
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401NotAuthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '405':
+          $ref: '#/components/responses/405NotAllowed'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+        '503':
+          $ref: '#/components/responses/503TemporaryUnavailable'
   /auth/proxy-user/ga4gh:
     get:
       summary: Get GA4GH passport for the given user.
