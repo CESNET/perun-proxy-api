@@ -5,11 +5,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.InterceptingClientHttpRequestFactory;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A class representing claim repository.
@@ -22,28 +25,38 @@ import java.util.Map;
 @EqualsAndHashCode
 public class ActiveClaimRepository {
 
-    private final String name;
+    @NonNull private final String name;
     @NonNull private final String actionUrl;
     @NonNull private final RestTemplate restTemplate;
 
-    public ActiveClaimRepository(String name, @NonNull String actionUrl,
-                                 @NonNull String authHeader, @NonNull String authValue)
+    public ActiveClaimRepository(@NonNull String name, @NonNull String actionUrl,
+                                 @NonNull List<ClaimRepository.Header> headers)
     {
+        if (!StringUtils.hasText(name)) {
+            throw new IllegalArgumentException("ActiveClaimRepository cannot have empty name");
+        }
         this.name = name;
+        if (!StringUtils.hasText(actionUrl)) {
+            throw new IllegalArgumentException("ActiveClaimRepository cannot have empty actionUrl");
+        }
         this.actionUrl = actionUrl;
-        this.restTemplate = initRestTemplate(authHeader, authValue);
+        if (headers.isEmpty()) {
+            throw new IllegalArgumentException("ActiveClaimRepository cannot have empty list of request headers");
+        }
+        this.restTemplate = initRestTemplate(headers);
     }
 
     public <T> T getForObject(Class<T> clazz, Map<String, String> uriVariables) {
         return restTemplate.getForObject(actionUrl, clazz, uriVariables);
     }
 
-    private RestTemplate initRestTemplate(String authHeader, String authValue) {
+    private RestTemplate initRestTemplate(@NonNull List<ClaimRepository.Header> headers) {
         RestTemplate restTemplate = new RestTemplate();
+        List<ClientHttpRequestInterceptor> interceptors = headers.stream()
+                .map(h -> new AddHeaderInterceptor(h.getHeader(), h.getValue()))
+                .collect(Collectors.toList());
         restTemplate.setRequestFactory(
-                new InterceptingClientHttpRequestFactory(restTemplate.getRequestFactory(),
-                        Collections.singletonList(new AddHeaderInterceptor(authHeader, authValue)))
-        );
+                new InterceptingClientHttpRequestFactory(restTemplate.getRequestFactory(), interceptors));
         return restTemplate;
     }
 

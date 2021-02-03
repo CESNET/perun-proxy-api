@@ -472,14 +472,13 @@ public class ElixirGa4ghService implements Ga4ghService {
     private void initializeClaimRepositories(List<ClaimRepository> repositories) {
         for (ClaimRepository repo : repositories) {
             String actionURL = repo.getActionUrl();
-            String authHeader = repo.getAuthHeader();
-            String authValue = repo.getAuthValue();
-            if (actionURL == null || authHeader == null || authValue == null) {
-                log.error("claim repository {} not defined with url|auth_header|auth_value ", repo);
+            List<ClaimRepository.Header> headers = repo.getHeaders();
+            if (actionURL == null || headers == null || headers.isEmpty()) {
+                log.error("claim repository {} not defined with url|headers", repo);
                 continue;
             }
             String name = repo.getName();
-            claimRepositories.add(new ActiveClaimRepository(name, actionURL, authHeader, authValue));
+            claimRepositories.add(new ActiveClaimRepository(name, actionURL, headers));
             log.info("GA4GH Claims Repository {} configured at {}", name, actionURL);
         }
     }

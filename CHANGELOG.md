@@ -28,6 +28,8 @@ Example:
 - added GUI method for displaying warning page when accessing service in STAGING or TESTING environment
 - added method to get RP environment as JSON
 - added method for creating user
+### Changed
+- the GA4GH external repositories' configuration now supports specifying multiple request headers instead of just a single auth header 
 
 ## [v0.2.0]
 ### Added
