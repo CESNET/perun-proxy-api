@@ -90,6 +90,7 @@ public class LdapAdapterImpl implements DataAdapter {
     public static final String PERUN_PARENT_GROUP_ID = "perunParentGroupId";
     public static final String PERUN_UNIQUE_GROUP_NAME = "perunUniqueGroupName";
     public static final String UNIQUE_MEMBER = "uniqueMember";
+    public static final String UUID = "uuid";
 
     // VO
     public static final String PERUN_VO = "perunVO";
@@ -923,6 +924,7 @@ public class LdapAdapterImpl implements DataAdapter {
             Long id = Long.parseLong(context.getStringAttribute(PERUN_GROUP_ID));
             String name = context.getStringAttribute(CN);
             String uniqueName = context.getStringAttribute(PERUN_UNIQUE_GROUP_NAME);
+            String uuid = context.getStringAttribute(UUID);
             Long groupVoId = Long.valueOf(context.getStringAttribute(PERUN_VO_ID));
             Long parentGroupId = null;
             String description = "";
@@ -936,7 +938,7 @@ public class LdapAdapterImpl implements DataAdapter {
                 }
             }
 
-            return new Group(id, parentGroupId, name, description, uniqueName, groupVoId);
+            return new Group(id, parentGroupId, name, description, uniqueName, uuid, groupVoId);
         };
     }
 

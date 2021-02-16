@@ -23,12 +23,14 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Slf4j
 public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
 
     public static final String GET_ENTITLEMENTS = "get_entitlements";
+    public static final String GET_ENTITLEMENTS_EXTENDED = "get_entitlements_extended";
     public static final String PREFIX = "prefix";
     public static final String AUTHORITY = "authority";
     public static final String FORWARDED_ENTITLEMENTS = "forwarded_entitlements";
@@ -69,7 +71,7 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
     }
 
     @Override
-    public List<String> getEntitlements(@NonNull String rpIdentifier, @NonNull String login)
+    public Set<String> getEntitlements(@NonNull String rpIdentifier, @NonNull String login)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
     {
         JsonNode options = FacadeUtils.getOptions(GET_ENTITLEMENTS, methodConfigurations);
@@ -92,13 +94,38 @@ public class RelyingPartyFacadeImpl implements RelyingPartyFacade {
             throw new EntityNotFoundException("No service has been found for given identifier");
         }
 
-        List<String> entitlements = relyingPartyService.getEntitlements(
+        return relyingPartyService.getEntitlements(
                 adapter, facility.getId(), user.getPerunId(), prefix, authority, forwardedEntitlementsAttrIdentifier,
                 resourceCapabilitiesAttrIdentifier, facilityCapabilitiesAttrIdentifier);
-        if (entitlements != null) {
-            Collections.sort(entitlements);
+    }
+
+    @Override
+    public Set<String> getEntitlementsExtended(@NonNull String rpIdentifier, @NonNull String login)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException
+    {
+        JsonNode options = FacadeUtils.getOptions(GET_ENTITLEMENTS_EXTENDED, methodConfigurations);
+        DataAdapter adapter = FacadeUtils.getAdapter(adaptersContainer, options);
+
+        String prefix = FacadeUtils.getRequiredStringOption(PREFIX, GET_ENTITLEMENTS_EXTENDED, options);
+        String authority = FacadeUtils.getRequiredStringOption(AUTHORITY, GET_ENTITLEMENTS_EXTENDED, options);
+
+        String forwardedEntitlementsAttrIdentifier = FacadeUtils.getStringOption(FORWARDED_ENTITLEMENTS, options);
+        String resourceCapabilitiesAttrIdentifier = FacadeUtils.getStringOption(RESOURCE_CAPABILITIES, options);
+        String facilityCapabilitiesAttrIdentifier = FacadeUtils.getStringOption(FACILITY_CAPABILITIES, options);
+
+        User user = proxyUserService.getUserByLogin(adapter, login);
+        if (user == null) {
+            throw new EntityNotFoundException("No user has been found for given login");
         }
-        return entitlements;
+
+        Facility facility = relyingPartyService.getFacilityByIdentifier(adapter, rpIdentifier);
+        if (facility == null || facility.getId() == null) {
+            throw new EntityNotFoundException("No service has been found for given identifier");
+        }
+
+        return relyingPartyService.getEntitlementsExtended(
+                adapter, facility.getId(), user.getPerunId(), prefix, authority, forwardedEntitlementsAttrIdentifier,
+                resourceCapabilitiesAttrIdentifier, facilityCapabilitiesAttrIdentifier);
     }
 
     @Override

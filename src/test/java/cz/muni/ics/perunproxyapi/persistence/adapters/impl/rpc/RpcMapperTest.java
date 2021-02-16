@@ -48,6 +48,7 @@ import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcMapper.
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcMapper.STATUS;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcMapper.UNIQUE;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcMapper.USER_ID;
+import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcMapper.UUID;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcMapper.VALUE;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcMapper.VO_ID;
 import static cz.muni.ics.perunproxyapi.persistence.adapters.impl.rpc.RpcMapper.NAME;
@@ -182,31 +183,35 @@ public class RpcMapperTest {
         Long id1 = 1L;
         String name1 = "name1";
         String description1 = "description1";
+        String uuid1 = "uuid1";
         Long voId1 = 2L;
         Long parentGroupId1 = 3L;
 
         sampleGroup1Json.put(ID, id1);
         sampleGroup1Json.put(NAME, name1);
         sampleGroup1Json.put(DESCRIPTION, description1);
+        sampleGroup1Json.put(UUID, uuid1);
         sampleGroup1Json.put(VO_ID, voId1);
         sampleGroup1Json.put(PARENT_GROUP_ID, parentGroupId1);
 
-        sampleGroup1 = new Group(id1, parentGroupId1, name1, description1, null, voId1);
+        sampleGroup1 = new Group(id1, parentGroupId1, name1, description1, null, uuid1, voId1);
 
         sampleGroup2Json = JsonNodeFactory.instance.objectNode();
         Long id2 = 4L;
         String name2 = "name2";
         String description2 = "description2";
+        String uuid2 = "description2";
         Long voId2 = 5L;
         Long parentGroupId2 = 6L;
 
         sampleGroup2Json.put(ID, id2);
         sampleGroup2Json.put(NAME, name2);
         sampleGroup2Json.put(DESCRIPTION, description2);
+        sampleGroup2Json.put(UUID, uuid2);
         sampleGroup2Json.put(VO_ID, voId2);
         sampleGroup2Json.put(PARENT_GROUP_ID, parentGroupId2);
 
-        sampleGroup2 = new Group(id2, parentGroupId2, name2, description2, null, voId2);
+        sampleGroup2 = new Group(id2, parentGroupId2, name2, description2, null, uuid2, voId2);
 
         groupsArray = JsonNodeFactory.instance.arrayNode();
         groupsArray.add(sampleGroup1Json);

@@ -38,6 +38,7 @@ public class RpcMapper {
     public static final String PARENT_GROUP_ID = "parentGroupId";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
+    public static final String UUID = "uuid";
     public static final String VO_ID = "voId";
     public static final String USER_ID = "userId";
     public static final String STATUS = "status";
@@ -111,9 +112,10 @@ public class RpcMapper {
         Long parentGroupId = getFieldAsLong(json, PARENT_GROUP_ID);
         String name = getRequiredFieldAsString(json, NAME);
         String description = getFieldAsString(json, DESCRIPTION);
+        String uuid = getFieldAsString(json, UUID);
         Long voId = getRequiredFieldAsLong(json, VO_ID);
 
-        return new Group(id, parentGroupId, name, description, null, voId);
+        return new Group(id, parentGroupId, name, description, null, uuid, voId);
     }
 
     /**

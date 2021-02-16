@@ -12,9 +12,12 @@ import cz.muni.ics.perunproxyapi.persistence.models.Group;
 import cz.muni.ics.perunproxyapi.persistence.models.PerunAttributeValue;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.external.com.google.gdata.util.common.base.PercentEscaper;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.FACILITY;
@@ -22,15 +25,22 @@ import static cz.muni.ics.perunproxyapi.persistence.enums.Entity.FACILITY;
 @Component
 public class RelyingPartyServiceImpl implements RelyingPartyService {
 
+    private static final PercentEscaper ESCAPER = new PercentEscaper("-_.!~*'()", false);
+
+    private static final String MEMBERS = "members";
+    private static final String GROUP_ATTRIBUTES = "groupAttributes";
+    private static final String DISPLAY_NAME = "displayName";
+    private static final String GROUP = "group";
+
     @Override
-    public List<String> getEntitlements(@NonNull DataAdapter adapter, @NonNull Long facilityId,
+    public Set<String> getEntitlements(@NonNull DataAdapter adapter, @NonNull Long facilityId,
                                         @NonNull Long userId, @NonNull String prefix, @NonNull String authority,
                                         String forwardedEntitlementsAttrIdentifier,
                                         String resourceCapabilitiesAttrIdentifier,
                                         String facilityCapabilitiesAttrIdentifier)
             throws PerunUnknownException, PerunConnectionException
     {
-        List<String> entitlements = new ArrayList<>(
+        Set<String> entitlements = new HashSet<>(
                 adapter.getForwardedEntitlements(userId, forwardedEntitlementsAttrIdentifier)
         );
 
@@ -42,14 +52,33 @@ public class RelyingPartyServiceImpl implements RelyingPartyService {
         List<String> groupEntitlements = ServiceUtils.wrapGroupEntitlements(groups, prefix, authority);
         entitlements.addAll(groupEntitlements);
 
-        List<String> capabilities = adapter.getCapabilities(facilityId, userId, groups,
-                resourceCapabilitiesAttrIdentifier, facilityCapabilitiesAttrIdentifier);
-        if (capabilities != null && !capabilities.isEmpty()) {
-            entitlements.addAll(capabilities.stream()
-                    .map(cap -> ServiceUtils.wrapCapabilityToAARC(cap, prefix, authority))
-                    .collect(Collectors.toSet())
-            );
+        fillCapabilities(entitlements, adapter, facilityId, userId, groups, resourceCapabilitiesAttrIdentifier,
+                facilityCapabilitiesAttrIdentifier, prefix, authority);
+
+        return entitlements;
+    }
+
+    @Override
+    public Set<String> getEntitlementsExtended(@NonNull DataAdapter adapter, @NonNull Long facilityId,
+                                               @NonNull Long userId, @NonNull String prefix, @NonNull String authority,
+                                               String forwardedEntitlementsAttrIdentifier,
+                                               String resourceCapabilitiesAttrIdentifier,
+                                               String facilityCapabilitiesAttrIdentifier)
+            throws PerunUnknownException, PerunConnectionException
+    {
+        Set<String> entitlements = new HashSet<>(
+                adapter.getForwardedEntitlements(userId, forwardedEntitlementsAttrIdentifier)
+        );
+
+        List<Group> groups = adapter.getUsersGroupsOnFacility(facilityId, userId);
+        if (groups == null || groups.isEmpty()) {
+            return entitlements;
         }
+
+        fillUuidEntitlements(entitlements, groups, prefix, authority);
+
+        fillCapabilities(entitlements, adapter, facilityId, userId, groups, resourceCapabilitiesAttrIdentifier,
+                facilityCapabilitiesAttrIdentifier, prefix, authority);
 
         return entitlements;
     }
@@ -104,6 +133,53 @@ public class RelyingPartyServiceImpl implements RelyingPartyService {
             return "";
         }
         return env.valueAsString();
+    }
+
+    private void fillUuidEntitlements(Set<String> entitlements, List<Group> userGroups, String prefix, String authority) {
+        for (Group group : userGroups) {
+            entitlements.add(wrapGroupNameToAARC(group.getUuid(), prefix, authority));
+            String displayName = group.getUniqueGroupName();
+
+            if (StringUtils.hasText(displayName) && MEMBERS.equals(group.getName())) {
+                displayName = displayName.replace(':' + MEMBERS, "");
+            }
+            String entitlement = wrapGroupEntitlementToAARC(group.getUuid(), prefix, authority);
+            entitlements.add(entitlement);
+            String entitlementWithAttributes = wrapGroupEntitlementToAARCWithAttributes(group.getUuid(), displayName, prefix, authority);
+            entitlements.add(entitlementWithAttributes);
+        }
+    }
+
+    private void fillCapabilities(Set<String> entitlements, DataAdapter adapter, Long facilityId, Long userId,
+                                  List<Group> groups, String resourceCapabilitiesAttrIdentifier,
+                                  String facilityCapabilitiesAttrIdentifier, String prefix, String authority)
+            throws PerunConnectionException, PerunUnknownException {
+        List<String> capabilities = adapter.getCapabilities(facilityId, userId, groups,
+                resourceCapabilitiesAttrIdentifier, facilityCapabilitiesAttrIdentifier);
+
+        if (capabilities != null && !capabilities.isEmpty()) {
+            entitlements.addAll(capabilities.stream()
+                    .map(cap -> ServiceUtils.wrapCapabilityToAARC(cap, prefix, authority))
+                    .collect(Collectors.toSet())
+            );
+        }
+    }
+
+    private String wrapGroupNameToAARC(String groupName, String prefix, String authority) {
+        return addPrefixAndSuffix(GROUP + ':' + ESCAPER.escape(groupName), prefix, authority);
+    }
+
+    private String wrapGroupEntitlementToAARC(String uuid, String prefix, String authority) {
+        return addPrefixAndSuffix(GROUP + ':' + uuid, prefix, authority);
+    }
+
+    private String wrapGroupEntitlementToAARCWithAttributes(String uuid, String displayName, String prefix, String authority) {
+        return addPrefixAndSuffix(GROUP_ATTRIBUTES + ':' + uuid + '?' + DISPLAY_NAME + '=' +
+                ESCAPER.escape(displayName), prefix, authority);
+    }
+
+    private String addPrefixAndSuffix(String s, String prefix, String authority) {
+        return prefix + s + '#' + authority;
     }
 
 }

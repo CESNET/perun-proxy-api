@@ -24,14 +24,16 @@ public class Group {
     @NonNull private String name;
     @NonNull private String description;
     private String uniqueGroupName; // voShortName + ":" + group name
+    private String uuid;
     @NonNull private Long voId;
 
-    public Group(Long id, Long parentGroupId, String name, String description, String uniqueGroupName, Long voId) {
+    public Group(Long id, Long parentGroupId, String name, String description, String uniqueGroupName, String uuid, Long voId) {
         this.setId(id);
         this.setParentGroupId(parentGroupId);
         this.setName(name);
         this.setDescription(description);
         this.setUniqueGroupName(uniqueGroupName);
+        this.setUuid(uuid);
         this.setVoId(voId);
     }
 

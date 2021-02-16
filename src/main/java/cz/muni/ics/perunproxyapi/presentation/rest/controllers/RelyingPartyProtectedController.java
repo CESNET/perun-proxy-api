@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.PathConstants.AUTH_PATH;
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.PathConstants.RELYING_PARTY;
@@ -59,7 +60,7 @@ public class RelyingPartyProtectedController {
      *   example_login_value@einfra.cesnet.cz/entitlements'
      *   --header 'authorization: Basic auth'
      *
-     * @param rpIdentifier Identifier of the Relying Party.
+     * @param rpIdentifier Identifier of the Relying Party in base64url safe format.
      * @param login Login of the user.
      * @return List of entitlements (filled or empty).
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
@@ -69,7 +70,7 @@ public class RelyingPartyProtectedController {
      */
     @ResponseBody
     @GetMapping(value = "/{rp-identifier}/proxy-user/{login}/entitlements", produces = APPLICATION_JSON_VALUE)
-    public List<String> getEntitlements(@PathVariable(RP_IDENTIFIER) String rpIdentifier,
+    public Set<String> getEntitlements(@PathVariable(RP_IDENTIFIER) String rpIdentifier,
                                         @PathVariable(LOGIN) String login)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
             InvalidRequestParameterException
@@ -84,9 +85,43 @@ public class RelyingPartyProtectedController {
     }
 
     /**
+     * Get extended entitlements for user specified by login when he/she is accessing the service specified by the
+     * given rp-identifier.
+     *
+     * EXAMPLE CURL:
+     * curl --request GET \
+     *   --url 'http://localhost:8081/proxyapi/auth/relying-party/rpID1/proxy-user/ \
+     *   example_login_value@einfra.cesnet.cz/entitlementsExtended'
+     *   --header 'authorization: Basic auth'
+     *
+     * @param rpIdentifier Identifier of the Relying Party in base64url safe format.
+     * @param login Login of the user.
+     * @return List of extended entitlements (filled or empty).
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
+     * @throws InvalidRequestParameterException Thrown when passed parameters or body does not meet criteria.
+     */
+    @ResponseBody
+    @GetMapping(value = "/{rp-identifier}/proxy-user/{login}/entitlementsExtended", produces = APPLICATION_JSON_VALUE)
+    public Set<String> getEntitlementsExtended(@PathVariable(RP_IDENTIFIER) String rpIdentifier,
+                                               @PathVariable(LOGIN) String login)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException,
+            InvalidRequestParameterException
+    {
+        if (!StringUtils.hasText(rpIdentifier)) {
+            throw new InvalidRequestParameterException("RP identifier cannot be empty");
+        } else if (!StringUtils.hasText(login)) {
+            throw new InvalidRequestParameterException("User login cannot be empty");
+        }
+        String decodedRpIdentifier = ControllerUtils.decodeUrlSafeBase64(rpIdentifier);
+        return facade.getEntitlementsExtended(decodedRpIdentifier, login);
+    }
+
+    /**
      * Check if user has access to the service.
      *
-     * @param rpIdentifier Identifier of the RP.
+     * @param rpIdentifier Identifier of the RP in base64url safe format.
      * @param login Login of the user.
      * @return TRUE if user has access to service, otherwise FALSE.
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.

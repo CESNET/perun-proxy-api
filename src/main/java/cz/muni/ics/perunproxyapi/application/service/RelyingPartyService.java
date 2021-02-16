@@ -8,6 +8,7 @@ import cz.muni.ics.perunproxyapi.persistence.models.Facility;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service layer for RP related things. Purpose of this class is to execute correct methods on the given adapter.
@@ -32,11 +33,33 @@ public interface RelyingPartyService {
      * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      */
-    List<String> getEntitlements(@NonNull DataAdapter adapter, @NonNull Long facilityId,
+    Set<String> getEntitlements(@NonNull DataAdapter adapter, @NonNull Long facilityId,
                                  @NonNull Long userId, @NonNull String prefix, @NonNull String authority,
                                  String forwardedEntitlementsAttrIdentifier,
                                  String resourceCapabilitiesAttrIdentifier,
                                  String facilityCapabilitiesAttrIdentifier)
+            throws PerunUnknownException, PerunConnectionException;
+
+    /**
+     * Get extended entitlements based on the service user is trying to access.
+     *
+     * @param adapter Adapter to be used.
+     * @param facilityId Id of the facility representing the service.
+     * @param userId Id of the user
+     * @param prefix Prefix to be prepended.
+     * @param authority Authority issuing the entitlements.
+     * @param forwardedEntitlementsAttrIdentifier Identifier of the attribute containing forwarded entitlements.
+     * @param resourceCapabilitiesAttrIdentifier Identifier of the attribute containing resource capabilities.
+     * @param facilityCapabilitiesAttrIdentifier Identifier of the attribute containing facility capabilities.
+     * @return List of AARC formatted entitlements (filled or empty).
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     */
+    Set<String> getEntitlementsExtended(@NonNull DataAdapter adapter, @NonNull Long facilityId,
+                                        @NonNull Long userId, @NonNull String prefix, @NonNull String authority,
+                                        String forwardedEntitlementsAttrIdentifier,
+                                        String resourceCapabilitiesAttrIdentifier,
+                                        String facilityCapabilitiesAttrIdentifier)
             throws PerunUnknownException, PerunConnectionException;
 
     /**

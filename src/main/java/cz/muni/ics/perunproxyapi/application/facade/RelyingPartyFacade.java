@@ -7,6 +7,7 @@ import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Facade for RP related things. Purpose of this class is to execute correct lower-level methods
@@ -27,7 +28,20 @@ public interface RelyingPartyFacade {
      * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
      * @throws EntityNotFoundException Thrown when no user has been found.
      */
-    List<String> getEntitlements(@NonNull String rpIdentifier, @NonNull String login)
+    Set<String> getEntitlements(@NonNull String rpIdentifier, @NonNull String login)
+            throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
+
+    /**
+     * Get extended entitlements based on the service user is trying to access.
+     *
+     * @param rpIdentifier Identifier of the RP.
+     * @param login Login of the user
+     * @return List of AARC formatted extended entitlements (filled or empty).
+     * @throws PerunUnknownException Thrown as wrapper of unknown exception thrown by Perun interface.
+     * @throws PerunConnectionException Thrown when problem with connection to Perun interface occurs.
+     * @throws EntityNotFoundException Thrown when no user has been found.
+     */
+    Set<String> getEntitlementsExtended(@NonNull String rpIdentifier, @NonNull String login)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
     /**
