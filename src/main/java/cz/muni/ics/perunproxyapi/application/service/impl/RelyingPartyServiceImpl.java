@@ -137,14 +137,14 @@ public class RelyingPartyServiceImpl implements RelyingPartyService {
 
     private void fillUuidEntitlements(Set<String> entitlements, List<Group> userGroups, String prefix, String authority) {
         for (Group group : userGroups) {
-            entitlements.add(wrapGroupNameToAARC(group.getUuid(), prefix, authority));
-            String displayName = group.getUniqueGroupName();
+            String entitlement = wrapGroupEntitlementToAARC(group.getUuid(), prefix, authority);
+            entitlements.add(entitlement);
 
+            String displayName = group.getUniqueGroupName();
             if (StringUtils.hasText(displayName) && MEMBERS.equals(group.getName())) {
                 displayName = displayName.replace(':' + MEMBERS, "");
             }
-            String entitlement = wrapGroupEntitlementToAARC(group.getUuid(), prefix, authority);
-            entitlements.add(entitlement);
+
             String entitlementWithAttributes = wrapGroupEntitlementToAARCWithAttributes(group.getUuid(), displayName, prefix, authority);
             entitlements.add(entitlementWithAttributes);
         }
@@ -163,10 +163,6 @@ public class RelyingPartyServiceImpl implements RelyingPartyService {
                     .collect(Collectors.toSet())
             );
         }
-    }
-
-    private String wrapGroupNameToAARC(String groupName, String prefix, String authority) {
-        return addPrefixAndSuffix(GROUP + ':' + ESCAPER.escape(groupName), prefix, authority);
     }
 
     private String wrapGroupEntitlementToAARC(String uuid, String prefix, String authority) {
