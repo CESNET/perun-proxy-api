@@ -26,5 +26,6 @@ public class StatisticsDbProperties {
     @NonNull private String idpMapTable;
     @NonNull private String rpMapTable;
     @NonNull private String statisticsTable;
+    @NonNull private String sumsTable;
 
 }

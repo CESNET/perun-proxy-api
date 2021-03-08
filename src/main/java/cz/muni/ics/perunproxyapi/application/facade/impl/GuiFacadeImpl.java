@@ -14,24 +14,41 @@ import cz.muni.ics.perunproxyapi.application.facade.parameters.ListOfServicesJso
 import cz.muni.ics.perunproxyapi.application.facade.parameters.ListOfServicesParams;
 import cz.muni.ics.perunproxyapi.application.service.GuiService;
 import cz.muni.ics.perunproxyapi.application.service.RelyingPartyService;
+import cz.muni.ics.perunproxyapi.application.service.StatisticsService;
+import cz.muni.ics.perunproxyapi.application.service.models.StatsRawData;
 import cz.muni.ics.perunproxyapi.persistence.adapters.DataAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.FullAdapter;
 import cz.muni.ics.perunproxyapi.persistence.adapters.impl.AdaptersContainer;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.ConfigurationException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
+import cz.muni.ics.perunproxyapi.persistence.exceptions.InternalErrorException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ListOfServicesDAO;
+import cz.muni.ics.perunproxyapi.persistence.models.statistics.IdpSumEntry;
+import cz.muni.ics.perunproxyapi.persistence.models.statistics.LoginsPerDaySumEntry;
+import cz.muni.ics.perunproxyapi.persistence.models.statistics.RpSumEntry;
+import cz.muni.ics.perunproxyapi.presentation.DTOModels.statistics.DailyGraphEntry;
+import cz.muni.ics.perunproxyapi.presentation.DTOModels.statistics.PieChartEntry;
+import cz.muni.ics.perunproxyapi.presentation.DTOModels.statistics.StatisticsDTO;
+import cz.muni.ics.perunproxyapi.presentation.enums.StatisticsDisplayMode;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static cz.muni.ics.perunproxyapi.application.facade.FacadeUtils.getBooleanOption;
 import static cz.muni.ics.perunproxyapi.application.facade.FacadeUtils.getRequiredStringOption;
+import static cz.muni.ics.perunproxyapi.presentation.enums.StatisticsDisplayMode.ALL;
+import static cz.muni.ics.perunproxyapi.presentation.enums.StatisticsDisplayMode.IDP;
+import static cz.muni.ics.perunproxyapi.presentation.enums.StatisticsDisplayMode.RP;
 
 @Component
 @Slf4j
@@ -57,17 +74,20 @@ public class GuiFacadeImpl implements GuiFacade {
     private final AdaptersContainer adaptersContainer;
     private final GuiService guiService;
     private final RelyingPartyService relyingPartyService;
+    private final StatisticsService statisticsService;
 
     @Autowired
     public GuiFacadeImpl(@NonNull GuiService guiService,
                          @NonNull RelyingPartyService relyingPartyService,
                          @NonNull AdaptersContainer adaptersContainer,
-                         @NonNull FacadeConfiguration facadeConfiguration)
+                         @NonNull FacadeConfiguration facadeConfiguration,
+                         @NonNull StatisticsService statisticsService)
     {
         this.guiService = guiService;
         this.relyingPartyService = relyingPartyService;
         this.adaptersContainer = adaptersContainer;
         this.methodConfigurations = facadeConfiguration.getGuiAdapterMethodConfigurations();
+        this.statisticsService = statisticsService;
     }
 
     @Override
@@ -115,6 +135,140 @@ public class GuiFacadeImpl implements GuiFacade {
         String attrName = FacadeUtils.getRequiredStringOption(RP_ENVIRONMENT_ATTR, RP_ENVIRONMENT, options);
 
         return relyingPartyService.getRpEnvironmentValue(rpIdentifier, adapter, attrName);
+    }
+
+    @Override
+    public StatisticsDTO getAllStatistics() {
+        StatsRawData stats = null;
+        try {
+            stats = getStatistics(ALL, null, null);
+        } catch (EntityNotFoundException e) {
+            // cannot happen
+        }
+        if (stats == null) {
+            throw new InternalErrorException("Could not fetch data");
+        }
+        List<PieChartEntry> idpData = transformIdpRawData(stats);
+        int totalIdpLoginsCount = stats.countTotalPerIdps();
+        List<PieChartEntry> rpData = transformRpRawData(stats);
+        int totalRpLoginsCount = stats.countTotalPerRps();
+        List<DailyGraphEntry> logins = transformLoginData(stats);
+
+        return new StatisticsDTO("", logins, totalIdpLoginsCount, idpData, totalRpLoginsCount, rpData);
+    }
+
+    @Override
+    public void getStatisticsForRps() {
+        StatsRawData stats = null;
+        try {
+            stats = getStatistics(RP, null, null);
+        } catch (EntityNotFoundException e) {
+            // cannot happen
+        }
+        if (stats == null) {
+            throw new InternalErrorException("Could not fetch data");
+        }
+        //TODO: process
+    }
+
+    @Override
+    public void getStatisticsForIdPs() {
+        StatsRawData stats = null;
+        try {
+            stats = getStatistics(IDP, null, null);
+        } catch (EntityNotFoundException e) {
+            // cannot happen
+        }
+        if (stats == null) {
+            throw new InternalErrorException("Could not fetch data");
+        }
+        //TODO: process
+    }
+
+    @Override
+    public void getStatisticsForRp(@NonNull String rpIdentifier) throws EntityNotFoundException {
+        StatsRawData stats = getStatistics(RP, null, rpIdentifier);
+        //TODO: process
+
+    }
+
+    @Override
+    public void getStatisticsForIdp(@NonNull String idpIdentifier) throws EntityNotFoundException {
+        StatsRawData stats = getStatistics(IDP, idpIdentifier, null);
+        //TODO: process
+    }
+
+    // private methods
+
+    private List<DailyGraphEntry> transformLoginData(StatsRawData stats) {
+        if (stats.getStatsPerDay() == null) {
+            return new ArrayList<>();
+        }
+        List<LoginsPerDaySumEntry> data = stats.getStatsPerDay();
+        return data.stream()
+                .sorted(LoginsPerDaySumEntry::compareByDate)
+                .map(e -> new DailyGraphEntry(getDateLabel(e), e.getUsers(), e.getLogins()))
+                .collect(Collectors.toList());
+    }
+
+    private String getDateLabel(LoginsPerDaySumEntry entry) {
+        return String.format("%d-%d-%d", entry.getDay(), entry.getMonth(), entry.getYear());
+    }
+
+    private List<PieChartEntry> transformIdpRawData(StatsRawData stats) {
+        if (stats.getStatsPerIdp() == null) {
+            return new ArrayList<>();
+        }
+        List<IdpSumEntry> data = stats.getStatsPerIdp();
+        List<PieChartEntry> transformed =
+                data.stream()
+                        .sorted(IdpSumEntry::compareByLogins)
+                        .map(e -> new PieChartEntry(e.getIdpName(), e.getIdpIdentifier(), e.getLogins()))
+                        .collect(Collectors.toList());
+        Collections.reverse(transformed);
+        return transformed;
+    }
+
+    private List<PieChartEntry> transformRpRawData(StatsRawData stats) {
+        if (stats.getStatsPerRp() == null) {
+            return new ArrayList<>();
+        }
+        List<RpSumEntry> data = stats.getStatsPerRp();
+        List<PieChartEntry> transformed = data.stream()
+                .sorted(RpSumEntry::compareByLogins)
+                .map(e -> new PieChartEntry(e.getRpName(), e.getRpIdentifier(), e.getLogins()))
+                .collect(Collectors.toList());
+        Collections.reverse(transformed);
+        return transformed;
+    }
+
+    private StatsRawData getStatistics(@NonNull StatisticsDisplayMode mode,
+                                       String idpIdentifier,
+                                       String rpIdentifier) throws EntityNotFoundException {
+        StatsRawData stats = null;
+        switch (mode) {
+            case ALL: {
+                stats = statisticsService.getOverallStatistics();
+            } break;
+            case RP: {
+                if (StringUtils.hasText(rpIdentifier)) {
+                    stats = statisticsService.getRpStatistics(rpIdentifier);
+                } else {
+                    stats = statisticsService.getOverallRpStatistics();
+                }
+            } break;
+            case IDP: {
+                if (StringUtils.hasText(rpIdentifier)) {
+                    stats = statisticsService.getIdpStatistics(idpIdentifier);
+                } else {
+                    stats = statisticsService.getOverallIdpStatistics();
+                }
+            } break;
+        }
+        if (stats == null) {
+            throw new InternalErrorException("Could not extract data");
+        }
+        return stats;
     }
 
     private ListOfServicesParams getListOfServicesParams(JsonNode options) {

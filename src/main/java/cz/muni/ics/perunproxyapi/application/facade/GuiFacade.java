@@ -6,6 +6,7 @@ import cz.muni.ics.perunproxyapi.persistence.exceptions.EntityNotFoundException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunConnectionException;
 import cz.muni.ics.perunproxyapi.persistence.exceptions.PerunUnknownException;
 import cz.muni.ics.perunproxyapi.persistence.models.listOfServices.ListOfServicesDAO;
+import cz.muni.ics.perunproxyapi.presentation.DTOModels.statistics.StatisticsDTO;
 import lombok.NonNull;
 
 /**
@@ -45,5 +46,15 @@ public interface GuiFacade {
      */
     String getRpEnvironmentValue(@NonNull String rpIdentifier)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
+
+    StatisticsDTO getAllStatistics();
+
+    void getStatisticsForRps();
+
+    void getStatisticsForIdPs();
+
+    void getStatisticsForRp(@NonNull String rpIdentifier) throws EntityNotFoundException;
+
+    void getStatisticsForIdp(@NonNull String idpIdentifier) throws EntityNotFoundException;
 
 }
