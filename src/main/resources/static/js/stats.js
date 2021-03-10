@@ -6,10 +6,10 @@ function getStatisticsData(name) {
     return $.parseJSON($('#' + name).attr('content'));
 }
 
-function getStatisticsDataYMDC(name, field) {
-    return getStatisticsData(name).map(function mapItemToDate(item) {
+function getStatisticsDataYMDC(data, field) {
+    return data.map(function mapItemToDate(item) {
         return {
-            t: new Date(item.day),
+            t: new Date(item.date),
             y: item[field]
         };
     });
@@ -35,20 +35,19 @@ function extendData(data, minX, maxX) {
     return extendedData;
 }
 
-function drawLoginsChart(getEl) {
-    const el = getEl();
-    if (!el) return;
+function drawLoginsChart(data, element) {
+    if (!element) return;
 
-    const ctx = el.getContext('2d');
+    const ctx = element.getContext('2d');
 
-    let data = getStatisticsDataYMDC('loginsData', 'count');
-    let data2 = getStatisticsDataYMDC('loginsData', 'users');
+    let usersData = getStatisticsDataYMDC(data, 'users');
+    let loginsData = getStatisticsDataYMDC(data, 'logins');
 
-    const minX = Math.min(data[0].t, data2[0].t);
-    const maxX = Math.max(data[data.length - 1].t, data2[data2.length - 1].t);
+    const minX = Math.min(usersData[0].t, loginsData[0].t);
+    const maxX = Math.max(usersData[usersData.length - 1].t, loginsData[loginsData.length - 1].t);
 
-    data = extendData(data, minX, maxX);
-    data2 = extendData(data2, minX, maxX);
+    usersData = extendData(usersData, minX, maxX);
+    loginsData = extendData(loginsData, minX, maxX);
 
     new Chart(ctx, { // eslint-disable-line no-new
         type: 'bar',
@@ -116,7 +115,7 @@ function drawLoginsChart(getEl) {
             "datasets": [
                 {
                     label: getTranslation('of_users'),
-                    data: data2,
+                    data: loginsData,
                     type: 'line',
                     pointRadius: 0,
                     fill: false,
@@ -127,7 +126,7 @@ function drawLoginsChart(getEl) {
                 },
                 {
                     label: getTranslation('of_logins'),
-                    data: data,
+                    data: usersData,
                     type: 'line',
                     pointRadius: 0,
                     fill: false,
@@ -153,22 +152,18 @@ const minPieOtherFraction = 0.01;
 const maxPieOtherFraction = 0.20;
 const pieOtherOnlyIfNeeded = false;
 
-function processDataForPieChart(data, viewCols) {
+function processDataForPieChart(data, total) {
     if (pieOtherOnlyIfNeeded && data.length <= pieColors.length) {
         return data;
     }
-    const col = viewCols || [0, 1];
-    const total = data.reduce(function getSum(accumulator, currentValue) {
-        return accumulator + currentValue[col[1]];
-    }, 0);
+    const dataCols = ['label', 'count', 'link'];
     let i = data.length;
     let othersFraction = 0;
     while (i > 1
-    && (i > pieColors.length
-        || (data[i - 1][col[1]] / total < minPieFraction
-            && data[i - 1][col[1]] / total + othersFraction < maxPieOtherFraction))) {
+           && (i > pieColors.length || (data[i - 1][dataCols[1]] / total < minPieFraction && data[i - 1][dataCols[1]] / total + othersFraction < maxPieOtherFraction)))
+    {
         i -= 1;
-        othersFraction += data[i][col[1]] / total;
+        othersFraction += data[i][dataCols[1]] / total;
     }
     if (othersFraction < minPieOtherFraction) {
         i = Math.min(data.length, pieColors.length);
@@ -177,40 +172,40 @@ function processDataForPieChart(data, viewCols) {
     const processedData = data.slice(0, i);
     if (i < data.length && othersFraction > 0) {
         const theOthers = [null, null, null];
-        theOthers[col[1]] = Math.round(othersFraction * total);
-        theOthers[col[0]] = getTranslation('other');
+        theOthers[dataCols[1]] = Math.round(othersFraction * total);
+        theOthers[dataCols[0]] = getTranslation('other');
         processedData.push(theOthers);
     }
     return { data: processedData, other: othersFraction > 0, total: total };
 }
 
-function drawPieChart(dataName, viewCols, url, getEl) {
-    const el = getEl();
-    if (!el) return;
-
-    const ctx = el.getContext('2d');
-    const processedData = processDataForPieChart(getStatisticsData(dataName), viewCols);
+function drawPieChart(dataset, total, element) {
+    if (!element) return;
+    const ctx = element.getContext('2d');
+    const processedData = processDataForPieChart(dataset, total);
     const data = processedData.data;
     const other = processedData.other;
-    const total = processedData.total;
-    const col = viewCols || [0, 1];
+    const dataCols = ['label', 'count', 'link'];
     const colors = pieColors.slice();
     if (other) {
         colors[data.length - 1] = '#DDDDDD';
     }
     const chart = new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels: data.map(function getFirst(row) {
-                return row[col[0]];
+                return row[dataCols[0]];
             }),
             datasets: [{
                 data: data.map(function getSecond(row) {
-                    return row[col[1]];
+                    return row[dataCols[1]];
                 }),
                 backgroundColor: colors,
                 borderWidth: 1
-            }]
+            }],
+            links: data.map(function getThird(row) {
+                return row[dataCols[2]]
+            })
         },
         options: {
             responsive: true,
@@ -222,7 +217,6 @@ function drawPieChart(dataName, viewCols, url, getEl) {
                 callbacks: {
                     label: function generateLabel(tooltipItem, myData) {
                         let label = myData.datasets[tooltipItem.datasetIndex].label || '';
-
                         if (label) {
                             label += ': ';
                         }
@@ -240,6 +234,7 @@ function drawPieChart(dataName, viewCols, url, getEl) {
 
                 const datasets = c.data.datasets;
                 const labels = c.data.labels;
+                const links = c.data.links;
 
                 if (datasets.length) {
                     for (let i = 0; i < datasets[0].data.length; ++i) {
@@ -250,8 +245,8 @@ function drawPieChart(dataName, viewCols, url, getEl) {
                         text.push('<li class="' + liClasses.join(' ') + '">');
                         if (labels[i]) {
                             let label = labels[i];
-                            if (url && (!other || i < datasets[0].data.length - 1)) {
-                                label = '<a href="' + url + encodeURIComponent(data[i][1]) + '" class="item">' + label + '</a>';
+                            if (links[i] && (!other || i < datasets[0].data.length - 1)) {
+                                label = '<a href="' + links[i] + '" class="item">' + label + '</a>';
                             } else {
                                 label = '<span class="item">' + label + '</span>';
                             }
@@ -266,38 +261,28 @@ function drawPieChart(dataName, viewCols, url, getEl) {
             }
         }
     });
-    if (url) {
-        el.addEventListener('click', function pieClick(evt) {
+    if (data) {
+        element.addEventListener('click', function pieClick(evt) {
             const activePoints = chart.getElementsAtEvent(evt);
-            if (activePoints[0]
-                && data[activePoints[0]._index][1] !== null) { // eslint-disable-line no-underscore-dangle
-                window.location.href = url + encodeURIComponent(
-                    data[activePoints[0]._index][1] // eslint-disable-line no-underscore-dangle
-                );
+            if (activePoints[0] && data[activePoints[0]._index]['link']) {
+                window.location.href = data[activePoints[0]._index]['link'];
             }
         });
     }
-    const legendContainer = el.parentNode.parentNode.querySelector('.legend-container');
+    const legendContainer = element.parentNode.parentNode.querySelector('.legend-container');
     legendContainer.innerHTML = chart.generateLegend();
 }
 
-function getDrawChart(side) {
-    return drawPieChart.bind(null, 'loginCountPer' + side, [0, 2], 'detail.php?side=' + side + '&id=');
-}
+function drawCountTable(cols, data, allowHTML, element) {
+    if (!element) return;
 
-function drawCountTable(cols, dataCol, countCol, dataName, allowHTML, url, getEl) {
-    const el = getEl();
-    if (!el) return;
+    const viewCols = ['label', 'count'];
 
-    const viewCols = [dataCol, countCol];
-
-    const tableDiv = el.appendChild(document.createElement('div'));
+    const tableDiv = element.appendChild(document.createElement('div'));
     tableDiv.className = 'table-responsive';
 
     const table = tableDiv.appendChild(document.createElement('table'));
     table.className = 'table table-striped table-hover table-condensed';
-
-    const data = getStatisticsData(dataName);
 
     const thead = table.appendChild(document.createElement('thead'));
     let tr = thead.appendChild(document.createElement('tr'));
@@ -306,7 +291,7 @@ function drawCountTable(cols, dataCol, countCol, dataName, allowHTML, url, getEl
     for (i = 0; i < viewCols.length; i++) {
         th = tr.appendChild(document.createElement('th'));
         th.innerText = getTranslation(cols[i]);
-        if (viewCols[i] === countCol) {
+        if (viewCols[i] === 'count') {
             th.className = 'text-right';
         }
     }
@@ -318,13 +303,13 @@ function drawCountTable(cols, dataCol, countCol, dataName, allowHTML, url, getEl
         tr = tbody.appendChild(document.createElement('tr'));
         for (i = 0; i < viewCols.length; i++) {
             td = tr.appendChild(document.createElement('td'));
-            if (viewCols[i] === countCol) {
+            if (viewCols[i] === 'count') {
                 td.className = 'text-right';
             }
-            if (url && viewCols[i] === dataCol) {
+            if (viewCols[i] === 'label') {
                 a = document.createElement('a');
                 a[allowHTML ? 'innerHTML' : 'innerText'] = data[j][viewCols[i]];
-                a.href = url + encodeURIComponent(data[j][1]);
+                a.href = data[j][2];
                 td.appendChild(a);
             } else {
                 td[allowHTML ? 'innerHTML' : 'innerText'] = data[j][viewCols[i]];
@@ -332,48 +317,33 @@ function drawCountTable(cols, dataCol, countCol, dataName, allowHTML, url, getEl
         }
     }
 
-    el.addEventListener('scroll', function floatingTableHead() {
-        const scrolling = el.scrollTop > 0;
-        el.classList.toggle('scrolling', scrolling);
-        el.querySelectorAll('th').forEach(function floatTh(the) {
-            the.style.transform = scrolling ? ('translateY(' + el.scrollTop + 'px)') : ''; // eslint-disable-line no-param-reassign
+    element.addEventListener('scroll', function floatingTableHead() {
+        const scrolling = element.scrollTop > 0;
+        element.classList.toggle('scrolling', scrolling);
+        element.querySelectorAll('th').forEach(function floatTh(the) {
+            the.style.transform = scrolling ? ('translateY(' + element.scrollTop + 'px)') : ''; // eslint-disable-line no-param-reassign
         });
     });
 }
 
-function getDrawTable(side) {
-    return drawCountTable.bind(null, ['tables_' + side, 'count'], 0, 2, 'loginCountPer' + side, false,
-        'detail.php?side=' + side + '&id=');
-}
-
-function getDrawCountTable(side) {
-    return drawCountTable.bind(null, ['tables_' + side, 'count'], 0, 2, 'accessCounts', true, null);
-}
-
-function getterLoadCallback(getEl, callback) {
-    callback(getEl);
-}
-
-function classLoadCallback(className, callback) {
-    getterLoadCallback(function () { return $('.' + className + ':visible')[0]; }, callback); // eslint-disable-line func-names
-}
-
-function idLoadCallback(id, callback) {
-    getterLoadCallback(document.getElementById.bind(document, id), callback);
-}
-
 function chartInit() {
-    idLoadCallback('loginsDashboard', drawLoginsChart);
-    ['IDP', 'SP'].forEach(function callbacksForSide(side) {
-        classLoadCallback('chart-' + side + 'Chart', getDrawChart(side));
-        idLoadCallback(side + 'Table', getDrawTable(side));
-        idLoadCallback('detail' + side + 'Chart', drawPieChart.bind(null, 'accessCounts', [0, 2], null));
-        idLoadCallback('detail' + side + 'Table', getDrawCountTable(side));
-    });
+    // draw overall statistics
+    const loginsData = getStatisticsData('logins');
+    const idpData = getStatisticsData('loginsIdp');
+    const rpData = getStatisticsData('loginsRp');
+    const idpTotal = getStatisticsData('loginsIdpTotalCount');
+    const rpTotal = getStatisticsData('loginsRpTotalCount');
 
-    /*$('#dateSelector input[name=lastDays]').on('click', function submitForm() {
-        this.form.submit();
-    });*/
+    drawLoginsChart(loginsData, $('#loginsDashboard')[0]);
+    drawPieChart(idpData, idpTotal , $('#summaryIDPChart')[0]);
+    drawPieChart(rpData, rpTotal, $('#summaryRPChart')[0]);
+
+    // draw IDP statistics
+    drawPieChart(idpData, idpTotal, $('#IDPChart')[0]);
+    drawCountTable(['tables_IDP', 'count'], idpData, true, $('#IDPTable')[0]);
+    // draw RP statistics
+    drawPieChart(rpData, rpTotal, $('#RPChart')[0]);
+    drawCountTable(['tables_RP', 'count'], rpData, true, $('#RPTable')[0]);
 }
 
 $(document).ready(function docReady() {
@@ -382,10 +352,5 @@ $(document).ready(function docReady() {
     if (loginsDashboard !== null && loginsDashboard.dataset.locale === 'cs') {
         moment.locale(loginsDashboard.dataset.locale);
     }
-
-    $('#tabdiv').tabs({
-        selected: $('#tabdiv').data('activetab'),
-        load: chartInit
-    });
     chartInit();
 });

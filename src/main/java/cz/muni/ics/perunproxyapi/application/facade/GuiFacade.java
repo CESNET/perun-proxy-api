@@ -49,15 +49,10 @@ public interface GuiFacade {
 
     /**
      * Get statistics for logins and its distribution among RPs and IdPs.
+     * @param currentUrl URL of the actual request.
      * @return StatisticsDTO with no label.
      */
-    StatisticsDTO getAllStatistics();
-
-    //TODO: decide if needed
-    StatisticsDTO getStatisticsForRps();
-
-    //TODO: decide if needed
-    StatisticsDTO getStatisticsForIdPs();
+    StatisticsDTO getAllStatistics(String currentUrl);
 
     /**
      * Get statistics for particular RP. Includes logins per day and its distribution among IdPs.

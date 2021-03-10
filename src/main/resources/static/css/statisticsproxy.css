@@ -13,6 +13,8 @@ h1, h2, h3 {
 
 #wrap {
     max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
 }
 
 #loginsDashboard {

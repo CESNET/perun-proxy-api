@@ -32,16 +32,17 @@ import cz.muni.ics.perunproxyapi.presentation.DTOModels.statistics.DailyGraphEnt
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.statistics.PieChartEntry;
 import cz.muni.ics.perunproxyapi.presentation.DTOModels.statistics.StatisticsDTO;
 import cz.muni.ics.perunproxyapi.presentation.enums.StatisticsDisplayMode;
+import cz.muni.ics.perunproxyapi.presentation.gui.controllers.StatisticsController;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import static cz.muni.ics.perunproxyapi.application.facade.FacadeUtils.getRequir
 import static cz.muni.ics.perunproxyapi.presentation.enums.StatisticsDisplayMode.ALL;
 import static cz.muni.ics.perunproxyapi.presentation.enums.StatisticsDisplayMode.IDP;
 import static cz.muni.ics.perunproxyapi.presentation.enums.StatisticsDisplayMode.RP;
+import static org.springframework.util.Base64Utils.encodeToUrlSafeString;
 
 @Component
 @Slf4j
@@ -143,7 +145,7 @@ public class GuiFacadeImpl implements GuiFacade {
     }
 
     @Override
-    public StatisticsDTO getAllStatistics() {
+    public StatisticsDTO getAllStatistics(String currentUrl) {
         StatsRawData stats = null;
         try {
             stats = getStatistics(ALL, null, null);
@@ -153,9 +155,9 @@ public class GuiFacadeImpl implements GuiFacade {
         if (stats == null) {
             throw new InternalErrorException("Could not fetch data");
         }
-        List<PieChartEntry> idpData = transformIdpRawData(stats);
+        List<PieChartEntry> idpData = transformIdpRawData(currentUrl, stats);
         int totalIdpLoginsCount = stats.countTotalPerIdps();
-        List<PieChartEntry> rpData = transformRpRawData(stats);
+        List<PieChartEntry> rpData = transformRpRawData(currentUrl, stats);
         int totalRpLoginsCount = stats.countTotalPerRps();
         List<DailyGraphEntry> logins = transformLoginData(stats);
 
@@ -163,42 +165,10 @@ public class GuiFacadeImpl implements GuiFacade {
     }
 
     @Override
-    public StatisticsDTO getStatisticsForRps() {
-        StatsRawData stats = null;
-        try {
-            stats = getStatistics(RP, null, null);
-        } catch (EntityNotFoundException e) {
-            // cannot happen
-        }
-        if (stats == null) {
-            throw new InternalErrorException("Could not fetch data");
-        }
-        List<PieChartEntry> rpData = transformRpRawData(stats);
-        int totalRpLoginsCount = stats.countTotalPerRps();
-        return new StatisticsDTO("", Collections.emptyList(), 0, Collections.emptyList(), totalRpLoginsCount, rpData);
-    }
-
-    @Override
-    public StatisticsDTO getStatisticsForIdPs() {
-        StatsRawData stats = null;
-        try {
-            stats = getStatistics(IDP, null, null);
-        } catch (EntityNotFoundException e) {
-            // cannot happen
-        }
-        if (stats == null) {
-            throw new InternalErrorException("Could not fetch data");
-        }
-        List<PieChartEntry> idpData = transformIdpRawData(stats);
-        int totalIdpLoginsCount = stats.countTotalPerIdps();
-        return new StatisticsDTO("", Collections.emptyList(), totalIdpLoginsCount, idpData, 0, Collections.emptyList());
-    }
-
-    @Override
     public StatisticsDTO getStatisticsForRp(@NonNull String rpIdentifier) throws EntityNotFoundException {
         StatsRawData stats = getStatistics(RP, null, rpIdentifier);
         List<DailyGraphEntry> logins = transformLoginData(stats);
-        List<PieChartEntry> idpData = transformIdpRawData(stats);
+        List<PieChartEntry> idpData = transformIdpRawData("", stats);
         int totalIdpLoginsCount = stats.countTotalPerIdps();
         String rpName = statisticsService.getRpNameForIdentifier(rpIdentifier);
 
@@ -209,7 +179,7 @@ public class GuiFacadeImpl implements GuiFacade {
     public StatisticsDTO getStatisticsForIdp(@NonNull String idpIdentifier) throws EntityNotFoundException {
         StatsRawData stats = getStatistics(IDP, idpIdentifier, null);
         List<DailyGraphEntry> logins = transformLoginData(stats);
-        List<PieChartEntry> rpData = transformRpRawData(stats);
+        List<PieChartEntry> rpData = transformRpRawData("", stats);
         int totalRpLoginsCount = stats.countTotalPerRps();
         String idpName = statisticsService.getIdpNameForIdentifier(idpIdentifier);
 
@@ -219,9 +189,6 @@ public class GuiFacadeImpl implements GuiFacade {
     // private methods
 
     private List<DailyGraphEntry> transformLoginData(StatsRawData stats) {
-        if (stats.getStatsPerDay() == null) {
-            return new ArrayList<>();
-        }
         List<LoginsPerDaySumEntry> data = stats.getStatsPerDay();
         return data.stream()
                 .sorted(LoginsPerDaySumEntry::compareByDate)
@@ -238,29 +205,35 @@ public class GuiFacadeImpl implements GuiFacade {
         }
     }
 
-    private List<PieChartEntry> transformIdpRawData(StatsRawData stats) {
-        if (stats.getStatsPerIdp() == null) {
-            return new ArrayList<>();
-        }
+    private List<PieChartEntry> transformIdpRawData(final String currentUrl, StatsRawData stats) {
         List<IdpSumEntry> data = stats.getStatsPerIdp();
         List<PieChartEntry> transformed =
                 data.stream()
                         .sorted(IdpSumEntry::compareByLogins)
-                        .map(e -> new PieChartEntry(e.getIdpName(), e.getIdpIdentifier(), e.getLogins()))
-                        .collect(Collectors.toList());
+                        .map(e -> new PieChartEntry(e.getIdpName(),
+                                getDetailLink(currentUrl, StatisticsController.IDP, e.getIdpIdentifier()),
+                                e.getLogins())
+                        ).collect(Collectors.toList());
         Collections.reverse(transformed);
         return transformed;
     }
 
-    private List<PieChartEntry> transformRpRawData(StatsRawData stats) {
-        if (stats.getStatsPerRp() == null) {
-            return new ArrayList<>();
-        }
+    private String getDetailLink(String baseUrl, String detailType, String entityIdentifier) {
+        return baseUrl +
+                (baseUrl.endsWith("/") ? "" : "/") +
+                detailType +
+                "/" +
+                encodeToUrlSafeString(entityIdentifier.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private List<PieChartEntry> transformRpRawData(final String currentUrl, StatsRawData stats) {
         List<RpSumEntry> data = stats.getStatsPerRp();
         List<PieChartEntry> transformed = data.stream()
                 .sorted(RpSumEntry::compareByLogins)
-                .map(e -> new PieChartEntry(e.getRpName(), e.getRpIdentifier(), e.getLogins()))
-                .collect(Collectors.toList());
+                .map(e -> new PieChartEntry(e.getRpName(),
+                        getDetailLink(currentUrl, StatisticsController.RP, e.getRpIdentifier()),
+                        e.getLogins())
+                ).collect(Collectors.toList());
         Collections.reverse(transformed);
         return transformed;
     }

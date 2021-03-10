@@ -16,7 +16,7 @@ import lombok.ToString;
 public class PieChartEntry {
 
     private String label;
-    private String entityIdentifier;
-    private int entryCount;
+    private String link;
+    private int count;
 
 }

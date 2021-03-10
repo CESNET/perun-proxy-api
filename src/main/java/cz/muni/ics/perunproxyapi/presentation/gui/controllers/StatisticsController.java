@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.WebConstants.GUI;
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.WebConstants.IDP_IDENTIFIER;
 import static cz.muni.ics.perunproxyapi.presentation.rest.config.WebConstants.NO_AUTH_PATH;
@@ -29,15 +31,19 @@ import static cz.muni.ics.perunproxyapi.presentation.rest.config.WebConstants.RP
 @Slf4j
 public class StatisticsController {
 
+    public static final String RP = "rp";
+    public static final String IDP = "idp";
     public static final String STATS_PATH = "/statistics";
+    public static final String RP_PATH = '/' + RP;
+    public static final String IDP_PATH = '/' + IDP;
 
     public static final String STATS_VIEW = "statistics";
     public static final String STATS_DETAIL_VIEW = "statistics_detail";
 
     public static final String IDP_DATA = "idpData";
-    public static final String IDP_LOGINS_CNT = "idpLoginsCount";
+    public static final String IDP_LOGINS_CNT = "idpLoginsTotalCount";
     public static final String RP_DATA = "rpData";
-    public static final String RP_LOGINS_CNT = "rpLoginsCount";
+    public static final String RP_LOGINS_CNT = "rpLoginsTotalCount";
     public static final String LOGINS_DATA = "loginsData";
     public static final String LABEL = "label";
 
@@ -51,15 +57,15 @@ public class StatisticsController {
     }
 
     @GetMapping(GUI + STATS_PATH)
-    public ModelAndView displayStatistics() throws JsonProcessingException {
+    public ModelAndView displayStatistics(HttpServletRequest req) throws JsonProcessingException {
         ModelAndView mav = new ModelAndView(STATS_VIEW);
-        StatisticsDTO data = facade.getAllStatistics();
+        StatisticsDTO data = facade.getAllStatistics(req.getRequestURL().toString());
         addDataToModel(mav, data);
         GuiUtils.addCommonGuiOptions(mav, guiProperties);
         return mav;
     }
 
-    @GetMapping(GUI + STATS_PATH + "/rp/{rp-identifier}")
+    @GetMapping(GUI + STATS_PATH + RP_PATH + "/{rp-identifier}")
     public ModelAndView displayStatisticsForRp(@NonNull @PathVariable(RP_IDENTIFIER) String rpIdentifier)
             throws EntityNotFoundException, InvalidRequestParameterException, JsonProcessingException
     {
@@ -74,7 +80,7 @@ public class StatisticsController {
         return mav;
     }
 
-    @GetMapping(GUI + STATS_PATH + "/idp/{idp-identifier}")
+    @GetMapping(GUI + STATS_PATH + IDP_PATH + "/{idp-identifier}")
     public ModelAndView displayStatisticsForIdp(@NonNull @PathVariable(IDP_IDENTIFIER) String idpIdentifier)
             throws EntityNotFoundException, InvalidRequestParameterException, JsonProcessingException
     {
@@ -92,9 +98,9 @@ public class StatisticsController {
     private void addDataToModel(ModelAndView mav, StatisticsDTO data) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mav.addObject(IDP_DATA, mapper.writeValueAsString(data.getIdpData()));
-        mav.addObject(IDP_LOGINS_CNT, mapper.writeValueAsString(data.getLoginsIdpTotal()));
+        mav.addObject(IDP_LOGINS_CNT, data.getLoginsIdpTotal());
         mav.addObject(RP_DATA, mapper.writeValueAsString(data.getRpData()));
-        mav.addObject(RP_LOGINS_CNT, mapper.writeValueAsString(data.getLoginsRpTotal()));
+        mav.addObject(RP_LOGINS_CNT, data.getLoginsRpTotal());
         mav.addObject(LOGINS_DATA, mapper.writeValueAsString(data.getLoginsData()));
         mav.addObject(LABEL, mapper.writeValueAsString(data.getLabel()));
     }
