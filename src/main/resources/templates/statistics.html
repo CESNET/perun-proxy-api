@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
+    <link rel="stylesheet" href="../static/css/default.css" th:href="@{/res/css/default.css}"/>
+    <link rel="stylesheet" href="../static/css/jquery-ui.css" th:href="@{/res/css/jquery-ui.css}"/>
+    <!-- TODO delete -->
+    <link rel="stylesheet" href="../static/css/backup_cesnet.css" th:href="@{/res/css/backup_cesnet.css}" type="text/css">
+
+    <!--<th:block th:replace="${header_path} :: header_head"/>-->
+    <link rel="stylesheet" href="../static/css/statisticsproxy.css" th:href="@{/res/css/statisticsproxy.css}"/>
+    <link rel="stylesheet" href="../static/css/Chart.min.css" th:href="@{/res/css/Chart.min.css}"/>
+    <title th:text="#{stats_title_all}">List of services</title>
+    <meta id="idpUsageData" th:content="${idpData}">
+    <meta id="rpUsageData" th:content="${rpData}">
+    <meta id="loginsData" th:content="${loginsData}">
+    <meta name="translations" id="translations" content="{&quot;count&quot;:&quot;Po\u010det&quot;,&quot;other&quot;:&quot;ostatn\u00ed&quot;,&quot;of_logins&quot;:&quot;p\u0159ihl\u00e1\u0161en\u00ed&quot;,&quot;of_users&quot;:&quot;u\u017eivatel\u016f&quot;,&quot;tables_IDP&quot;:&quot;Poskytovatel identity&quot;,&quot;tables_SP&quot;:&quot;Slu\u017eba&quot;}">
+</head>
+<body>
+<div id="wrap">
+    <!-- REPLACEABLE HEADER -->
+    <th:block th:if="${language_bar_enabled}" th:replace="${header_path} :: languagebar"/>
+    <th:block id="header" th:replace="${header_path} :: header_body"/>
+    <!-- CONTENT -->
+    <div id="content">
+        <ul class="nav nav-tabs" id="tabdiv">
+            <li class="active">
+                <a data-toggle="tab" href="#all" th:text="#{stats_tab_all}">All</a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#idps" th:text="#{stats_tab_idps}">Identity provider details</a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#rps" th:text="#{stats_tab_rps}">Relying parties detail</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div id="all" class="tab-pane fade in active">
+                <h2>Počet přihlášení</h2>
+                <div class="legend-logins">
+                    <div>Graf zobrazuje počet přihlášení za každý den.</div>
+                    <div class="canvas-container">
+                        <canvas id="loginsDashboard" data-locale="cs" height="250"></canvas>
+                    </div>
+                </div>
+
+                <div class="row tableMaxHeight">
+                    <div class="col-md-6 graph">
+                        <h2>Poskytovatelé identit</h2>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="legend">
+                                    <div id="summaryIDP">Graf ukazuje počet přihlášení od každého poskytovatele identity ve zvoleném časovém rozmezí. Kliknutím na poskytovatele identit zobrazíte detailní statistiky.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="pie-chart-container row">
+                                    <div class="canvas-container col-md-7">
+                                        <canvas id="IDPChart" class="pieChart chart-IDPChart"></canvas>
+                                    </div>
+                                    <div class="legend-container col-md-5"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 graph">
+                        <h2>Poskytovatelé služeb</h2>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="legend">
+                                    <div id="summarySP">Graf ukazuje počet přihlášení ke každé službě ve zvoleném časovém rozmezí. Kliknutím na službu zobrazíte detailní statistiky. Počítá se pouze první přístup ke službě, protože další již nejdou přes proxy.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="pie-chart-container row">
+                                    <div class="canvas-container col-md-7">
+                                        <canvas id="SPChart" class="pieChart chart-SPChart"></canvas>
+                                    </div>
+                                    <div class="legend-container col-md-5"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="idps" class="tab-pane fade">
+                <h3>Menu 1</h3>
+                <p>Some content in menu 1.</p>
+            </div>
+            <div id="rps" class="tab-pane fade">
+                <h3>Menu 2</h3>
+                <p>Some content in menu 2.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="${footer_path} :: footer"></div>
+<!-- TODO: prepare data and modify scripts -->
+<script type="text/javascript" src="../static/js/jquery.min.js"
+        th:src="@{/res/js/jquery.min.js}"></script>
+<script type="text/javascript" src="../static/js/jquery-ui.min.js"
+        th:src="@{/res/js/jquery-ui.min.js}"></script>
+<script type="text/javascript" src="../static/js/moment.min.js"
+        th:src="@{/res/js/moment.min.js}"></script>
+<script type="text/javascript" src="../static/js/moment.cs.min.js"
+        th:src="@{/res/js/moment.cs.min.js}"></script>
+<script type="text/javascript" src="../static/js/Chart.min.js"
+        th:src="@{/res/js/Chart.min.js}"></script>
+<script type="text/javascript" src="../static/js/hammer.min.js"
+        th:src="@{/res/js/hammer.min.js}"></script>
+<script type="text/javascript" src="../static/js/chartjs-plugin-zoom.min.js"
+        th:src="@{/res/js/chartjs-plugin-zoom.min.js}"></script>
+<script type="text/javascript" src="../static/js/stats.js"
+        th:src="@{/res/js/stats.js}"></script>
+</body>
+</html>

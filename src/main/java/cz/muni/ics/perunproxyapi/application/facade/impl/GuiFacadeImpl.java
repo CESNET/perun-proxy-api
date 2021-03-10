@@ -38,6 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -75,6 +78,8 @@ public class GuiFacadeImpl implements GuiFacade {
     private final GuiService guiService;
     private final RelyingPartyService relyingPartyService;
     private final StatisticsService statisticsService;
+
+    private final DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
     @Autowired
     public GuiFacadeImpl(@NonNull GuiService guiService,
@@ -158,7 +163,7 @@ public class GuiFacadeImpl implements GuiFacade {
     }
 
     @Override
-    public void getStatisticsForRps() {
+    public StatisticsDTO getStatisticsForRps() {
         StatsRawData stats = null;
         try {
             stats = getStatistics(RP, null, null);
@@ -168,11 +173,13 @@ public class GuiFacadeImpl implements GuiFacade {
         if (stats == null) {
             throw new InternalErrorException("Could not fetch data");
         }
-        //TODO: process
+        List<PieChartEntry> rpData = transformRpRawData(stats);
+        int totalRpLoginsCount = stats.countTotalPerRps();
+        return new StatisticsDTO("", Collections.emptyList(), 0, Collections.emptyList(), totalRpLoginsCount, rpData);
     }
 
     @Override
-    public void getStatisticsForIdPs() {
+    public StatisticsDTO getStatisticsForIdPs() {
         StatsRawData stats = null;
         try {
             stats = getStatistics(IDP, null, null);
@@ -182,20 +189,31 @@ public class GuiFacadeImpl implements GuiFacade {
         if (stats == null) {
             throw new InternalErrorException("Could not fetch data");
         }
-        //TODO: process
+        List<PieChartEntry> idpData = transformIdpRawData(stats);
+        int totalIdpLoginsCount = stats.countTotalPerIdps();
+        return new StatisticsDTO("", Collections.emptyList(), totalIdpLoginsCount, idpData, 0, Collections.emptyList());
     }
 
     @Override
-    public void getStatisticsForRp(@NonNull String rpIdentifier) throws EntityNotFoundException {
+    public StatisticsDTO getStatisticsForRp(@NonNull String rpIdentifier) throws EntityNotFoundException {
         StatsRawData stats = getStatistics(RP, null, rpIdentifier);
-        //TODO: process
+        List<DailyGraphEntry> logins = transformLoginData(stats);
+        List<PieChartEntry> idpData = transformIdpRawData(stats);
+        int totalIdpLoginsCount = stats.countTotalPerIdps();
+        String rpName = statisticsService.getRpNameForIdentifier(rpIdentifier);
 
+        return new StatisticsDTO(rpName, logins, totalIdpLoginsCount, idpData, 0, Collections.emptyList());
     }
 
     @Override
-    public void getStatisticsForIdp(@NonNull String idpIdentifier) throws EntityNotFoundException {
+    public StatisticsDTO getStatisticsForIdp(@NonNull String idpIdentifier) throws EntityNotFoundException {
         StatsRawData stats = getStatistics(IDP, idpIdentifier, null);
-        //TODO: process
+        List<DailyGraphEntry> logins = transformLoginData(stats);
+        List<PieChartEntry> rpData = transformRpRawData(stats);
+        int totalRpLoginsCount = stats.countTotalPerRps();
+        String idpName = statisticsService.getIdpNameForIdentifier(idpIdentifier);
+
+        return new StatisticsDTO(idpName, logins, 0, Collections.emptyList(), totalRpLoginsCount, rpData);
     }
 
     // private methods
@@ -211,8 +229,13 @@ public class GuiFacadeImpl implements GuiFacade {
                 .collect(Collectors.toList());
     }
 
-    private String getDateLabel(LoginsPerDaySumEntry entry) {
-        return String.format("%d-%d-%d", entry.getDay(), entry.getMonth(), entry.getYear());
+    private long getDateLabel(LoginsPerDaySumEntry entry) {
+        String date = String.format("%d-%d-%d", entry.getDay(), entry.getMonth(), entry.getYear());
+        try {
+            return dateFormat.parse(date).getTime();
+        } catch (ParseException e) {
+            return 0;
+        }
     }
 
     private List<PieChartEntry> transformIdpRawData(StatsRawData stats) {

@@ -47,14 +47,32 @@ public interface GuiFacade {
     String getRpEnvironmentValue(@NonNull String rpIdentifier)
             throws PerunUnknownException, PerunConnectionException, EntityNotFoundException;
 
+    /**
+     * Get statistics for logins and its distribution among RPs and IdPs.
+     * @return StatisticsDTO with no label.
+     */
     StatisticsDTO getAllStatistics();
 
-    void getStatisticsForRps();
+    //TODO: decide if needed
+    StatisticsDTO getStatisticsForRps();
 
-    void getStatisticsForIdPs();
+    //TODO: decide if needed
+    StatisticsDTO getStatisticsForIdPs();
 
-    void getStatisticsForRp(@NonNull String rpIdentifier) throws EntityNotFoundException;
+    /**
+     * Get statistics for particular RP. Includes logins per day and its distribution among IdPs.
+     * @param rpIdentifier Identifier of the Relying Party.
+     * @return StatisticsDTO without filled fields for RPs.
+     * @throws EntityNotFoundException Throw when no RP has been found for given identifier.
+     */
+    StatisticsDTO getStatisticsForRp(@NonNull String rpIdentifier) throws EntityNotFoundException;
 
-    void getStatisticsForIdp(@NonNull String idpIdentifier) throws EntityNotFoundException;
+    /**
+     * Get statistics for particular IdP. Includes logins per day and its distribution among IdPs.
+     * @param idpIdentifier Identifier of the Identity Provider.
+     * @return StatisticsDTO without filled fields for IdPs.
+     * @throws EntityNotFoundException Throw when no IdP has been found for given identifier.
+     */
+    StatisticsDTO getStatisticsForIdp(@NonNull String idpIdentifier) throws EntityNotFoundException;
 
 }

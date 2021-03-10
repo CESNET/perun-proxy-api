@@ -15,7 +15,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class DailyGraphEntry {
 
-    private String label;
+    private long date;
     private int users;
     private int logins;
 
