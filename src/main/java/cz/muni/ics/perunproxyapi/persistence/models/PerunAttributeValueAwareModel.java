@@ -146,7 +146,10 @@ public abstract class PerunAttributeValueAwareModel {
                 arrJson.forEach(item -> arr.add(item.asText()));
             }
         } else {
-            arr.add(this.valueAsString());
+            String strVal = this.valueAsString();
+            if (strVal != null) {
+                arr.add(strVal);
+            }
         }
 
         return arr;
