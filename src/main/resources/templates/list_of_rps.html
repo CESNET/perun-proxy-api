@@ -4,16 +4,48 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
-  <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
-  <link th:href="@{/res/css/default.css}" rel="stylesheet" />
-  <th:block th:replace="${header_path} :: header_head"/>
-  <link th:href="@{/res/css/listOfSps.css}" rel="stylesheet" />
-  <title>List of services</title>
+  <meta id="dataStats" content="{&quot;allTestingCount&quot;:1,&quot;allStagingCount&quot;:1,&quot;samlProductionCount&quot;:0,&quot;samlStagingCount&quot;:0,&quot;oidcProductionCount&quot;:1,&quot;samlTestingCount&quot;:1,&quot;oidcTestingCount&quot;:0,&quot;oidcStagingCount&quot;:1,&quot;allProductionCount&quot;:1}"
+        th:content="${statisticsJson}">
+  <meta id="showOidc" content="true" th:content="${showOidc}">
+  <meta id="showSaml" content="true" th:content="${showSaml}">
+  <meta id="showTesting" content="true" th:content="${showTesting}">
+  <meta id="showStaging" content="true" th:content="${showStaging}">
+  <meta id="showProduction" content="true" th:content="${showProduction}">
+  <meta id="productionServicesOidc" content="OIDC Production" th:content="#{production_services_oidc}">
+  <meta id="stageServicesOidc" content="OIDC Staging" th:content="#{stage_services_oidc}">
+  <meta id="testServicesOidc" content="OIDC Test" th:content="#{test_services_oidc}">
+  <meta id="productionServicesSaml" content="SAML Production" th:content="#{production_services_saml}">
+  <meta id="stageServicesSaml" content="SAML Staging" th:content="#{stage_services_saml}">
+  <meta id="testServicesSaml" content="SAML Test" th:content="#{test_services_saml}">
+  <!-- CSS -->
+  <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.min.css"
+        th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
+  <link rel="stylesheet" type="text/css" href="../static/css/default.css"
+        th:href="@{/res/css/default.css}" />
+  <th:block th:replace="${header_path} :: header_head">
+    <link rel="stylesheet" href="../static/css/backup_cesnet.css" th:href="@{/res/css/backup_cesnet.css}" type="text/css">
+  </th:block>
+  <link  rel="stylesheet" href="../static/css/list_of_rps.css"
+         th:href="@{/res/css/list_of_rps.css}"/>
+  <link rel="stylesheet" href="../static/css/Chart.min.css"
+        th:href="@{/res/css/Chart.min.css}"/>
+  <title th:text="#{list_of_rps_title}">List of relying services</title>
 <body>
 <div id="wrap">
   <!-- REPLACEABLE HEADER -->
-  <th:block th:if="${language_bar_enabled}" th:replace="${header_path} :: languagebar"/>
-  <th:block id="header" th:replace="${header_path} :: header_body"/>
+  <th:block th:if="${language_bar_enabled}" th:replace="${header_path} :: languagebar">
+    <div id="languagebar_line">
+      <div id="languagebar">
+        <a href="">English</a> | Čeština
+      </div>
+    </div>
+  </th:block>
+  <div id="header">
+    <th:block th:replace="${header_path} :: header_logo">
+      <img src="https://login.cesnet.cz/proxy/module.php/cesnet/res/img/cesnet_RGB.png" alt="logo"/>
+    </th:block>
+    <h1 th:text="#{list_of_rps_title}">List of Relying Services</h1>
+  </div>
   <!-- CONTENT -->
   <div id="content">
     <div class="row">
@@ -72,11 +104,11 @@
       <div class="col-xs-12 table-responsive">
         <table class="table table-striped" id="table1">
           <thead>
-          <tr>
-            <th th:if="${services.size() > 0}" th:each="attr: ${attributes}"
-                th:class="${services.get(0).getAttributes().get(attr.getSourceAttrName()).getType()}"
-                th:text="#{${attr.getLocalizationKey()}}">Attr name</th>
-          </tr>
+            <tr>
+              <th th:if="${services.size() > 0}" th:each="attr: ${attributes}"
+                  th:class="${services.get(0).getAttributes().get(attr.getSourceAttrName()).getType()}"
+                  th:text="#{${attr.getLocalizationKey()}}">Attr name</th>
+            </tr>
           </thead>
           <tbody>
             <tr th:each="service: ${services}">
@@ -85,7 +117,6 @@
                            type=${service.getAttributes().get(displayAttr.getSourceAttrName()).getType()},
                            url=${service.getAttributes().getOrDefault(displayAttr.getUrlSourceAttr(), null) == null ?
                                null : service.getAttributes().get(displayAttr.getUrlSourceAttr()).valueAsString() }">
-
                 <!-- NULL VALUE -->
                 <div th:if="${attr.getValue()} == null" class="center">&horbar;</div>
                 <!-- STRING AND LARGE STRING -->
@@ -150,73 +181,56 @@
     </div>
   </div>
 </div>
-<div th:replace="${footer_path} :: footer"></div>
-<script th:inline="javascript" th:content="${statisticsJson}" id="dataStats" type="text/javascript"></script>
-<script th:inline="javascript" type="text/javascript">
-    const showOidc = [[${showOidc}]];
-    const showSaml = [[${showSaml}]];
-    const showTesting = [[${showTesting}]];
-    const showStaging = [[${showStaging}]];
-    const showProduction = [[${showProduction}]];
-    const labels = [];
-    const data = [];
-    const backgroundColor = [];
-    const borderColor = [];
-    let jsonData = null;
-
-    function getData(dataKey) {
-      if (jsonData === null) {
-        jsonData = JSON.parse(document.getElementById("dataStats").getAttribute('content'));
-      }
-      return jsonData[dataKey];
-    }
-
-    function initializeChartData() {
-      if (showSaml) {
-        if (showProduction) {
-          data.push(getData('samlProductionCount'));
-          labels.push([[#{production_services_saml}]]);
-          backgroundColor.push('rgba(50, 0, 255, 0.2)');
-          borderColor.push('rgba(50, 0, 252, 1)');
-        }
-        if (showStaging) {
-          data.push(getData('samlStagingCount'));
-          labels.push([[#{stage_services_saml}]]);
-          backgroundColor.push('rgba(50, 150, 255, 0.2)');
-          borderColor.push('rgba(50, 150, 252, 1)');
-        }
-        if (showTesting) {
-          data.push(getData('samlTestingCount'));
-          labels.push([[#{test_services_saml}]]);
-          backgroundColor.push('rgba(50, 220, 255, 0.2)');
-          borderColor.push('rgba(50, 220, 252, 1)');
-        }
-      }
-      if (showOidc) {
-        if (showProduction) {
-          data.push(getData('oidcProductionCount'));
-          labels.push([[#{production_services_oidc}]]);
-          backgroundColor.push('rgba(0, 255, 50, 0.2)');
-          borderColor.push('rgba(0, 255, 50, 1)');
-        }
-        if (showStaging) {
-          data.push(getData('oidcStagingCount'));
-          labels.push([[#{stage_services_oidc}]]);
-          backgroundColor.push('rgba(150, 255, 50, 0.2)');
-          borderColor.push('rgba(150, 255, 50, 1)');
-        }
-        if (showTesting) {
-          data.push(getData('oidcTestingCount'));
-          labels.push([[#{test_services_oidc}]]);
-          backgroundColor.push('rgba(220, 255, 50, 0.2)');
-          borderColor.push('rgba(220, 255, 50, 1)');
-        }
-      }
-    }
-
-    initializeChartData();
-</script>
-<script type="text/javascript" th:src="@{/res/js/chart.js}"></script>
-<script th:inline="javascript" th:src="@{/res/js/listOfSps.js}" type="text/javascript"></script>
+<div th:replace="${footer_path} :: footer">
+  <div id="footer">
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 logo">
+            <a href="http://www.cesnet.cz/">
+              <img src="https://login.cesnet.cz/proxy/module.php/cesnet/res/img/logo-cesnet.png"
+                   width="250px">
+            </a>
+          </div>
+          <div class="col-md-8">
+            <div class="row">
+              <div class="col col-sm-6">
+                <h2> OTHER CESNET PROJECTS</h2>
+                <ul>
+                  <li><a href="https://www.metacentrum.cz/en/Sluzby/index.html">Computing</a></li>
+                  <li><a href="https://du.cesnet.cz/en/start">Data storage</a></li>
+                  <li><a href="https://meetings.cesnet.cz/?lang=en">Videoconferences</a></li>
+                  <li><a href="https://pki.cesnet.cz/en/st-cca-services.html">Certificates</a></li>
+                  <li><a href="https://www.cesnet.cz/services/?lang=en">Other services</a></li>
+                  <li><a href="https://www.cesnet.cz/cesnet/personal-data-protection/?lang=en">Personal data protection</a></li>
+                </ul>
+              </div>
+              <div class="col col-sm-6">
+                <h2>HELPDESK</h2>
+                TEL: +420 234 680 222<br>
+                GSM: +420 602 252 531<br>
+                <a href="mailto:login@cesnet.cz">login@cesnet.cz</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col col-sm-12 copyright">
+            © 1991– 2021 | CESNET, z. s. p. o.
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+<!-- JS -->
+<script type="text/javascript" src="../static/js/jquery.min.js"
+        th:src="@{/res/js/jquery.min.js}"></script>
+<script type="text/javascript" src="../static/js/bootstrap.min.js"
+        th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script type="text/javascript" src="../static/js/Chart.min.js"
+        th:src="@{/res/js/Chart.min.js}"></script>
+<script type="text/javascript"  src="../static/js/list_of_rps.js"
+        th:src="@{/res/js/list_of_rps.js}"></script>
 </body>
 </html>
