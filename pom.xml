@@ -17,8 +17,14 @@
         <maven-model.version>3.6.3</maven-model.version>
         <mockito.version>3.4.0</mockito.version>
         <nimbus-jose-jwt.version>7.9</nimbus-jose-jwt.version>
-        <bootstrap.version>3.3.7</bootstrap.version>
         <webjars-locator.version>0.30</webjars-locator.version>
+        <bootstrap.version>3.3.7</bootstrap.version>
+        <jquery.version>3.6.0</jquery.version>
+        <jquery-ui.version>1.12.1</jquery-ui.version>
+        <chartjs.version>2.9.4</chartjs.version>
+        <chartjs-plugin-zoom.version>0.7.7</chartjs-plugin-zoom.version>
+        <hammerjs.version>2.0.8</hammerjs.version>
+        <momentjs.version>2.29.1</momentjs.version>
     </properties>
 
     <dependencies>
@@ -152,6 +158,37 @@
             <artifactId>bootstrap</artifactId>
             <version>${bootstrap.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>${jquery.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery-ui</artifactId>
+            <version>${jquery-ui.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>chartjs</artifactId>
+            <version>${chartjs.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>chartjs-plugin-zoom</artifactId>
+            <version>${chartjs-plugin-zoom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>hammerjs</artifactId>
+            <version>${hammerjs.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>momentjs</artifactId>
+            <version>${momentjs.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

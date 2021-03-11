@@ -32,7 +32,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class ListOfSpsController {
 
-    public static final String LIST_OF_SPS = "list_of_sps";
+    public static final String LIST_OF_SPS = "list_of_rps";
 
     private final GuiProperties guiProperties;
     private final GuiFacade facade;

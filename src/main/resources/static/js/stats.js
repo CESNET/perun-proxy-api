@@ -272,7 +272,6 @@ function drawCountTable(cols, data, allowHTML, element) {
     let i;
     for (i = 0; i < viewCols.length; i++) {
         th = tr.appendChild(document.createElement('th'));
-        console.log(cols[i]);
         th.innerText = getTranslation(cols[i]);
         if (viewCols[i] === 'count') {
             th.className = 'text-right';

@@ -23,12 +23,13 @@
   <link rel="stylesheet" type="text/css" href="../static/css/default.css"
         th:href="@{/res/css/default.css}" />
   <th:block th:replace="${header_path} :: header_head">
-    <link rel="stylesheet" href="../static/css/backup_cesnet.css" th:href="@{/res/css/backup_cesnet.css}" type="text/css">
+    <link rel="stylesheet" type="text/css" href="../static/css/backup_cesnet.css"
+          th:href="@{/res/css/backup_cesnet.css}">
   </th:block>
   <link  rel="stylesheet" href="../static/css/list_of_rps.css"
          th:href="@{/res/css/list_of_rps.css}"/>
   <link rel="stylesheet" href="../static/css/Chart.min.css"
-        th:href="@{/res/css/Chart.min.css}"/>
+        th:href="@{/webjars/chartjs/Chart.min.css}"/>
   <title th:text="#{list_of_rps_title}">List of relying services</title>
 <body>
 <div id="wrap">
@@ -224,12 +225,12 @@
   </div>
 </div>
 <!-- JS -->
-<script type="text/javascript" src="../static/js/jquery.min.js"
-        th:src="@{/res/js/jquery.min.js}"></script>
-<script type="text/javascript" src="../static/js/bootstrap.min.js"
+<script type="text/javascript" src="../static/js/lib/jquery.min.js"
+        th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script type="text/javascript" src="../static/js/lib/bootstrap.min.js"
         th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
-<script type="text/javascript" src="../static/js/Chart.min.js"
-        th:src="@{/res/js/Chart.min.js}"></script>
+<script type="text/javascript" src="../static/js/lib/Chart.min.js"
+        th:src="@{/webjars/chartjs/Chart.min.js}"></script>
 <script type="text/javascript"  src="../static/js/list_of_rps.js"
         th:src="@{/res/js/list_of_rps.js}"></script>
 </body>
