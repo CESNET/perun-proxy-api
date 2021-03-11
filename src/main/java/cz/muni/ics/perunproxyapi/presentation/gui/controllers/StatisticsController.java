@@ -46,6 +46,7 @@ public class StatisticsController {
     public static final String RP_LOGINS_CNT = "rpLoginsTotalCount";
     public static final String LOGINS_DATA = "loginsData";
     public static final String LABEL = "label";
+    public static final String MODE = "mode";
 
     @NonNull private final GuiFacade facade;
     @NonNull private final GuiProperties guiProperties;
@@ -57,16 +58,18 @@ public class StatisticsController {
     }
 
     @GetMapping(GUI + STATS_PATH)
-    public ModelAndView displayStatistics(HttpServletRequest req) throws JsonProcessingException {
+    public ModelAndView displayStatistics(@NonNull HttpServletRequest req) throws JsonProcessingException {
         ModelAndView mav = new ModelAndView(STATS_VIEW);
-        StatisticsDTO data = facade.getAllStatistics(req.getRequestURL().toString());
+        String url = req.getRequestURL().toString();
+        StatisticsDTO data = facade.getAllStatistics(url);
         addDataToModel(mav, data);
         GuiUtils.addCommonGuiOptions(mav, guiProperties);
         return mav;
     }
 
     @GetMapping(GUI + STATS_PATH + RP_PATH + "/{rp-identifier}")
-    public ModelAndView displayStatisticsForRp(@NonNull @PathVariable(RP_IDENTIFIER) String rpIdentifier)
+    public ModelAndView displayStatisticsForRp(@NonNull HttpServletRequest req,
+                                               @NonNull @PathVariable(RP_IDENTIFIER) String rpIdentifier)
             throws EntityNotFoundException, InvalidRequestParameterException, JsonProcessingException
     {
         if (!StringUtils.hasText(rpIdentifier)) {
@@ -74,14 +77,17 @@ public class StatisticsController {
         }
         String identifierDecoded = ControllerUtils.decodeUrlSafeBase64(rpIdentifier);
         ModelAndView mav = new ModelAndView(STATS_DETAIL_VIEW);
-        StatisticsDTO data = facade.getStatisticsForRp(identifierDecoded);
+        String url = req.getRequestURL().toString().replaceFirst(RP_PATH + "/.*", "");
+        StatisticsDTO data = facade.getStatisticsForRp(url, identifierDecoded);
+        mav.addObject(MODE, RP);
         addDataToModel(mav, data);
         GuiUtils.addCommonGuiOptions(mav, guiProperties);
         return mav;
     }
 
     @GetMapping(GUI + STATS_PATH + IDP_PATH + "/{idp-identifier}")
-    public ModelAndView displayStatisticsForIdp(@NonNull @PathVariable(IDP_IDENTIFIER) String idpIdentifier)
+    public ModelAndView displayStatisticsForIdp(@NonNull HttpServletRequest req,
+                                                @NonNull @PathVariable(IDP_IDENTIFIER) String idpIdentifier)
             throws EntityNotFoundException, InvalidRequestParameterException, JsonProcessingException
     {
         if (!StringUtils.hasText(idpIdentifier)) {
@@ -89,7 +95,9 @@ public class StatisticsController {
         }
         String identifierDecoded = ControllerUtils.decodeUrlSafeBase64(idpIdentifier);
         ModelAndView mav = new ModelAndView(STATS_DETAIL_VIEW);
-        StatisticsDTO data = facade.getStatisticsForIdp(identifierDecoded);
+        String url = req.getRequestURL().toString().replaceFirst(IDP_PATH + "/.*", "");
+        StatisticsDTO data = facade.getStatisticsForIdp(url, identifierDecoded);
+        mav.addObject(MODE, IDP);
         addDataToModel(mav, data);
         GuiUtils.addCommonGuiOptions(mav, guiProperties);
         return mav;

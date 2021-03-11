@@ -155,7 +155,7 @@ public class StatisticsManagerImpl implements StatisticsManager {
         Map<String, Object> params = new HashMap<>();
         params.put(PARAM_RP_ID, rpId);
         try {
-            return getSummaryForIdpOrRps(dbProperties.getRpMapTable(), whereClause, params, idpSumsMapper);
+            return getSummaryForIdpOrRps(dbProperties.getIdpMapTable(), whereClause, params, idpSumsMapper);
         } catch (Exception e) {
             log.error("Caught exception when fetching RP sums");
             log.debug("", e);
@@ -206,7 +206,7 @@ public class StatisticsManagerImpl implements StatisticsManager {
         if (!StringUtils.hasText(idpIdentifier)) {
             throw new IllegalArgumentException("No IDP identifier provided");
         }
-        return extractSpOrIdpName(dbProperties.getRpMapTable(), idpIdentifier, IDP);
+        return extractSpOrIdpName(dbProperties.getIdpMapTable(), idpIdentifier, IDP);
     }
 
     private String extractSpOrIdpName(String table, String identifier, String type)

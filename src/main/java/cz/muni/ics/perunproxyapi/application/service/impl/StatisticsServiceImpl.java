@@ -86,7 +86,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public StatsRawData getRpStatistics(String rpIdentifier) throws EntityNotFoundException {
+    public StatsRawData getRpStatistics(@NonNull String rpIdentifier) throws EntityNotFoundException {
         if (!StringUtils.hasText(rpIdentifier)) {
             throw new IllegalArgumentException("No RP identifier provided");
         }
@@ -103,7 +103,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public StatsRawData getIdpStatistics(String idpIdentifier) throws EntityNotFoundException {
+    public StatsRawData getIdpStatistics(@NonNull String idpIdentifier) throws EntityNotFoundException {
         if (!StringUtils.hasText(idpIdentifier)) {
             throw new IllegalArgumentException("No IdP identifier provided");
         }

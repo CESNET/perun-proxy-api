@@ -145,10 +145,10 @@ public class GuiFacadeImpl implements GuiFacade {
     }
 
     @Override
-    public StatisticsDTO getAllStatistics(String currentUrl) {
+    public StatisticsDTO getAllStatistics(@NonNull String currentUrl) {
         StatsRawData stats = null;
         try {
-            stats = getStatistics(ALL, null, null);
+            stats = getStatistics(ALL, null);
         } catch (EntityNotFoundException e) {
             // cannot happen
         }
@@ -165,10 +165,12 @@ public class GuiFacadeImpl implements GuiFacade {
     }
 
     @Override
-    public StatisticsDTO getStatisticsForRp(@NonNull String rpIdentifier) throws EntityNotFoundException {
-        StatsRawData stats = getStatistics(RP, null, rpIdentifier);
+    public StatisticsDTO getStatisticsForRp(@NonNull String currentUrl, @NonNull String rpIdentifier)
+            throws EntityNotFoundException
+    {
+        StatsRawData stats = getStatistics(RP, rpIdentifier);
         List<DailyGraphEntry> logins = transformLoginData(stats);
-        List<PieChartEntry> idpData = transformIdpRawData("", stats);
+        List<PieChartEntry> idpData = transformIdpRawData(currentUrl, stats);
         int totalIdpLoginsCount = stats.countTotalPerIdps();
         String rpName = statisticsService.getRpNameForIdentifier(rpIdentifier);
 
@@ -176,10 +178,12 @@ public class GuiFacadeImpl implements GuiFacade {
     }
 
     @Override
-    public StatisticsDTO getStatisticsForIdp(@NonNull String idpIdentifier) throws EntityNotFoundException {
-        StatsRawData stats = getStatistics(IDP, idpIdentifier, null);
+    public StatisticsDTO getStatisticsForIdp(@NonNull String currentUrl, @NonNull String idpIdentifier)
+            throws EntityNotFoundException
+    {
+        StatsRawData stats = getStatistics(IDP, idpIdentifier);
         List<DailyGraphEntry> logins = transformLoginData(stats);
-        List<PieChartEntry> rpData = transformRpRawData("", stats);
+        List<PieChartEntry> rpData = transformRpRawData(currentUrl, stats);
         int totalRpLoginsCount = stats.countTotalPerRps();
         String idpName = statisticsService.getIdpNameForIdentifier(idpIdentifier);
 
@@ -238,24 +242,24 @@ public class GuiFacadeImpl implements GuiFacade {
         return transformed;
     }
 
-    private StatsRawData getStatistics(@NonNull StatisticsDisplayMode mode,
-                                       String idpIdentifier,
-                                       String rpIdentifier) throws EntityNotFoundException {
+    private StatsRawData getStatistics(@NonNull StatisticsDisplayMode mode, String identifier)
+            throws EntityNotFoundException
+    {
         StatsRawData stats = null;
         switch (mode) {
             case ALL: {
                 stats = statisticsService.getOverallStatistics();
             } break;
             case RP: {
-                if (StringUtils.hasText(rpIdentifier)) {
-                    stats = statisticsService.getRpStatistics(rpIdentifier);
+                if (StringUtils.hasText(identifier)) {
+                    stats = statisticsService.getRpStatistics(identifier);
                 } else {
                     stats = statisticsService.getOverallRpStatistics();
                 }
             } break;
             case IDP: {
-                if (StringUtils.hasText(rpIdentifier)) {
-                    stats = statisticsService.getIdpStatistics(idpIdentifier);
+                if (StringUtils.hasText(identifier)) {
+                    stats = statisticsService.getIdpStatistics(identifier);
                 } else {
                     stats = statisticsService.getOverallIdpStatistics();
                 }

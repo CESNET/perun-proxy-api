@@ -15,6 +15,7 @@
     <meta name="translationsEN" id="translationsEN" content="{&quot;count&quot;:&quot;Count&quot;,&quot;other&quot;:&quot;other&quot;,&quot;of_logins&quot;:&quot;logins&quot;,&quot;of_users&quot;:&quot;users&quot;,&quot;tables_IDP&quot;:&quot;Identity provider&quot;,&quot;tables_RP&quot;:&quot;Relying service&quot;}">
     <meta name="translationsCS" id="translationsCS" content="{&quot;count&quot;:&quot;Po\u010det&quot;,&quot;other&quot;:&quot;ostatn\u00ed&quot;,&quot;of_logins&quot;:&quot;p\u0159ihl\u00e1\u0161en\u00ed&quot;,&quot;of_users&quot;:&quot;u\u017eivatel\u016f&quot;,&quot;tables_IDP&quot;:&quot;Poskytovatel identity&quot;,&quot;tables_RP&quot;:&quot;Slu\u017eba&quot;}">
     <meta id="locale" content="en" th:content="${#locale}">
+    <meta id="mode" content="IDP" th:content="${mode}">
     <!-- CSS -->
     <link rel="stylesheet" href="../static/css/default.css" th:href="@{/res/css/default.css}"/>
     <link rel="stylesheet" href="../static/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
@@ -24,7 +25,7 @@
     </th:block>
     <link rel="stylesheet" href="../static/css/statisticsproxy.css" th:href="@{/res/css/statisticsproxy.css}"/>
     <link rel="stylesheet" href="../static/css/Chart.min.css" th:href="@{/res/css/Chart.min.css}"/>
-    <title th:text="#{stats_title}">List of services</title>
+    <title th:text="#{stats_detail_title}">List of services</title>
 </head>
 <body>
 <div id="wrap" class="container-fluid">
@@ -40,104 +41,43 @@
         <th:block th:replace="${header_path} :: header_logo">
             <img src="https://login.cesnet.cz/proxy/module.php/cesnet/res/img/cesnet_RGB.png" alt="logo"/>
         </th:block>
-        <h1 th:text="#{stats_title}">CESNET AAI Statistics</h1>
+        <h1>
+            <span th:text="${mode eq 'idp'} ? #{stats_detail_header_idp} : #{stats_detail_header_rp}">
+                Detailed statistics for Identity Provider -</span> <span th:text="${label}">Google</span>
+        </h1>
     </div>
     <!-- CONTENT -->
     <div id="content">
-        <!-- TABS NAV -->
-        <ul class="nav nav-tabs">
-            <li class="active">
-                <a data-toggle="tab" href="#all">
-                    <h4 th:text="#{stats_tab_all}">All statistics</h4>
-                </a>
-            </li>
-            <li>
-                <a data-toggle="tab" href="#idps">
-                    <h4 th:text="#{stats_tab_idps}">Identity provider details</h4>
-                </a>
-            </li>
-            <li>
-                <a data-toggle="tab" href="#rps">
-                    <h4 th:text="#{stats_tab_rps}">Relying parties detail</h4>
-                </a>
-            </li>
-        </ul>
+        <div class="go-to-stats-btn">
+            <a class="btn btn-md btn-default" href="http://localhost:63342/perun-proxy-api/templates/statistics.html"
+               th:href="@{/non/gui/statistics}">
+                <span class="glyphicon glyphicon-home"></span> <span th:text="#{stats_detail_to_overall}">To overall statistics</span>
+            </a>
+        </div>
         <!-- TABS -->
-        <div class="tab-content col-md-12">
+        <div class="tab-content">
             <!-- LOGINS PER DAY -->
-            <div id="all" class="tab-pane fade in active">
+            <div id="all">
                 <h2 th:text="#{stats_nr_of_logins}">Number of logins</h2>
                 <p class="legend-logins" th:text="#{stats_nr_of_logins_legend}">Graph displays logins per day.</p>
                 <div class="canvas-container col-md-12">
-                    <canvas id="loginsDashboard" data-locale="en" height="250"></canvas>
-                </div>
-                <div class="col-md-12">
-                    <div class="row tableMaxHeight">
-                        <div class="col-md-6 graph">
-                            <h2 th:text="#{stats_idps}">Identity Providers</h2>
-                            <div class="row">
-                                <p class="col-md-12 legend" id="summaryIDP" th:text="#{stats_idps_legend}">Graph displays number of logins per identity provider</p>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="pie-chart-container row">
-                                        <div class="canvas-container col-md-7">
-                                            <canvas id="summaryIDPChart" class="pieChart chart-IDPChart"></canvas>
-                                        </div>
-                                        <div class="legend-container col-md-5"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 graph">
-                            <h2 th:text="#{stats_rps}">Relying services</h2>
-                            <div class="row">
-                                <p id="summaryRP" class="col-md-12 legend" th:text="#{stats_rps_legend}">Number of logins per relying service</p>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="pie-chart-container row">
-                                        <div class="canvas-container col-md-7">
-                                            <canvas id="summaryRPChart" class="pieChart chart-RPChart"></canvas>
-                                        </div>
-                                        <div class="legend-container col-md-5"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <canvas id="loginsDashboard" th:data-locale="${#locale}" data-locale="cs" height="250"></canvas>
                 </div>
             </div>
-            <!-- IDPS -->
-            <div id="idps" class="tab-pane fade">
-                <h2 th:text="#{stats_idps}">Identity providers</h2>
-                <p class="legend" th:text="#{stats_idps_legend}">The chart shows the number of logins from each identity provider in the selected time range. Click an identity provider to view detailed statistics.</p>
+            <!-- RPS / IDPs -->
+            <div>
+                <h2 th:text="${mode eq 'idp'} ? #{stats_accessed_idps} : #{stats_accessed_rps}">Accessed Relying Parties</h2>
+                <p class="legend" th:text="${mode eq 'idp'} ? #{stats_accessed_idps_legend} : #{stats_accessed_rps_legend}">The chart shows the number of logins to each relying party in the selected time range. Click a service to view detailed statistics. Only first access to a service is counted, because following logins are not going through the proxy.</p>
                 <div class="col-md-8">
                     <div class="pie-chart-container row">
                         <div class="canvas-container col-md-7">
-                            <canvas id="IDPChart" class="pieChart chart-IDPChart"></canvas>
+                            <canvas id="detailsChart" class="pieChart chart-DetailsChart"></canvas>
                         </div>
                         <div class="legend-container col-md-5"></div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div id="IDPTable" class="table-container"></div>
-                </div>
-            </div>
-            <!-- RPS -->
-            <div id="rps" class="tab-pane fade">
-                <h2 th:text="#{stats_rps}">Service providers</h2>
-                <p class="legend" th:text="#{stats_rps_legend}">The chart shows the number of logins to each service provider in the selected time range. Click a service to view detailed statistics. Only first access to a service is counted, because following logins are not going through the proxy.</p>
-                <div class="col-md-8">
-                    <div class="pie-chart-container row">
-                        <div class="canvas-container col-md-7">
-                            <canvas id="RPChart" class="pieChart chart-SPChart"></canvas>
-                        </div>
-                        <div class="legend-container col-md-5"></div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div id="RPTable" class="table-container"></div>
+                    <div id="detailsTable" class="table-container"></div>
                 </div>
             </div>
         </div>
@@ -206,30 +146,28 @@
 <script type="text/javascript">
     function chartInit() {
         // draw overall statistics
+        const mode = $('#mode').attr('content');
+        if (!mode) {
+            return;
+        }
         const loginsData = getStatisticsData('logins');
-        const idpData = getStatisticsData('loginsIdp');
-        const rpData = getStatisticsData('loginsRp');
-        const idpTotal = getStatisticsData('loginsIdpTotalCount');
-        const rpTotal = getStatisticsData('loginsRpTotalCount');
-
         drawLoginsChart(loginsData, $('#loginsDashboard')[0]);
-        drawPieChart(idpData, idpTotal , $('#summaryIDPChart')[0]);
-        drawPieChart(rpData, rpTotal, $('#summaryRPChart')[0]);
-
-        // draw IDP statistics
-        drawPieChart(idpData, idpTotal, $('#IDPChart')[0]);
-        drawCountTable(['tables_IDP', 'count'], idpData, true, $('#IDPTable')[0]);
-        // draw RP statistics
-        drawPieChart(rpData, rpTotal, $('#RPChart')[0]);
-        drawCountTable(['tables_RP', 'count'], rpData, true, $('#RPTable')[0]);
+        if (mode.toLowerCase() === 'rp') {
+            const idpData = getStatisticsData('loginsIdp');
+            const idpTotal = getStatisticsData('loginsIdpTotalCount');
+            drawPieChart(idpData, idpTotal, $('#detailsChart')[0]);
+            drawCountTable(['tables_IDP', 'count'], idpData, true, $('#detailsTable')[0]);
+        } else if (mode.toLowerCase() === 'idp') {
+            const rpData = getStatisticsData('loginsRp');
+            const rpTotal = getStatisticsData('loginsRpTotalCount');
+            drawPieChart(rpData, rpTotal, $('#detailsChart')[0]);
+            drawCountTable(['tables_RP', 'count'], rpData, true, $('#detailsTable')[0]);
+        }
     }
 
     $(document).ready(function docReady() {
         Chart.platform.disableCSSInjection = true;
-        const loginsDashboard = document.getElementById('loginsDashboard');
-        if (loginsDashboard !== null && loginsDashboard.dataset.locale === 'cs') {
-            moment.locale(loginsDashboard.dataset.locale);
-        }
+        moment.locale($('#locale').attr('content'));
         chartInit();
     });
 </script>

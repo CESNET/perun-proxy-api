@@ -16,23 +16,8 @@ function getStatisticsDataYMDC(data, field) {
 }
 
 function getTranslation(str) {
-    return $.parseJSON($('#translations').attr('content'))[str];
-}
-
-function extendData(data, minX, maxX) {
-    let i = 0;
-    const extendedData = [];
-    for (let d = new Date(minX); d <= maxX; d.setDate(d.getDate() + 1)) {
-        if (data[i].t.getTime() === d.getTime()) {
-            extendedData.push(data[i]);
-            i += 1;
-        } else if (data[i].t.getTime() > d.getTime()) {
-            extendedData.push({ t: new Date(d), y: 0 });
-        } else {
-            throw new Error("Data is not sorted");
-        }
-    }
-    return extendedData;
+    const locale = $('#locale').attr('content').toUpperCase();
+    return $.parseJSON($('#translations' + locale).attr('content'))[str];
 }
 
 function drawLoginsChart(data, element) {
@@ -45,9 +30,6 @@ function drawLoginsChart(data, element) {
 
     const minX = Math.min(usersData[0].t, loginsData[0].t);
     const maxX = Math.max(usersData[usersData.length - 1].t, loginsData[loginsData.length - 1].t);
-
-    usersData = extendData(usersData, minX, maxX);
-    loginsData = extendData(loginsData, minX, maxX);
 
     new Chart(ctx, { // eslint-disable-line no-new
         type: 'bar',
@@ -191,7 +173,7 @@ function drawPieChart(dataset, total, element) {
         colors[data.length - 1] = '#DDDDDD';
     }
     const chart = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
             labels: data.map(function getFirst(row) {
                 return row[dataCols[0]];
@@ -290,6 +272,7 @@ function drawCountTable(cols, data, allowHTML, element) {
     let i;
     for (i = 0; i < viewCols.length; i++) {
         th = tr.appendChild(document.createElement('th'));
+        console.log(cols[i]);
         th.innerText = getTranslation(cols[i]);
         if (viewCols[i] === 'count') {
             th.className = 'text-right';
@@ -325,32 +308,3 @@ function drawCountTable(cols, data, allowHTML, element) {
         });
     });
 }
-
-function chartInit() {
-    // draw overall statistics
-    const loginsData = getStatisticsData('logins');
-    const idpData = getStatisticsData('loginsIdp');
-    const rpData = getStatisticsData('loginsRp');
-    const idpTotal = getStatisticsData('loginsIdpTotalCount');
-    const rpTotal = getStatisticsData('loginsRpTotalCount');
-
-    drawLoginsChart(loginsData, $('#loginsDashboard')[0]);
-    drawPieChart(idpData, idpTotal , $('#summaryIDPChart')[0]);
-    drawPieChart(rpData, rpTotal, $('#summaryRPChart')[0]);
-
-    // draw IDP statistics
-    drawPieChart(idpData, idpTotal, $('#IDPChart')[0]);
-    drawCountTable(['tables_IDP', 'count'], idpData, true, $('#IDPTable')[0]);
-    // draw RP statistics
-    drawPieChart(rpData, rpTotal, $('#RPChart')[0]);
-    drawCountTable(['tables_RP', 'count'], rpData, true, $('#RPTable')[0]);
-}
-
-$(document).ready(function docReady() {
-    Chart.platform.disableCSSInjection = true;
-    const loginsDashboard = document.getElementById('loginsDashboard');
-    if (loginsDashboard !== null && loginsDashboard.dataset.locale === 'cs') {
-        moment.locale(loginsDashboard.dataset.locale);
-    }
-    chartInit();
-});
