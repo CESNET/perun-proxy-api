@@ -16,7 +16,10 @@ function getStatisticsDataYMDC(data, field) {
 }
 
 function getTranslation(str) {
-    const locale = $('#locale').attr('content').toUpperCase();
+    let locale = $('#locale').attr('content').toUpperCase();
+    if (!locale.trim()) {
+        locale = 'EN';
+    }
     return $.parseJSON($('#translations' + locale).attr('content'))[str];
 }
 

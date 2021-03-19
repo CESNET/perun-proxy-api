@@ -43,7 +43,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private String userFilesPath;
 
     private static final String ROLE_API_USER = "API_USER";
-    private static final String BOOTSTRAP = "/webjars/bootstrap";
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -51,7 +50,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers('/' + JWKSetPublishingEndpoint.URL).permitAll()
                 .antMatchers(NO_AUTH_PATH + "/**").permitAll()
-                .antMatchers(BOOTSTRAP + "/**").permitAll()
+                .antMatchers("/webjars/**").permitAll()
                 .antMatchers( "/res/**").permitAll()
                 .anyRequest().authenticated()
                 .and()

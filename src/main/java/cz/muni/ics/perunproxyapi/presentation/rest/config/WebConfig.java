@@ -15,6 +15,7 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -71,7 +72,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     public LocaleResolver localeResolver() {
-        return new CookieLocaleResolver();
+        CookieLocaleResolver r = new CookieLocaleResolver();
+        r.setDefaultLocale(Locale.ENGLISH);
+        return r;
     }
 
     @Override
