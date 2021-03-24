@@ -172,7 +172,7 @@ public class RelyingPartyServiceImpl implements RelyingPartyService {
     }
 
     private String wrapGroupEntitlementToAARCWithAttributes(String uuid, String displayName, String prefix, String authority) {
-        return addPrefixAndSuffix(GROUP_ATTRIBUTES + ':' + uuid + '?' + DISPLAY_NAME + '=' +
+        return addPrefixAndSuffix(GROUP_ATTRIBUTES + ':' + uuid + "?=" + DISPLAY_NAME + '=' +
                 ESCAPER.escape(displayName), prefix, authority);
     }
 
